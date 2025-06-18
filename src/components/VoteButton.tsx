@@ -28,10 +28,12 @@ export default function VoteButton({
   // Effect to update currentScore if initial total score from server changes
   useEffect(() => {
     console.log(`[VoteButton ${pId}] INITIAL SCORE EFFECT. initial: ${initial}, currentScore: ${currentScore}`);
-    if (initial !== currentScore) { // Only update if different to avoid potential loops if logic evolves
+    // Only update if different to avoid potential loops if logic evolves,
+    // and if `initial` is actually a new value, not just a parent re-render with same prop.
+    if (initial !== currentScore) {
         setCurrentScore(initial);
     }
-  }, [initial, pId, currentScore]); // Added currentScore to dep array based on standard exhaustive-deps, though initial is main driver
+  }, [initial, pId]); // Simplified dependency array. currentScore removed to prevent re-running if only currentScore changes locally.
 
   // Load session once
   useEffect(() => {

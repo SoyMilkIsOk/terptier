@@ -24,48 +24,43 @@ import type { Producer } from "@prisma/client"; // Import Producer type
 // or it will re-fetch/rely on router.refresh().
 // The prompt doesn't specify refactoring data fetching, just adding delete.
 
-export default function AdminPage({ initialProducers }: { initialProducers?: Producer[] }) {
+export default function AdminPage() { // Removed initialProducers prop
   const router = useRouter();
-  // The session check for admin is tricky in a client component that might not have direct access like a server one.
-  // This would typically be handled by page protection or API middleware for the delete action.
-  // The API route for DELETE already protects itself.
-
-  // For displaying producers, we'll use state if we were to update locally,
-  // but router.refresh() makes local state for the list less critical.
-  // const [producers, setProducers] = useState<Producer[]>(initialProducers || []);
-  // useEffect(() => {
-  //   if (initialProducers) setProducers(initialProducers);
-  // }, [initialProducers]);
-  // For now, we'll assume `producers` are passed or fetched in a way that `router.refresh()` works.
-  // The original page was a server component, so `producers` were directly available.
-  // To make it interactive, we need client component features.
-
-  // This component cannot be an `async function` if it's `"use client"`.
-  // Data fetching will be simplified for this example to focus on the delete UI.
-  // In a real app, you'd fetch `producers` in a useEffect or pass from a parent server component.
-  // For this task, we'll assume `producers` are somehow provided (e.g. if this component was wrapped).
-  // Let's simulate by fetching them in useEffect for demonstration if not provided.
-  const [producers, setProducers] = useState<Producer[]>(initialProducers || []);
-  const [isLoading, setIsLoading] = useState(!initialProducers); // True if no initial producers
+  const [producers, setProducers] = useState<Producer[]>([]); // Initialize with empty array
+  const [isLoading, setIsLoading] = useState(true); // Start with loading true
+  const [error, setError] = useState<string | null>(null); // State for error messages
 
   useEffect(() => {
-    // If producers are not passed initially, fetch them.
-    // This part is to make the component runnable if it were standalone.
-    // In the full app, this page might be a server component passing data to a client list component.
-    if (!initialProducers) {
+    const fetchProducers = async () => {
       setIsLoading(true);
-      fetch("/api/producers") // Assuming an API route to get producers exists
-        .then(res => res.json())
-        .then(data => {
-          if (data.success) setProducers(data.producers);
-          setIsLoading(false);
-        })
-        .catch(err => {
-          console.error("Failed to fetch producers", err);
-          setIsLoading(false);
-        });
-    }
-  }, [initialProducers]);
+      setError(null);
+      try {
+        const response = await fetch('/api/producers');
+        if (!response.ok) {
+          throw new Error(`Failed to fetch producers: ${response.status} ${response.statusText}`);
+        }
+        const data = await response.json();
+        // Assuming data is { flower: Producer[], hash: Producer[] }
+        // And that Producer type is compatible (it should be if from @prisma/client)
+        if (data.flower && data.hash) {
+          setProducers([...data.flower, ...data.hash].sort((a, b) => a.name.localeCompare(b.name)));
+        } else {
+          // Handle cases where data might not be in the expected format, or an error was returned in the JSON
+          if(data.error) {
+            throw new Error(`API returned an error: ${data.error}`);
+          }
+          setProducers([]); // Set to empty if data is not as expected
+        }
+      } catch (err: any) {
+        setError(err.message);
+        console.error("Error fetching producers for admin panel:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProducers();
+  }, []); // Empty dependency array to run once on mount
 
 
   const handleDelete = async (producerId: string) => {
@@ -87,8 +82,12 @@ export default function AdminPage({ initialProducers }: { initialProducers?: Pro
   // without a dedicated auth context or prop drilling. The API itself is protected.
   // We will omit the direct session check here and assume the page is admin-accessible.
 
-  if (isLoading && producers.length === 0) {
-    return <div>Loading producers...</div>;
+  if (isLoading) {
+    return <div className="p-6 text-center">Loading producers...</div>;
+  }
+
+  if (error) {
+    return <div className="p-6 text-center text-red-500">Error loading producers: {error}</div>;
   }
 
   return (
@@ -105,14 +104,23 @@ export default function AdminPage({ initialProducers }: { initialProducers?: Pro
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Logo</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {producers.map((p) => (
+            {producers.length === 0 && !isLoading ? (
+              <tr>
+                <td colSpan={4} className="px-6 py-4 text-center text-gray-500">No producers found.</td>
+              </tr>
+            ) : (
+              producers.map((p) => (
               <tr key={p.id} className="hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{p.name}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{p.category}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {p.logoUrl && <img src={p.logoUrl} alt={p.name} className="w-10 h-10 object-contain rounded-sm"/>}
+                </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm">
                   <button
                     onClick={() => handleDelete(p.id)}
