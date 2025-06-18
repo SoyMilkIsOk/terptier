@@ -19,20 +19,14 @@ export default function VoteButton({
   const [score, setScore]     = useState(initial);
   const [vote, setVote]       = useState<number | null>(userVote);
   const [session, setSession] = useState<Session | null>(null);
+  const [isVoting, setIsVoting] = useState(false); // Added isVoting state
   console.log(`[VoteButton.tsx] producer ${producerId}: vote state initialized to =`, vote);
 
-  // Effect to update vote state if userVote prop changes after initial render
+  // Effect to update vote state if userVote prop changes
   useEffect(() => {
-    console.log(`[VoteButton.tsx] producer ${producerId}: userVote prop changed to =`, userVote, "Current vote state =", vote);
-    // Only update from prop if it's different to prevent potential infinite loops
-    // and to respect local changes if user has already interacted.
-    // This logic might need refinement based on how "interacted with" is defined.
-    // For now, a direct update if different seems reasonable for prop-driven changes.
-    if (userVote !== vote) {
-      setVote(userVote);
-      console.log(`[VoteButton.tsx] producer ${producerId}: vote state updated to =`, userVote, "due to prop change.");
-    }
-  }, [userVote, vote, producerId]); // Added vote and producerId to dependency array for completeness in logging
+    console.log(`[VoteButton.tsx] producer ${producerId}: userVote prop is now =`, userVote, ". Updating internal vote state.");
+    setVote(userVote);
+  }, [userVote, producerId]); // producerId added for logging context, userVote is the primary dependency
 
   // Load session once
   useEffect(() => {
@@ -50,55 +44,74 @@ export default function VoteButton({
 
 
   const cast = async (val: 1 | -1) => {
-    // 1) guard
+    if (isVoting) {
+      console.log(`[VoteButton.tsx] producer ${producerId}: Already processing a vote.`);
+      return;
+    }
+
+    // 1) guard for session
     if (!session?.user.id) {
       window.location.href = "/login?reason=vote_redirect";
       return;
     }
 
-    const newVote = vote === val ? null : val; // Changed 0 to null for consistency
-    setVote(newVote);
-    setScore((prev) => prev - (vote || 0) + (newVote || 0)); // Ensure newVote is handled as 0 if null
+    setIsVoting(true);
+    const originalVote = vote; // Store original vote for potential rollback
+    const originalScore = score; // Store original score for potential rollback
 
-    // 2) send only producerId & value
-    const res = await fetch("/api/vote", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ producerId, value: newVote }),
-    });
+    const newVote = vote === val ? null : val;
+    setVote(newVote); // Optimistic update for UI
+    setScore((prev) => prev - (originalVote || 0) + (newVote || 0)); // Optimistic update for UI
 
-    // 3) parse JSON safely
-    let payload: { success: boolean; data?: any; error?: string };
     try {
-      payload = await res.json();
-    } catch {
-      payload = { success: false, error: "No JSON in response" };
-    }
+      // 2) send only producerId & value
+      const res = await fetch("/api/vote", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ producerId, value: newVote }),
+      });
 
-    // 4) handle error
-    if (!payload.success) {
-      console.error("Vote API error:", payload.error);
-      // rollback
-      setVote(userVote);
-      setScore(initial);
+      // 3) parse JSON safely
+      let payload: { success: boolean; data?: any; error?: string };
+      try {
+        payload = await res.json();
+      } catch (e) {
+        payload = { success: false, error: `JSON parsing error: ${(e as Error).message}` };
+      }
+
+      // 4) handle error
+      if (!payload.success) {
+        console.error("Vote API error:", payload.error);
+        // rollback optimistic updates
+        setVote(originalVote);
+        setScore(originalScore);
+      }
+      // If successful, optimistic updates remain
+    } catch (error) {
+      console.error("Network or unexpected error during vote:", error);
+      // rollback optimistic updates
+      setVote(originalVote);
+      setScore(originalScore);
+    } finally {
+      setIsVoting(false);
     }
   };
 
   return (
     <div className="flex items-center space-x-2">
-      <button onClick={() => cast(1)}>
+      <button onClick={() => cast(1)} disabled={isVoting} className={isVoting ? "cursor-not-allowed" : ""}>
         <ThumbsUp
           className={`w-5 h-5 ${
             vote === 1 ? "text-green-500" : "text-gray-500"
-          }`}
+          } ${isVoting ? "opacity-50" : ""}`}
         />
       </button>
       <span>{score}</span>
-      <button onClick={() => cast(-1)}>
+      <button onClick={() => cast(-1)} disabled={isVoting} className={isVoting ? "cursor-not-allowed" : ""}>
         <ThumbsDown
           className={`w-5 h-5 ${
             vote === -1 ? "text-red-500" : "text-gray-500"
-          }`}
+          } ${isVoting ? "opacity-50" : ""}`}
         />
       </button>
     </div>

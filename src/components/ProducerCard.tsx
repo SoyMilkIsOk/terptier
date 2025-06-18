@@ -30,8 +30,8 @@ export default function ProducerCard({
             className="h-6 w-6 object-contain mr-2"
           />
         )}
-        <Link href={`/profile/${producer.id}`}>
-          <h2 className="text-lg font-semibold">
+        <Link href={`/producer/${producer.id}`}>
+          <h2 className="text-lg font-semibold hover:underline">
             {producer.name}
           </h2>
         </Link>
