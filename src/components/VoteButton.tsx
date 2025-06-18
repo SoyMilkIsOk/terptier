@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { ThumbsUp, ThumbsDown } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import type { Session } from "@supabase/supabase-js";
 
@@ -34,9 +35,9 @@ export default function VoteButton({
       return;
     }
 
-    const newVote = vote === val ? 0 : val;
-    setVote(newVote || null);
-    setScore((prev) => prev - (vote || 0) + newVote);
+    const newVote = vote === val ? null : val; // Changed 0 to null for consistency
+    setVote(newVote);
+    setScore((prev) => prev - (vote || 0) + (newVote || 0)); // Ensure newVote is handled as 0 if null
 
     // 2) send only producerId & value
     const res = await fetch("/api/vote", {
@@ -64,9 +65,21 @@ export default function VoteButton({
 
   return (
     <div className="flex items-center space-x-2">
-      <button onClick={() => cast(1)}>👍</button>
+      <button onClick={() => cast(1)}>
+        <ThumbsUp
+          className={`w-5 h-5 ${
+            vote === 1 ? "text-green-500" : "text-gray-500"
+          }`}
+        />
+      </button>
       <span>{score}</span>
-      <button onClick={() => cast(-1)}>👎</button>
+      <button onClick={() => cast(-1)}>
+        <ThumbsDown
+          className={`w-5 h-5 ${
+            vote === -1 ? "text-red-500" : "text-gray-500"
+          }`}
+        />
+      </button>
     </div>
   );
 }

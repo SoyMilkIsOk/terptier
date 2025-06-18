@@ -3,6 +3,7 @@
 
 import { useState } from "react";
 import ProducerCard from "./ProducerCard";
+import CategoryToggle from "./CategoryToggle"; // Import CategoryToggle
 import type { Producer, Vote } from "@prisma/client";
 
 // merge the generated Prisma Producer with its votes
@@ -13,9 +14,10 @@ interface Props {
     flower: ProducerWithVotes[];
     hash:   ProducerWithVotes[];
   };
+  userVotes?: Record<string, number>; // Added userVotes to Props
 }
 
-export default function ProducerList({ initialData }: Props) {
+export default function ProducerList({ initialData, userVotes }: Props) { // Added userVotes to destructuring
   const [view, setView] = useState<"flower" | "hash">("flower");
   const list =
     view === "flower" ? initialData.flower : initialData.hash;
@@ -23,18 +25,7 @@ export default function ProducerList({ initialData }: Props) {
   return (
     <>
       <div className="flex justify-center mb-4">
-        <button
-          onClick={() => setView("flower")}
-          className={view === "flower" ? "underline" : ""}
-        >
-          Flower
-        </button>
-        <button
-          onClick={() => setView("hash")}
-          className={view === "hash" ? "underline" : ""}
-        >
-          Hash
-        </button>
+        <CategoryToggle view={view} setView={setView} />
       </div>
 
       <div className="grid md:grid-cols-2 gap-4">
@@ -43,6 +34,7 @@ export default function ProducerList({ initialData }: Props) {
             key={producer.id}
             rank={i + 1}
             producer={producer}
+            userVoteValue={userVotes?.[producer.id]} // Pass down the specific user vote
           />
         ))}
       </div>

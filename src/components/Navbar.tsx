@@ -36,6 +36,15 @@ export default function Navbar() {
             Home
           </Link>
 
+          {session?.user && (
+            <Link
+              href={`/profile/${session.user.id}`}
+              className={pathname === `/profile/${session.user.id}` ? "underline" : ""}
+            >
+              Profile
+            </Link>
+          )}
+
           {session && (
             <Link
               href="/admin"

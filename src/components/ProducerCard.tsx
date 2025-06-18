@@ -8,12 +8,14 @@ import type { ProducerWithVotes } from "./ProducerList";
 export default function ProducerCard({
   rank,
   producer,
+  userVoteValue, // Added userVoteValue prop
 }: {
   rank: number;
   producer: ProducerWithVotes;
+  userVoteValue?: number | null; // Added userVoteValue prop type
 }) {
   const total = producer.votes.reduce((sum, v) => sum + v.value, 0);
-  const userVote = null; // plug in your user logic
+  const userVote = userVoteValue; // Use the passed prop
 
   return (
     <div className="bg-white p-4 rounded shadow flex flex-col">
@@ -28,8 +30,7 @@ export default function ProducerCard({
         )}
         <Link href={`/profile/${producer.id}`}>
           <h2 className="text-lg font-semibold">
-            {producer.name}{" "}
-            {producer.category === "FLOWER" ? "🌼" : "🪨"}
+            {producer.name}
           </h2>
         </Link>
       </div>

@@ -1,15 +1,33 @@
 // src/app/page.tsx
 import { cookies } from "next/headers";
+import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import AgeGate from "@/components/AgeGate";
 import ProducerList, { ProducerWithVotes } from "@/components/ProducerList";
 import { prisma } from "@/lib/prismadb";
-import { Category } from "@prisma/client";
+import { Category, Vote } from "@prisma/client";
 
 export default async function HomePage() {
   // 1) Age‐gate
-  const cookieStore = await cookies();
+  const cookieStore = cookies(); // No await needed here
   const is21 = cookieStore.get("ageVerify")?.value === "true";
   if (!is21) return <AgeGate />;
+
+  // Initialize Supabase client
+  const supabase = createServerComponentClient({ cookies });
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  const userId = session?.user?.id;
+
+  let userVotes: Record<string, number> = {};
+  if (userId) {
+    const votes = await prisma.vote.findMany({
+      where: { userId: userId },
+    });
+    votes.forEach((vote) => {
+      userVotes[vote.producerId] = vote.value;
+    });
+  }
 
   // 2) Fetch all producers with their votes
   const flowerRaw = (await prisma.producer.findMany({
@@ -34,6 +52,6 @@ export default async function HomePage() {
     .sort((a, b) => score(b) - score(a))
     .slice(0, 10);
 
-  // 4) Render the client list with initialData
-  return <ProducerList initialData={{ flower, hash }} />;
+  // 4) Render the client list with initialData and userVotes
+  return <ProducerList initialData={{ flower, hash }} userVotes={userVotes} />;
 }
