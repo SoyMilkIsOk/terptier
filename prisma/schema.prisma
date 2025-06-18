@@ -18,13 +18,14 @@ enum Category {
 }
 
 model User {
-  id           String     @id @default(cuid())
+  id           String     @id @db.Uuid // Changed to UUID
   name         String?
   email        String     @unique
   passwordHash String? // for credentials
   role         Role       @default(USER)
   votes        Vote[]
   createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt // Added updatedAt, standard practice
   Producer     Producer[]
 }
 

@@ -6,6 +6,9 @@ import { cookies } from "next/headers";
 
 export async function POST(request: Request) {
   try {
+    const originalRequestBody = await request.clone().text();
+    console.log("[/api/vote] Received raw request body:", originalRequestBody);
+
     // 1) Authenticate via Supabase
     const supabase = createServerComponentClient({ cookies });
     const {
@@ -26,26 +29,32 @@ export async function POST(request: Request) {
         name: user_metadata?.full_name || email!,
       },
       create: {
+        id: session.user.id, // Use Supabase user.id as the User's primary key
         email: email!,
         name: user_metadata?.full_name || email!,
       },
     });
 
     // 3) Parse and validate body
-    let body: any;
+    let parsedBody: any;
     try {
-      body = await request.json();
-    } catch {
+      // Use the cloned body text for parsing, so original request.json() can be used later if needed by other logic
+      // or if there are multiple attempts to read. For this case, we just parse it once.
+      parsedBody = JSON.parse(originalRequestBody);
+      console.log("[/api/vote] Parsed request body:", parsedBody);
+    } catch (e: any) {
+      console.error("[/api/vote] Error parsing JSON body:", e.message, "Raw body was:", originalRequestBody);
       return NextResponse.json(
         { success: false, error: "Invalid JSON body" },
         { status: 400 }
       );
     }
-    const { producerId, value } = body as {
+    const { producerId, value } = parsedBody as { // Use parsedBody here
       producerId?: string;
       value?: number;
     };
     if (!producerId || typeof value !== "number") {
+      console.error("[/api/vote] Validation Error. producerId:", producerId, "value:", value);
       return NextResponse.json(
         {
           success: false,

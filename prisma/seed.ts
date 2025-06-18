@@ -11,6 +11,7 @@ async function main() {
     where: { email: process.env.ADMIN_EMAIL! },
     update: {},
     create: {
+      id: process.env.ADMIN_SUPABASE_ID || '00000000-0000-0000-0000-000000000000', // Add Supabase ID for admin
       email: process.env.ADMIN_EMAIL!,
       name: "Admin",
       passwordHash: hash,

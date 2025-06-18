@@ -36,10 +36,10 @@ export default function Navbar() {
             Home
           </Link>
 
-          {session?.user && session.user.email && ( // Ensure email exists
+          {session?.user && ( // session.user.id should always exist if session.user exists
             <Link
-              href={`/profile/${encodeURIComponent(session.user.email)}`}
-              className={pathname === `/profile/${encodeURIComponent(session.user.email)}` ? "underline" : ""}
+              href={`/profile/${session.user.id}`}
+              className={pathname === `/profile/${session.user.id}` ? "underline" : ""}
             >
               Profile
             </Link>

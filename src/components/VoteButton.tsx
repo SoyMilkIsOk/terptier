@@ -22,11 +22,15 @@ export default function VoteButton({
   const [isVoting, setIsVoting] = useState(false); // Added isVoting state
   console.log(`[VoteButton.tsx] producer ${producerId}: vote state initialized to =`, vote);
 
-  // Effect to update vote state if userVote prop changes
+  // Effect to update vote state if userVote prop changes or if local vote state changes (for logging sync issues)
   useEffect(() => {
-    console.log(`[VoteButton.tsx] producer ${producerId}: userVote prop is now =`, userVote, ". Updating internal vote state.");
-    setVote(userVote);
-  }, [userVote, producerId]); // producerId added for logging context, userVote is the primary dependency
+    const id = producerId || 'N/A'; // Ensure producerId is available for logging
+    console.log(`[VoteButton ${id}] SYNC EFFECT. userVote PROP: ${userVote}, current vote STATE: ${vote}`);
+    if (userVote !== vote) {
+      console.log(`[VoteButton ${id}] SYNC EFFECT - MISMATCH DETECTED. Setting vote STATE to: ${userVote}`);
+      setVote(userVote);
+    }
+  }, [userVote, vote, producerId]);
 
   // Load session once
   useEffect(() => {
@@ -64,6 +68,12 @@ export default function VoteButton({
     setScore((prev) => prev - (originalVote || 0) + (newVote || 0)); // Optimistic update for UI
 
     try {
+      // Log the payload before sending
+      console.log(
+        `[VoteButton ${producerId}] API CALL PREP. Payload:`,
+        JSON.stringify({ producerId, value: newVote })
+      );
+
       // 2) send only producerId & value
       const res = await fetch("/api/vote", {
         method: "POST",
