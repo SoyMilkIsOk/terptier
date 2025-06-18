@@ -29,7 +29,6 @@ export async function POST(request: Request) {
         name: user_metadata?.full_name || email!,
       },
       create: {
-        id: session.user.id, // Use Supabase user.id as the User's primary key
         email: email!,
         name: user_metadata?.full_name || email!,
       },

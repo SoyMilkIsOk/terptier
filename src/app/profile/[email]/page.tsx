@@ -1,16 +1,17 @@
-// src/app/profile/[id]/page.tsx
+// src/app/profile/[email]/page.tsx
 import ProducerCard from "@/components/ProducerCard";
 import { prisma } from "@/lib/prismadb";
 
 export default async function ProfilePage({
   params,
 }: {
-  params: { id: string }; // Parameter changed back to id
+  params: { email: string }; // Parameter changed to email
 }) {
-  const { id } = params; // Destructure id directly
+  const { email: encodedEmail } = params; // Destructure and rename
+  const email = decodeURIComponent(encodedEmail); // Decode email
 
   const user = await prisma.user.findUnique({
-    where: { id }, // Query by id
+    where: { email }, // Query by email
     include: {
       votes: {
         // producer.votes is needed for ProducerCard to calculate total score
@@ -21,7 +22,7 @@ export default async function ProfilePage({
 
   if (!user) {
     // Consider a more user-friendly "not found" page or redirect
-    return <p>User not found. (ID: {id})</p>; // Updated message for ID
+    return <p>User not found. (Email: {email})</p>; // Updated message for email
   }
 
   // Process votes into liked and disliked producers
