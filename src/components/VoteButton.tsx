@@ -15,23 +15,44 @@ export default function VoteButton({
   initial: number;
   userVote: number | null;
 }) {
+  console.log(`[VoteButton.tsx] producer ${producerId}: initial render. userVote prop =`, userVote, "initial score =", initial);
   const [score, setScore]     = useState(initial);
   const [vote, setVote]       = useState<number | null>(userVote);
   const [session, setSession] = useState<Session | null>(null);
+  console.log(`[VoteButton.tsx] producer ${producerId}: vote state initialized to =`, vote);
+
+  // Effect to update vote state if userVote prop changes after initial render
+  useEffect(() => {
+    console.log(`[VoteButton.tsx] producer ${producerId}: userVote prop changed to =`, userVote, "Current vote state =", vote);
+    // Only update from prop if it's different to prevent potential infinite loops
+    // and to respect local changes if user has already interacted.
+    // This logic might need refinement based on how "interacted with" is defined.
+    // For now, a direct update if different seems reasonable for prop-driven changes.
+    if (userVote !== vote) {
+      setVote(userVote);
+      console.log(`[VoteButton.tsx] producer ${producerId}: vote state updated to =`, userVote, "due to prop change.");
+    }
+  }, [userVote, vote, producerId]); // Added vote and producerId to dependency array for completeness in logging
 
   // Load session once
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => setSession(data.session));
-    const { data: listener } = supabase.auth.onAuthStateChange((_e, sess) =>
+    console.log(`[VoteButton.tsx] producer ${producerId}: useEffect for session running.`);
+    supabase.auth.getSession().then(({ data }) => {
+      console.log(`[VoteButton.tsx] producer ${producerId}: session fetched data =`, data.session?.user?.id);
+      setSession(data.session)
+    });
+    const { data: listener } = supabase.auth.onAuthStateChange((_e, sess) => {
+      console.log(`[VoteButton.tsx] producer ${producerId}: onAuthStateChange triggered, new session user id =`, sess?.user?.id);
       setSession(sess)
-    );
+    });
     return () => listener.subscription.unsubscribe();
-  }, []);
+  }, [producerId]); // Added producerId to dependency array for completeness in logging
+
 
   const cast = async (val: 1 | -1) => {
     // 1) guard
     if (!session?.user.id) {
-      window.location.href = "/login";
+      window.location.href = "/login?reason=vote_redirect";
       return;
     }
 

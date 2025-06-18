@@ -28,6 +28,7 @@ export default async function HomePage() {
       userVotes[vote.producerId] = vote.value;
     });
   }
+  console.log("[page.tsx] userVotes:", userVotes); // SERVER-SIDE LOG
 
   // 2) Fetch all producers with their votes
   const flowerRaw = (await prisma.producer.findMany({

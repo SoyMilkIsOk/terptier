@@ -17,6 +17,8 @@ export default function ProducerCard({
   const total = producer.votes.reduce((sum, v) => sum + v.value, 0);
   const userVote = userVoteValue; // Use the passed prop
 
+  console.log(`[ProducerCard.tsx] producer ${producer.id}: received userVoteValue =`, userVoteValue, "Passing to VoteButton:", userVote);
+
   return (
     <div className="bg-white p-4 rounded shadow flex flex-col">
       <div className="flex items-center mb-2">

@@ -22,6 +22,8 @@ export default function ProducerList({ initialData, userVotes }: Props) { // Add
   const list =
     view === "flower" ? initialData.flower : initialData.hash;
 
+  console.log("[ProducerList.tsx] userVotes prop:", userVotes);
+
   return (
     <>
       <div className="flex justify-center mb-4">
@@ -29,14 +31,18 @@ export default function ProducerList({ initialData, userVotes }: Props) { // Add
       </div>
 
       <div className="grid md:grid-cols-2 gap-4">
-        {list.map((producer, i) => (
-          <ProducerCard
-            key={producer.id}
-            rank={i + 1}
-            producer={producer}
-            userVoteValue={userVotes?.[producer.id]} // Pass down the specific user vote
-          />
-        ))}
+        {list.map((producer, i) => {
+          const userVoteValue = userVotes?.[producer.id];
+          console.log(`[ProducerList.tsx] Mapping producer ${producer.id}: userVoteValue =`, userVoteValue);
+          return (
+            <ProducerCard
+              key={producer.id}
+              rank={i + 1}
+              producer={producer}
+              userVoteValue={userVoteValue} // Pass down the specific user vote
+            />
+          );
+        })}
       </div>
     </>
   );
