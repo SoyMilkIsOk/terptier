@@ -2,11 +2,13 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation"; // Added useSearchParams
 import { supabase } from "@/lib/supabaseClient";
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams(); // Get search params
+  const reason = searchParams.get("reason"); // Get reason query param
   const [email, setEmail]       = useState("");
   const [password, setPassword] = useState("");
   const [error, setError]       = useState<string | null>(null);
@@ -51,44 +53,54 @@ export default function LoginPage() {
 
   return (
     <div className="max-w-md mx-auto bg-white p-6 rounded shadow">
-      <h1 className="text-2xl mb-4">Log In / Sign Up</h1>
-      {error && <div className="text-red-500 mb-2">{error}</div>}
+      {reason === "vote_redirect" && (
+        <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-6" role="alert">
+          <p className="font-bold">Access Required</p>
+          <p>You must be logged in to vote.</p>
+        </div>
+      )}
+      <h1 className="text-2xl mb-4 text-center font-semibold">Log In / Sign Up</h1>
+      {error && <div className="text-red-500 mb-2 p-3 bg-red-100 border border-red-400 rounded">{error}</div>}
 
       <button
         onClick={() => supabase.auth.signInWithOAuth({ provider: "google" })}
-        className="w-full mb-2 py-2 bg-red-500 text-white rounded"
+        className="w-full mb-2 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-md transition duration-150"
       >
         Continue with Google
       </button>
       <button
         onClick={() => supabase.auth.signInWithOAuth({ provider: "discord" })}
-        className="w-full mb-4 py-2 bg-gray-900 text-white rounded"
+        className="w-full mb-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md transition duration-150"
       >
         Continue with Discord
       </button>
 
-      <div className="border-t my-4"></div>
+      <div className="relative flex py-3 items-center">
+        <div className="flex-grow border-t border-gray-300"></div>
+        <span className="flex-shrink mx-4 text-gray-400">Or</span>
+        <div className="flex-grow border-t border-gray-300"></div>
+      </div>
 
       <input
         type="email"
         placeholder="Email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
-        className="w-full mb-2 p-2 border rounded"
+        className="w-full mb-3 p-2.5 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
       />
       <input
         type="password"
         placeholder="Password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
-        className="w-full mb-4 p-2 border rounded"
+        className="w-full mb-6 p-2.5 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
       />
 
       <button
         onClick={handleAuth}
-        className="w-full py-2 bg-blue-600 text-white rounded"
+        className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition duration-150"
       >
-        Log In / Sign Up
+        Log In / Sign Up with Email
       </button>
     </div>
   );

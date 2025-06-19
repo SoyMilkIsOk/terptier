@@ -36,6 +36,15 @@ export default function Navbar() {
             Home
           </Link>
 
+          {session?.user && session.user.email && ( // Check for email specifically
+            <Link
+              href={`/profile/${encodeURIComponent(session.user.email)}`}
+              className={pathname === `/profile/${encodeURIComponent(session.user.email)}` ? "underline" : ""}
+            >
+              Profile
+            </Link>
+          )}
+
           {session && (
             <Link
               href="/admin"
