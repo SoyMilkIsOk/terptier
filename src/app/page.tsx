@@ -17,16 +17,23 @@ export default async function HomePage() {
   const {
     data: { session },
   } = await supabase.auth.getSession();
-  const userId = session?.user?.id;
 
   let userVotes: Record<string, number> = {};
-  if (userId) {
-    const votes = await prisma.vote.findMany({
-      where: { userId: userId },
+
+  if (session?.user?.email) {
+    const prismaUser = await prisma.user.findUnique({
+      where: { email: session.user.email },
     });
-    votes.forEach((vote) => {
-      userVotes[vote.producerId] = vote.value;
-    });
+
+    if (prismaUser) {
+      const votes = await prisma.vote.findMany({
+        where: { userId: prismaUser.id },
+      });
+
+      votes.forEach((vote) => {
+        userVotes[vote.producerId] = vote.value;
+      });
+    }
   }
   console.log("[HomePage] Constructed userVotes map:", JSON.stringify(userVotes, null, 2)); // Enhanced log
 
