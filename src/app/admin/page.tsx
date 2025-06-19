@@ -4,15 +4,17 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import AddProducerForm from "@/components/AddProducerForm";
+import Modal from "@/components/Modal";
 import type { Producer } from "@prisma/client";
 import { XCircle } from "lucide-react";
-import Image from "next/image"; // Added import for Image component
 
 export default function AdminPage() {
   const router = useRouter();
   const [producers, setProducers] = useState<Producer[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [confirmData, setConfirmData] = useState<{id: string, name: string} | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchProducers = async () => {
@@ -45,23 +47,30 @@ export default function AdminPage() {
     fetchProducers();
   }, []);
 
-  const handleDelete = async (producerId: string, producerName: string) => {
-    if (window.confirm(`Are you sure you want to delete "${producerName}"? This action cannot be undone.`)) {
-      try {
-        const response = await fetch(`/api/producers/${producerId}`, {
-          method: 'DELETE',
-        });
-        if (response.ok) {
-          alert(`Producer "${producerName}" deleted successfully.`);
-          router.refresh();
-        } else {
-          const errorData = await response.json().catch(() => ({ message: 'Failed to delete producer. Unknown error.' }));
-          alert(`Failed to delete producer: ${errorData.message || response.statusText}`);
-        }
-      } catch (err: any) {
-        alert(`An error occurred: ${err.message}`);
-        console.error("Error during delete operation:", err);
+  const handleDelete = (producerId: string, producerName: string) => {
+    setConfirmData({ id: producerId, name: producerName });
+  };
+
+  const confirmDelete = async () => {
+    if (!confirmData) return;
+    try {
+      const response = await fetch(`/api/producers/${confirmData.id}`, {
+        method: "DELETE",
+      });
+      if (response.ok) {
+        setProducers(producers.filter((p) => p.id !== confirmData.id));
+        setMessage(`Producer "${confirmData.name}" deleted successfully.`);
+      } else {
+        const errorData = await response
+          .json()
+          .catch(() => ({ message: "Failed to delete producer. Unknown error." }));
+        setMessage(`Failed to delete producer: ${errorData.message || response.statusText}`);
       }
+    } catch (err: any) {
+      setMessage(`An error occurred: ${err.message}`);
+      console.error("Error during delete operation:", err);
+    } finally {
+      setConfirmData(null);
     }
   };
 
@@ -90,7 +99,6 @@ export default function AdminPage() {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Logo</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
@@ -99,13 +107,6 @@ export default function AdminPage() {
             <tbody className="bg-white divide-y divide-gray-200">
               {producers.map((p) => (
                 <tr key={p.id}>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {p.logoUrl ? (
-                      <Image src={p.logoUrl} alt={`${p.name || 'Producer'} logo`} width={40} height={40} className="object-contain rounded" />
-                    ) : (
-                      <div className="w-10 h-10 bg-gray-100 rounded flex items-center justify-center text-xs text-gray-400">No Logo</div>
-                    )}
-                  </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">{p.name || 'N/A'}</div>
                   </td>
@@ -132,6 +133,30 @@ export default function AdminPage() {
           </table>
         )}
       </div>
+      {confirmData && (
+        <Modal isOpen={true} onClose={() => setConfirmData(null)}>
+          <p className="mb-4">Are you sure you want to delete "{confirmData.name}"? This action cannot be undone.</p>
+          <div className="flex justify-end space-x-2">
+            <button
+              onClick={() => setConfirmData(null)}
+              className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={confirmDelete}
+              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+            >
+              Delete
+            </button>
+          </div>
+        </Modal>
+      )}
+      {message && (
+        <Modal isOpen={true} onClose={() => setMessage(null)}>
+          <p className="mb-4">{message}</p>
+        </Modal>
+      )}
     </div>
   );
 }
