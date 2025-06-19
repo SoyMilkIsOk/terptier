@@ -1,9 +1,14 @@
 import { PrismaClient, Category, Role } from "@prisma/client";
 import bcrypt from "bcrypt";
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({
+  datasources: {
+    db: { url: process.env.DIRECT_URL },
+  },
+});
 
 async function main() {
+  await prisma.$executeRawUnsafe("DEALLOCATE ALL;");
   // 1) Create admin user from env
   const adminPass = process.env.ADMIN_PASS || "changeme";
   const hash = await bcrypt.hash(adminPass, 10);
@@ -20,9 +25,18 @@ async function main() {
 
   // 2) Seed flower producers
   const flowerNames = [
-    "Locol Love", "Grateful Grove", "SPCY", "GreenDot",
-    "Verde", "14er", "Fox", "Cherry",
-    "710Labs", "Malek’s", "Indico", "Melody Genetics"
+    "Locol Love",
+    "Grateful Grove",
+    "SPCY",
+    "GreenDot",
+    "Verde",
+    "14er",
+    "Fox",
+    "Cherry",
+    "710Labs",
+    "Malek’s",
+    "Indico",
+    "Melody Genetics",
   ];
   for (const name of flowerNames) {
     await prisma.producer.upsert({
@@ -34,9 +48,17 @@ async function main() {
 
   // 3) Seed hash producers
   const hashNames = [
-    "Soiku Bano", "710Labs", "LazerCat", "Dablogic",
-    "InHouse", "Sunshine", "Locol Love", "Rivers",
-    "Allgreens", "Malek’s", "GreenDot"
+    "Soiku Bano",
+    "710Labs",
+    "LazerCat",
+    "Dablogic",
+    "InHouse",
+    "Sunshine",
+    "Locol Love",
+    "Rivers",
+    "Allgreens",
+    "Malek’s",
+    "GreenDot",
   ];
   for (const name of hashNames) {
     await prisma.producer.upsert({
@@ -48,5 +70,10 @@ async function main() {
 }
 
 main()
-  .catch(e => { console.error(e); process.exit(1); })
-  .finally(async () => { await prisma.$disconnect(); });
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });
