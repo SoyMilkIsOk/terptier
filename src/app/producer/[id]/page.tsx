@@ -7,13 +7,13 @@ import { Category } from "@prisma/client"; // Import Category enum if needed for
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
 
 interface ProducerProfilePageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default async function ProducerProfilePage({ params }: ProducerProfilePageProps) {
-  const { id } = params;
+  const { id } = await params;
 
   const producer = await prisma.producer.findUnique({
     where: { id },
