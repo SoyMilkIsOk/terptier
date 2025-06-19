@@ -8,7 +8,7 @@ import { Category, Vote } from "@prisma/client";
 
 export default async function HomePage() {
   // 1) Age‐gate
-  const cookieStore = cookies(); // No await needed here
+  const cookieStore = await cookies();
   const is21 = cookieStore.get("ageVerify")?.value === "true";
   if (!is21) return <AgeGate />;
 
