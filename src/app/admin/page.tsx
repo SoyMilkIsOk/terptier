@@ -30,11 +30,15 @@ export default function AdminPage() {
           throw new Error(data.error);
         }
 
-        const combinedProducers = [...(data.flower || []), ...(data.hash || [])].sort((a, b) => {
-          const nameA = a.name || '';
-          const nameB = b.name || '';
-          return nameA.localeCompare(nameB);
-        });
+        const combinedProducers = [...(data.flower || []), ...(data.hash || [])].sort(
+          (a, b) => {
+            const typeCompare = (a.category || '').localeCompare(b.category || '');
+            if (typeCompare !== 0) return typeCompare;
+            const nameA = a.name || '';
+            const nameB = b.name || '';
+            return nameA.localeCompare(nameB);
+          }
+        );
         setProducers(combinedProducers);
       } catch (err: any) {
         setError(err.message);
@@ -56,6 +60,7 @@ export default function AdminPage() {
     try {
       const response = await fetch(`/api/producers/${confirmData.id}`, {
         method: "DELETE",
+        credentials: "include",
       });
       if (response.ok) {
         setProducers(producers.filter((p) => p.id !== confirmData.id));
