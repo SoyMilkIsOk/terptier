@@ -10,15 +10,34 @@ import type { Session } from "@supabase/supabase-js";
 export default function Navbar() {
   const pathname = usePathname();
   const [session, setSession] = useState<Session | null>(null);
+  const [profileId, setProfileId] = useState<string | null>(null);
 
   useEffect(() => {
     // fetch initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
+      if (session?.user?.email) {
+        const res = await fetch("/api/users/me");
+        const data = await res.json();
+        if (data.success) {
+          setProfileId(data.id);
+        }
+      }
     });
     // listen for changes (login/logout)
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, sess) => {
+    const { data: listener } = supabase.auth.onAuthStateChange(async (_event, sess) => {
       setSession(sess);
+      if (sess?.user?.email) {
+        const res = await fetch("/api/users/me");
+        const data = await res.json();
+        if (data.success) {
+          setProfileId(data.id);
+        } else {
+          setProfileId(null);
+        }
+      } else {
+        setProfileId(null);
+      }
     });
     return () => {
       listener.subscription.unsubscribe();
@@ -36,10 +55,10 @@ export default function Navbar() {
             Home
           </Link>
 
-          {session?.user && session.user.email && ( // Check for email specifically
+          {profileId && (
             <Link
-              href={`/profile/${encodeURIComponent(session.user.email)}`}
-              className={pathname === `/profile/${encodeURIComponent(session.user.email)}` ? "underline" : ""}
+              href={`/profile/${profileId}`}
+              className={pathname === `/profile/${profileId}` ? "underline" : ""}
             >
               Profile
             </Link>
