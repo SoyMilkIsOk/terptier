@@ -5,9 +5,9 @@ import { prisma } from "@/lib/prismadb";
 export default async function ProfilePage({
   params,
 }: {
-  params: { email: string }; // Parameter changed to email
+  params: Promise<{ email: string }>; // Parameter changed to email
 }) {
-  const { email: encodedEmail } = params; // Destructure and rename
+  const { email: encodedEmail } = await params; // Destructure and rename
   const email = decodeURIComponent(encodedEmail); // Decode email
 
   const user = await prisma.user.findUnique({

@@ -1,17 +1,15 @@
 // src/app/api/producers/[id]/route.ts
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { prisma } from "@/lib/prismadb";
 import { createServerActionClient } from "@supabase/auth-helpers-nextjs"; // Correct import for Route Handlers
 import { cookies } from "next/headers";
 import { Role } from "@prisma/client";
 
-interface DeleteParams {
-  params: {
-    id: string;
-  };
-}
-
-export async function DELETE(request: Request, { params }: DeleteParams) {
+export async function DELETE(
+  request: NextRequest,
+  context: any
+) {
+  const params = await (context?.params);
   try {
     // 1. Authentication & Authorization
     const supabase = createServerActionClient({ cookies }); // Use createServerActionClient for Route Handlers
