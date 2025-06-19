@@ -48,12 +48,22 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
-    const { producerId, value } = parsedBody as { // Use parsedBody here
+    const { producerId, value } = parsedBody as {
       producerId?: string;
       value?: number;
     };
-    if (!producerId || typeof value !== "number") {
-      console.error("[/api/vote] Validation Error. producerId:", producerId, "value:", value);
+    if (
+      !producerId ||
+      typeof value !== "number" ||
+      !Number.isInteger(value) ||
+      ![1, 0, -1].includes(value)
+    ) {
+      console.error(
+        "[/api/vote] Validation Error. producerId:",
+        producerId,
+        "value:",
+        value
+      );
       return NextResponse.json(
         {
           success: false,
