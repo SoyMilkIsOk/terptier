@@ -7,7 +7,10 @@ import CategoryToggle from "./CategoryToggle"; // Import CategoryToggle
 import type { Producer, Vote } from "@prisma/client";
 
 // merge the generated Prisma Producer with its votes
-export type ProducerWithVotes = Producer & { votes: Vote[] };
+export type ProducerWithVotes = Producer & {
+  votes: Vote[];
+  _count?: { comments: number };
+};
 
 interface Props {
   initialData: {

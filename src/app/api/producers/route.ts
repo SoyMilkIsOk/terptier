@@ -6,11 +6,11 @@ export async function GET() {
     const [flower, hash] = await Promise.all([
       prisma.producer.findMany({
         where: { category: "FLOWER" },
-        include: { votes: true },
+        include: { votes: true, _count: { select: { comments: true } } },
       }),
       prisma.producer.findMany({
         where: { category: "HASH" },
-        include: { votes: true },
+        include: { votes: true, _count: { select: { comments: true } } },
       }),
     ]);
     return NextResponse.json({ flower, hash });

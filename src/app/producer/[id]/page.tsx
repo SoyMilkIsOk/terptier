@@ -2,6 +2,9 @@
 import { prisma } from "@/lib/prismadb";
 import Image from "next/image";
 import { Category } from "@prisma/client"; // Import Category enum if needed for type safety
+import CommentCard from "@/components/CommentCard";
+import AddCommentForm from "@/components/AddCommentForm";
+import { supabaseServer } from "@/lib/supabaseServer";
 
 // Helper function to capitalize category
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
@@ -15,10 +18,23 @@ interface ProducerProfilePageProps {
 export default async function ProducerProfilePage({ params }: ProducerProfilePageProps) {
   const { id } = await params;
 
+  const supabase = supabaseServer;
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  let currentUserId: string | null = null;
+  if (session?.user?.email) {
+    const prismaUser = await prisma.user.findUnique({ where: { email: session.user.email } });
+    currentUserId = prismaUser?.id || null;
+  }
+
   const producer = await prisma.producer.findUnique({
     where: { id },
     include: {
       votes: true, // To calculate total score
+      comments: false,
+      _count: { select: { comments: true } },
     },
   });
 
@@ -31,6 +47,19 @@ export default async function ProducerProfilePage({ params }: ProducerProfilePag
   }
 
   const totalScore = producer.votes.reduce((sum, vote) => sum + vote.value, 0);
+
+  const comments = await prisma.comment.findMany({
+    where: { producerId: id },
+    include: { user: true },
+    orderBy: { updatedAt: "desc" },
+  });
+
+  const userComment = currentUserId
+    ? await prisma.comment.findUnique({
+        where: { userId_producerId: { userId: currentUserId, producerId: id } },
+        include: { user: true },
+      })
+    : null;
 
   // Calculate rank
   let rank = 0;
@@ -97,7 +126,13 @@ export default async function ProducerProfilePage({ params }: ProducerProfilePag
         )}
         */}
 
-        {/* You could also list individual votes or comments here if desired in a future iteration */}
+        <div className="mt-8">
+          <h3 className="text-xl font-semibold mb-4">Comments ({producer._count?.comments ?? 0})</h3>
+          {currentUserId && <AddCommentForm producerId={id} />}
+          {comments.map((c) => (
+            <CommentCard key={c.id} comment={c} currentUserId={currentUserId ?? undefined} />
+          ))}
+        </div>
 
       </div>
     </div>

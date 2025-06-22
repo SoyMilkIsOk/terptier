@@ -40,12 +40,12 @@ export default async function HomePage() {
   // 2) Fetch all producers with their votes
   const flowerRaw = (await prisma.producer.findMany({
     where:    { category: Category.FLOWER },
-    include:  { votes: true },
+    include:  { votes: true, _count: { select: { comments: true } } },
   })) as ProducerWithVotes[];
 
   const hashRaw = (await prisma.producer.findMany({
     where:    { category: Category.HASH },
-    include:  { votes: true },
+    include:  { votes: true, _count: { select: { comments: true } } },
   })) as ProducerWithVotes[];
 
   // 3) Sort by total votes desc and take top 10
