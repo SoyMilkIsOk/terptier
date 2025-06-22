@@ -32,7 +32,7 @@ export default function AddProducerForm() {
         <option value="FLOWER">Flower</option>
         <option value="HASH">Hash</option>
       </select>
-      <button onClick={add} className="bg-green-600 text-white px-4 py-2 rounded">
+      <button onClick={add} className="bg-green-600 text-white px-4 py-2 rounded cursor-pointer">
         Add
       </button>
     </div>

@@ -56,7 +56,8 @@ export async function POST(request: Request) {
       !producerId ||
       typeof value !== "number" ||
       !Number.isInteger(value) ||
-      ![1, 0, -1].includes(value)
+      value < 1 ||
+      value > 5
     ) {
       console.error(
         "[/api/vote] Validation Error. producerId:",

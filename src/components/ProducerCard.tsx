@@ -18,6 +18,7 @@ export default function ProducerCard({
   isTopTen?: boolean;
 }) {
   const total = producer.votes.reduce((sum, v) => sum + v.value, 0);
+  const average = producer.votes.length ? total / producer.votes.length : 0;
   const userVote = userVoteValue; // Use the passed prop
 
   console.log(`[ProducerCard.tsx] producer ${producer.id}: received userVoteValue =`, userVoteValue, "Passing to VoteButton:", userVote);
@@ -33,20 +34,22 @@ export default function ProducerCard({
             className="h-6 w-6 object-contain mr-2"
           />
         )}
-        <Link href={`/producer/${producer.id}`}>
+        <Link href={`/producer/${producer.id}`} className="cursor-pointer">
           <h2 className="text-lg font-semibold hover:underline">
             {producer.name}
           </h2>
         </Link>
-        <Link href={`/producer/${producer.id}`} className="flex items-center ml-auto">
+        <Link href={`/producer/${producer.id}`} className="flex items-center ml-auto cursor-pointer">
           <MessageCircle className="w-4 h-4 text-gray-500" />
           <span className="text-sm ml-1">{producer._count?.comments ?? 0}</span>
         </Link>
       </div>
       <VoteButton
         producerId={producer.id}
-        initial={total}
-        userVote={userVote}
+        initialAverage={average}
+        userRating={userVote}
+        readOnly
+        navigateOnClick
       />
     </div>
   );

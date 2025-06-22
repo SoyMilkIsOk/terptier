@@ -52,9 +52,11 @@ export default async function HomePage({
     include:  { votes: true, _count: { select: { comments: true } } },
   })) as ProducerWithVotes[];
 
-  // 3) Sort by total votes desc
-  const score = (p: ProducerWithVotes) =>
-    p.votes.reduce((sum, v) => sum + v.value, 0);
+  // 3) Sort by average rating desc
+  const score = (p: ProducerWithVotes) => {
+    const total = p.votes.reduce((sum, v) => sum + v.value, 0);
+    return p.votes.length > 0 ? total / p.votes.length : 0;
+  };
 
   const flower = flowerRaw.sort((a, b) => score(b) - score(a));
 

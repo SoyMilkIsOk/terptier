@@ -4,6 +4,7 @@ import Image from "next/image";
 import { Category } from "@prisma/client"; // Import Category enum if needed for type safety
 import CommentCard from "@/components/CommentCard";
 import AddCommentForm from "@/components/AddCommentForm";
+import VoteButton from "@/components/VoteButton";
 import { supabaseServer } from "@/lib/supabaseServer";
 
 // Helper function to capitalize category
@@ -47,6 +48,17 @@ export default async function ProducerProfilePage({ params }: ProducerProfilePag
   }
 
   const totalScore = producer.votes.reduce((sum, vote) => sum + vote.value, 0);
+  const averageRating =
+    producer.votes.length > 0 ? totalScore / producer.votes.length : 0;
+
+  const userVoteRecord = currentUserId
+    ? await prisma.vote.findUnique({
+        where: {
+          userId_producerId: { userId: currentUserId, producerId: id },
+        },
+      })
+    : null;
+  const userVoteValue = userVoteRecord?.value ?? null;
 
   const comments = await prisma.comment.findMany({
     where: { producerId: id },
@@ -68,10 +80,11 @@ export default async function ProducerProfilePage({ params }: ProducerProfilePag
     include: { votes: true },
   });
 
-  const scoredProducers = allProducersOfCategory.map(p => ({
-    ...p,
-    score: p.votes.reduce((sum, v) => sum + v.value, 0),
-  }));
+  const scoredProducers = allProducersOfCategory.map((p) => {
+    const total = p.votes.reduce((sum, v) => sum + v.value, 0);
+    const avg = p.votes.length > 0 ? total / p.votes.length : 0;
+    return { ...p, score: avg };
+  });
 
   scoredProducers.sort((a, b) => b.score - a.score);
 
@@ -104,11 +117,19 @@ export default async function ProducerProfilePage({ params }: ProducerProfilePag
               </span>
             </div>
             <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 text-lg justify-center md:justify-start">
-              <p className="font-semibold text-gray-700">Votes:
-                <span className={`ml-1 font-bold ${totalScore >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {totalScore}
-                </span>
-              </p>
+              <div className="flex items-center mb-2 sm:mb-0">
+                <span className="mr-2 font-semibold">Avg. Rating:</span>
+                <VoteButton
+                  producerId={id}
+                  initialAverage={averageRating}
+                  userRating={null}
+                  readOnly
+                />
+              </div>
+              <div className="flex items-center mb-2 sm:mb-0">
+                <span className="mr-2 font-semibold">Your Rating:</span>
+                <VoteButton producerId={id} initialAverage={averageRating} userRating={userVoteValue} />
+              </div>
               {rank > 0 && (
                 <p className="text-gray-600">Rank: <span className="font-bold">#{rank}</span> <span className="text-sm">(in {producerCategoryFormatted})</span></p>
               )}
