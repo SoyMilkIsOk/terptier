@@ -9,7 +9,7 @@ import { Category, Vote } from "@prisma/client";
 export default async function HomePage({
   searchParams,
 }: {
-  searchParams?: { view?: string };
+  searchParams: Promise<{ view?: string }>;
 }) {
   // 1) Age‐gate
   const cookieStore = await cookies();
@@ -60,7 +60,8 @@ export default async function HomePage({
 
   const hash = hashRaw.sort((a, b) => score(b) - score(a));
 
-  const initialViewParam = searchParams?.view === "hash" ? "hash" : "flower";
+  const { view } = await searchParams;
+  const initialViewParam = view === "hash" ? "hash" : "flower";
 
   // 4) Render the client list with initialData and userVotes
   return (
