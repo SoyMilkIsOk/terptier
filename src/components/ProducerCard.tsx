@@ -3,6 +3,7 @@
 
 import Link from "next/link";
 import VoteButton from "./VoteButton";
+import { MessageCircle } from "lucide-react";
 import type { ProducerWithVotes } from "./ProducerList";
 
 export default function ProducerCard({
@@ -34,6 +35,10 @@ export default function ProducerCard({
           <h2 className="text-lg font-semibold hover:underline">
             {producer.name}
           </h2>
+        </Link>
+        <Link href={`/producer/${producer.id}`} className="flex items-center ml-auto">
+          <MessageCircle className="w-4 h-4 text-gray-500" />
+          <span className="text-sm ml-1">{producer._count?.comments ?? 0}</span>
         </Link>
       </div>
       <VoteButton

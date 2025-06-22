@@ -1,5 +1,6 @@
 // src/app/profile/[id]/page.tsx
 import ProducerCard from "@/components/ProducerCard";
+import CommentCard from "@/components/CommentCard";
 import { prisma } from "@/lib/prismadb";
 
 export default async function ProfilePage({
@@ -14,7 +15,11 @@ export default async function ProfilePage({
     include: {
       votes: {
         // producer.votes is needed for ProducerCard to calculate total score
-        include: { producer: { include: { votes: true } } },
+        include: { producer: { include: { votes: true, _count: { select: { comments: true } } } } },
+      },
+      comments: {
+        include: { producer: true, user: true },
+        orderBy: { updatedAt: "desc" },
       },
     },
   });
@@ -38,6 +43,19 @@ export default async function ProfilePage({
       <h1 className="text-2xl font-semibold mb-6 text-center">
         {user.name || user.email}'s Profile
       </h1>
+
+      <section className="mb-10">
+        <h2 className="text-xl font-semibold mb-4 border-b pb-2">Comments</h2>
+        {user.comments.length > 0 ? (
+          <div>
+            {user.comments.map((c) => (
+              <CommentCard key={c.id} comment={c} currentUserId={id} />
+            ))}
+          </div>
+        ) : (
+          <p className="text-gray-600">No comments yet.</p>
+        )}
+      </section>
 
       <section className="mb-10">
         <h2 className="text-xl font-semibold mb-4 border-b pb-2">Liked Producers</h2>
