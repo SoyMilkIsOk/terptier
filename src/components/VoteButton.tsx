@@ -10,16 +10,19 @@ export default function VoteButton({
   producerId,
   initialAverage,
   userRating,
+  readOnly = false,
 }: {
   producerId: string;
   initialAverage: number;
   userRating: number | null | undefined;
+  readOnly?: boolean;
 }) {
   const router = useRouter();
   const [session, setSession] = useState<Session | null>(null);
   const [rating, setRating] = useState(userRating ?? 0);
 
   useEffect(() => {
+    if (readOnly) return;
     supabase.auth.getSession().then(({ data }) => setSession(data.session));
     const { data: listener } = supabase.auth.onAuthStateChange((_e, sess) =>
       setSession(sess)
@@ -27,9 +30,14 @@ export default function VoteButton({
     return () => {
       listener?.subscription.unsubscribe();
     };
-  }, []);
+  }, [readOnly]);
 
   const cast = async (val: number) => {
+    if (readOnly) {
+      router.push(`/producer/${producerId}`);
+      return;
+    }
+
     if (!session?.user.id) {
       router.push("/login?reason=vote_redirect");
       return;
@@ -46,15 +54,18 @@ export default function VoteButton({
 
   return (
     <div className="flex items-center space-x-1">
-      {[1, 2, 3, 4, 5].map((n) => (
-        <button key={n} onClick={() => cast(n)} className="p-0.5">
-          <Star
-            className={`w-5 h-5 ${
-              n <= rating ? "text-yellow-400 fill-yellow-400" : "text-gray-400"
-            }`}
-          />
-        </button>
-      ))}
+      {[1, 2, 3, 4, 5].map((n) => {
+        const display = readOnly ? Math.round(initialAverage) : rating;
+        return (
+          <button key={n} onClick={() => cast(n)} className="p-0.5">
+            <Star
+              className={`w-5 h-5 ${
+                n <= display ? "text-yellow-400 fill-yellow-400" : "text-gray-400"
+              }`}
+            />
+          </button>
+        );
+      })}
       <span className="ml-2 text-sm text-gray-700">
         {initialAverage.toFixed(1)}
       </span>

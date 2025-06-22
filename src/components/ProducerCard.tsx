@@ -48,6 +48,7 @@ export default function ProducerCard({
         producerId={producer.id}
         initialAverage={average}
         userRating={userVote}
+        readOnly
       />
     </div>
   );
