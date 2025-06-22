@@ -18,6 +18,7 @@ export default function ProducerCard({
   isTopTen?: boolean;
 }) {
   const total = producer.votes.reduce((sum, v) => sum + v.value, 0);
+  const average = producer.votes.length ? total / producer.votes.length : 0;
   const userVote = userVoteValue; // Use the passed prop
 
   console.log(`[ProducerCard.tsx] producer ${producer.id}: received userVoteValue =`, userVoteValue, "Passing to VoteButton:", userVote);
@@ -45,8 +46,8 @@ export default function ProducerCard({
       </div>
       <VoteButton
         producerId={producer.id}
-        initial={total}
-        userVote={userVote}
+        initialAverage={average}
+        userRating={userVote}
       />
     </div>
   );

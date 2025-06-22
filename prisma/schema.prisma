@@ -51,7 +51,7 @@ model Vote {
   userId     String
   producer   Producer @relation(fields: [producerId], references: [id], onDelete: Cascade) // Added onDelete: Cascade
   producerId String
-  value      Int // +1 or -1
+  value      Int // rating 1-5
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt // Added missing updatedAt
 
