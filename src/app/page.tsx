@@ -6,7 +6,11 @@ import ProducerList, { ProducerWithVotes } from "@/components/ProducerList";
 import { prisma } from "@/lib/prismadb";
 import { Category, Vote } from "@prisma/client";
 
-export default async function HomePage() {
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams?: { view?: string };
+}) {
   // 1) Age‐gate
   const cookieStore = await cookies();
   const is21 = cookieStore.get("ageVerify")?.value === "true";
@@ -48,18 +52,22 @@ export default async function HomePage() {
     include:  { votes: true, _count: { select: { comments: true } } },
   })) as ProducerWithVotes[];
 
-  // 3) Sort by total votes desc and take top 10
+  // 3) Sort by total votes desc
   const score = (p: ProducerWithVotes) =>
     p.votes.reduce((sum, v) => sum + v.value, 0);
 
-  const flower = flowerRaw
-    .sort((a, b) => score(b) - score(a))
-    .slice(0, 10);
+  const flower = flowerRaw.sort((a, b) => score(b) - score(a));
 
-  const hash = hashRaw
-    .sort((a, b) => score(b) - score(a))
-    .slice(0, 10);
+  const hash = hashRaw.sort((a, b) => score(b) - score(a));
+
+  const initialViewParam = searchParams?.view === "hash" ? "hash" : "flower";
 
   // 4) Render the client list with initialData and userVotes
-  return <ProducerList initialData={{ flower, hash }} userVotes={userVotes} />;
+  return (
+    <ProducerList
+      initialData={{ flower, hash }}
+      userVotes={userVotes}
+      initialView={initialViewParam}
+    />
+  );
 }

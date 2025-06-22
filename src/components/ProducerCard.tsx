@@ -10,10 +10,12 @@ export default function ProducerCard({
   rank,
   producer,
   userVoteValue, // Added userVoteValue prop
+  isTopTen,
 }: {
   rank: number;
   producer: ProducerWithVotes;
   userVoteValue?: number | null; // Added userVoteValue prop type
+  isTopTen?: boolean;
 }) {
   const total = producer.votes.reduce((sum, v) => sum + v.value, 0);
   const userVote = userVoteValue; // Use the passed prop
@@ -21,7 +23,7 @@ export default function ProducerCard({
   console.log(`[ProducerCard.tsx] producer ${producer.id}: received userVoteValue =`, userVoteValue, "Passing to VoteButton:", userVote);
 
   return (
-    <div className="bg-white p-4 rounded shadow flex flex-col">
+    <div className={`${isTopTen === false ? "bg-gray-100" : "bg-white"} p-4 rounded shadow flex flex-col`}>
       <div className="flex items-center mb-2">
         <span className="font-bold mr-2">{rank}.</span>
         {producer.logoUrl && (

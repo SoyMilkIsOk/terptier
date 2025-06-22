@@ -1,7 +1,8 @@
 // src/components/ProducerList.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import ProducerCard from "./ProducerCard";
 import CategoryToggle from "./CategoryToggle"; // Import CategoryToggle
 import type { Producer, Vote } from "@prisma/client";
@@ -18,10 +19,28 @@ interface Props {
     hash:   ProducerWithVotes[];
   };
   userVotes?: Record<string, number>; // Added userVotes to Props
+  initialView?: "flower" | "hash";
 }
 
-export default function ProducerList({ initialData, userVotes }: Props) { // Added userVotes to destructuring
-  const [view, setView] = useState<"flower" | "hash">("flower");
+export default function ProducerList({ initialData, userVotes, initialView }: Props) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [view, setView] = useState<"flower" | "hash">(initialView ?? "flower");
+
+  // Sync state with url search params
+  useEffect(() => {
+    const param = searchParams.get("view");
+    if (param === "flower" || param === "hash") {
+      setView(param);
+    }
+  }, [searchParams]);
+
+  const updateView = (v: "flower" | "hash") => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("view", v);
+    router.push(`/?${params.toString()}`);
+    setView(v);
+  };
   const list =
     view === "flower" ? initialData.flower : initialData.hash;
 
@@ -30,7 +49,7 @@ export default function ProducerList({ initialData, userVotes }: Props) { // Add
   return (
     <>
       <div className="flex justify-center mb-4">
-        <CategoryToggle view={view} setView={setView} />
+        <CategoryToggle view={view} setView={updateView} />
       </div>
 
       <div className="grid md:grid-cols-2 gap-4">
@@ -43,6 +62,7 @@ export default function ProducerList({ initialData, userVotes }: Props) { // Add
               rank={i + 1}
               producer={producer}
               userVoteValue={userVoteValue} // Pass down the specific user vote
+              isTopTen={i < 10}
             />
           );
         })}
