@@ -117,7 +117,12 @@ export default async function ProducerProfilePage({ params }: ProducerProfilePag
               </span>
             </div>
             <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 text-lg justify-center md:justify-start">
-              <div className="flex items-center">
+              <div className="flex items-center mb-2 sm:mb-0">
+                <span className="mr-2 font-semibold">Avg. Rating:</span>
+                <VoteButton producerId={id} initialAverage={averageRating} readOnly />
+              </div>
+              <div className="flex items-center mb-2 sm:mb-0">
+                <span className="mr-2 font-semibold">Your Rating:</span>
                 <VoteButton producerId={id} initialAverage={averageRating} userRating={userVoteValue} />
               </div>
               {rank > 0 && (

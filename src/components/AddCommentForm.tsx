@@ -45,7 +45,7 @@ export default function AddCommentForm({ producerId }: { producerId: string }) {
     <div className="border rounded p-4 mb-4">
       <textarea value={text} onChange={(e) => setText(e.target.value)} className="w-full border rounded p-2 mb-2" placeholder="Leave a comment" />
       <input type="file" multiple onChange={handleFileChange} className="mb-2" />
-      <button onClick={submit} className="bg-blue-600 text-white px-3 py-1 rounded">Submit</button>
+      <button onClick={submit} className="bg-blue-600 text-white px-3 py-1 rounded cursor-pointer">Submit</button>
     </div>
   );
 }

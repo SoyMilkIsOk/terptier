@@ -16,7 +16,7 @@ export default function Modal({ isOpen, onClose, children }: ModalProps) {
         <div className="mt-4 text-right">
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+            className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 cursor-pointer"
           >
             Close
           </button>

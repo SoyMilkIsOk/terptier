@@ -17,7 +17,7 @@ export default function AgeGate() {
       <div className="text-center">
         <button
           onClick={confirmAge}
-          className="px-4 py-2 bg-green-600 text-white rounded"
+          className="px-4 py-2 bg-green-600 text-white rounded cursor-pointer"
         >
           I'm 21 or older
         </button>

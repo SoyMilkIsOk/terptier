@@ -63,12 +63,12 @@ export default function CommentCard({ comment, currentUserId }: { comment: Comme
           {images.map((url) => (
             <div key={url} className="relative">
               <img src={url} className="w-20 h-20 object-cover rounded" />
-              <button onClick={() => removeImage(url)} className="absolute top-0 right-0 bg-white rounded-full text-xs px-1">x</button>
+              <button onClick={() => removeImage(url)} className="absolute top-0 right-0 bg-white rounded-full text-xs px-1 cursor-pointer">x</button>
             </div>
           ))}
         </div>
         <input type="file" multiple onChange={handleFileChange} className="mb-2" />
-        <button onClick={save} className="bg-blue-600 text-white px-3 py-1 rounded">Save</button>
+        <button onClick={save} className="bg-blue-600 text-white px-3 py-1 rounded cursor-pointer">Save</button>
       </div>
     );
   }
@@ -83,7 +83,7 @@ export default function CommentCard({ comment, currentUserId }: { comment: Comme
         ))}
       </div>
       {currentUserId === comment.userId && (
-        <button onClick={() => setEditing(true)} className="text-sm text-blue-600">Edit</button>
+        <button onClick={() => setEditing(true)} className="text-sm text-blue-600 cursor-pointer">Edit</button>
       )}
     </div>
   );

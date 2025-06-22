@@ -11,11 +11,13 @@ export default function VoteButton({
   initialAverage,
   userRating,
   readOnly = false,
+  navigateOnClick = false,
 }: {
   producerId: string;
   initialAverage: number;
   userRating: number | null | undefined;
   readOnly?: boolean;
+  navigateOnClick?: boolean;
 }) {
   const router = useRouter();
   const [session, setSession] = useState<Session | null>(null);
@@ -34,7 +36,9 @@ export default function VoteButton({
 
   const cast = async (val: number) => {
     if (readOnly) {
-      router.push(`/producer/${producerId}`);
+      if (navigateOnClick) {
+        router.push(`/producer/${producerId}`);
+      }
       return;
     }
 
@@ -57,7 +61,11 @@ export default function VoteButton({
       {[1, 2, 3, 4, 5].map((n) => {
         const display = readOnly ? Math.round(initialAverage) : rating;
         return (
-          <button key={n} onClick={() => cast(n)} className="p-0.5">
+          <button
+            key={n}
+            onClick={() => cast(n)}
+            className={`p-0.5 ${!readOnly || navigateOnClick ? "cursor-pointer" : ""}`}
+          >
             <Star
               className={`w-5 h-5 ${
                 n <= display ? "text-yellow-400 fill-yellow-400" : "text-gray-400"

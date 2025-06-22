@@ -66,23 +66,6 @@ function LoginForm() {
           {error}
         </div>
       )}
-      <button
-        onClick={() => supabase.auth.signInWithOAuth({ provider: "google" })}
-        className="w-full mb-2 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-md transition duration-150"
-      >
-        Continue with Google
-      </button>
-      <button
-        onClick={() => supabase.auth.signInWithOAuth({ provider: "discord" })}
-        className="w-full mb-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md transition duration-150"
-      >
-        Continue with Discord
-      </button>
-      <div className="relative flex py-3 items-center">
-        <div className="flex-grow border-t border-gray-300"></div>
-        <span className="flex-shrink mx-4 text-gray-400">Or</span>
-        <div className="flex-grow border-t border-gray-300"></div>
-      </div>
       <input
         type="email"
         placeholder="Email"
@@ -99,7 +82,7 @@ function LoginForm() {
       />
       <button
         onClick={handleAuth}
-        className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition duration-150"
+        className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition duration-150 cursor-pointer"
       >
         Log In / Sign Up with Email
       </button>

@@ -34,12 +34,12 @@ export default function ProducerCard({
             className="h-6 w-6 object-contain mr-2"
           />
         )}
-        <Link href={`/producer/${producer.id}`}>
+        <Link href={`/producer/${producer.id}`} className="cursor-pointer">
           <h2 className="text-lg font-semibold hover:underline">
             {producer.name}
           </h2>
         </Link>
-        <Link href={`/producer/${producer.id}`} className="flex items-center ml-auto">
+        <Link href={`/producer/${producer.id}`} className="flex items-center ml-auto cursor-pointer">
           <MessageCircle className="w-4 h-4 text-gray-500" />
           <span className="text-sm ml-1">{producer._count?.comments ?? 0}</span>
         </Link>
@@ -49,6 +49,7 @@ export default function ProducerCard({
         initialAverage={average}
         userRating={userVote}
         readOnly
+        navigateOnClick
       />
     </div>
   );
