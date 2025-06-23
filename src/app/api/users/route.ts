@@ -1,12 +1,13 @@
 // src/app/api/users/route.ts
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prismadb";
-import { Role } from "@prisma/client";
+import { getRoleForEmail } from "@/utils/role";
 
 export async function POST(request: Request) {
   const { id, email, name } = await request.json();
 
-  const role = email === process.env.ADMIN_EMAIL ? Role.ADMIN : Role.USER;
+  const role = getRoleForEmail(email);
+  console.log("[POST /api/users] email", email, "role", role);
 
   // Upsert a Prisma User record matching the Supabase user
   await prisma.user.upsert({

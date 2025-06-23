@@ -26,6 +26,8 @@ export async function GET() {
     where: { email: session.user.email },
   });
 
+  console.log("[GET /api/users/me] session email", session.user.email, "user", user);
+
   if (!user) {
     return NextResponse.json(
       { success: false, error: "User not found" },

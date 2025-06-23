@@ -16,10 +16,12 @@ export default function Navbar() {
   useEffect(() => {
     // fetch initial session
     supabase.auth.getSession().then(async ({ data: { session } }) => {
+      console.log("[Navbar] initial session", session);
       setSession(session);
       if (session?.user?.email) {
         const res = await fetch("/api/users/me");
         const data = await res.json();
+        console.log("[Navbar] /api/users/me", data);
         if (data.success) {
           setProfileId(data.id);
           setIsAdmin(data.role === "ADMIN");
@@ -28,10 +30,12 @@ export default function Navbar() {
     });
     // listen for changes (login/logout)
     const { data: listener } = supabase.auth.onAuthStateChange(async (_event, sess) => {
+      console.log("[Navbar] auth state change", sess);
       setSession(sess);
       if (sess?.user?.email) {
         const res = await fetch("/api/users/me");
         const data = await res.json();
+        console.log("[Navbar] /api/users/me", data);
         if (data.success) {
           setProfileId(data.id);
           setIsAdmin(data.role === "ADMIN");
