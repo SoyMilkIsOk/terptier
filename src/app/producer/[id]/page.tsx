@@ -152,7 +152,7 @@ export default async function ProducerProfilePage({ params }: ProducerProfilePag
         <div className="mt-8">
           <h3 className="text-xl font-semibold mb-4">Comments ({producer._count?.comments ?? 0})</h3>
           {userComment ? (
-            <CommentCard comment={userComment} currentUserId={currentUserId ?? undefined} />
+            <CommentCard comment={userComment} currentUserId={currentUserId ?? undefined} highlighted />
           ) : (
             <AddCommentForm producerId={id} />
           )}
