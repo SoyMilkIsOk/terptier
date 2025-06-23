@@ -57,34 +57,47 @@ export default function CommentCard({ comment, currentUserId }: { comment: Comme
 
   if (editing) {
     return (
-      <div className="border rounded p-4 mb-4">
-        <textarea value={text} onChange={(e) => setText(e.target.value)} className="w-full border rounded p-2 mb-2" />
-        <div className="flex flex-wrap gap-2 mb-2">
+      <div className="bg-white shadow rounded-lg p-4 mb-4">
+        <textarea
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          className="w-full border rounded-md p-2 mb-3"
+        />
+        <div className="flex flex-wrap gap-2 mb-3">
           {images.map((url) => (
             <div key={url} className="relative">
               <img src={url} className="w-20 h-20 object-cover rounded" />
-              <button onClick={() => removeImage(url)} className="absolute top-0 right-0 bg-white rounded-full text-xs px-1 cursor-pointer">x</button>
+              <button
+                onClick={() => removeImage(url)}
+                className="absolute -top-1 -right-1 bg-white rounded-full text-xs px-1 cursor-pointer border"
+              >
+                x
+              </button>
             </div>
           ))}
         </div>
-        <input type="file" multiple onChange={handleFileChange} className="mb-2" />
-        <button onClick={save} className="bg-blue-600 text-white px-3 py-1 rounded cursor-pointer">Save</button>
+        <input type="file" multiple onChange={handleFileChange} className="mb-3" />
+        <button onClick={save} className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md">Save</button>
       </div>
     );
   }
 
   return (
-    <div className="border rounded p-4 mb-4">
-      <p className="font-semibold mb-1">{comment.user.name || comment.user.email}</p>
+    <div className="bg-gray-50 rounded-lg p-4 mb-4 shadow">
+      <div className="flex justify-between mb-2">
+        <p className="font-semibold">{comment.user.name || comment.user.email}</p>
+        {currentUserId === comment.userId && (
+          <button onClick={() => setEditing(true)} className="text-sm text-blue-600 hover:underline">
+            Edit
+          </button>
+        )}
+      </div>
       <p className="whitespace-pre-wrap mb-2">{comment.text}</p>
-      <div className="flex flex-wrap gap-2 mb-2">
+      <div className="flex flex-wrap gap-2">
         {images.map((url) => (
           <Image key={url} src={url} alt="comment image" width={80} height={80} className="object-cover rounded" />
         ))}
       </div>
-      {currentUserId === comment.userId && (
-        <button onClick={() => setEditing(true)} className="text-sm text-blue-600 cursor-pointer">Edit</button>
-      )}
     </div>
   );
 }

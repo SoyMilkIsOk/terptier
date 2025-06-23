@@ -4,6 +4,7 @@ import Image from "next/image";
 import { Category } from "@prisma/client"; // Import Category enum if needed for type safety
 import CommentCard from "@/components/CommentCard";
 import AddCommentForm from "@/components/AddCommentForm";
+import UpdateCommentForm from "@/components/UpdateCommentForm";
 import VoteButton from "@/components/VoteButton";
 import { supabaseServer } from "@/lib/supabaseServer";
 
@@ -72,6 +73,8 @@ export default async function ProducerProfilePage({ params }: ProducerProfilePag
         include: { user: true },
       })
     : null;
+
+  const otherComments = comments.filter((c) => c.id !== userComment?.id);
 
   // Calculate rank
   let rank = 0;
@@ -149,8 +152,12 @@ export default async function ProducerProfilePage({ params }: ProducerProfilePag
 
         <div className="mt-8">
           <h3 className="text-xl font-semibold mb-4">Comments ({producer._count?.comments ?? 0})</h3>
-          {currentUserId && <AddCommentForm producerId={id} />}
-          {comments.map((c) => (
+          {userComment ? (
+            <UpdateCommentForm comment={userComment} />
+          ) : (
+            <AddCommentForm producerId={id} />
+          )}
+          {otherComments.map((c) => (
             <CommentCard key={c.id} comment={c} currentUserId={currentUserId ?? undefined} />
           ))}
         </div>

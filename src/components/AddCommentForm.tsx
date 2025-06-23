@@ -12,12 +12,8 @@ export default function AddCommentForm({ producerId }: { producerId: string }) {
     if (e.target.files) setFiles(Array.from(e.target.files));
   };
 
-  const uploadFiles = async () => {
+  const uploadFiles = async (uid: string) => {
     const uploaded: string[] = [];
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    const uid = session?.user?.id ?? "anon";
     for (const file of files) {
       const path = `${uid}/${Date.now()}-${file.name}`;
       const { error } = await supabase.storage.from("comment-images").upload(path, file);
@@ -30,7 +26,14 @@ export default function AddCommentForm({ producerId }: { producerId: string }) {
   };
 
   const submit = async () => {
-    const urls = await uploadFiles();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    if (!session?.user) {
+      router.push("/login?reason=comment");
+      return;
+    }
+    const urls = await uploadFiles(session.user.id);
     await fetch("/api/comments", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -42,10 +45,20 @@ export default function AddCommentForm({ producerId }: { producerId: string }) {
   };
 
   return (
-    <div className="border rounded p-4 mb-4">
-      <textarea value={text} onChange={(e) => setText(e.target.value)} className="w-full border rounded p-2 mb-2" placeholder="Leave a comment" />
-      <input type="file" multiple onChange={handleFileChange} className="mb-2" />
-      <button onClick={submit} className="bg-blue-600 text-white px-3 py-1 rounded cursor-pointer">Submit</button>
+    <div className="bg-white shadow rounded-lg p-4 mb-6 space-y-3">
+      <textarea
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        className="w-full border rounded-md p-2"
+        placeholder="Leave a comment"
+      />
+      <input type="file" multiple onChange={handleFileChange} />
+      <button
+        onClick={submit}
+        className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md"
+      >
+        Submit
+      </button>
     </div>
   );
 }
