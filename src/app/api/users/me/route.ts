@@ -27,5 +27,5 @@ export async function GET() {
     );
   }
 
-  return NextResponse.json({ success: true, id: user.id });
+  return NextResponse.json({ success: true, id: user.id, role: user.role });
 }

@@ -48,7 +48,16 @@ export default function AdminPage() {
       }
     };
 
-    fetchProducers();
+    const run = async () => {
+      const res = await fetch('/api/users/me');
+      const data = await res.json();
+      if (!data.success || data.role !== 'ADMIN') {
+        router.push('/');
+        return;
+      }
+      await fetchProducers();
+    };
+    run();
   }, []);
 
   const handleDelete = (producerId: string, producerName: string) => {
