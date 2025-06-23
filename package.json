@@ -11,7 +11,8 @@
     "start": "next start",
     "lint": "next lint",
     "db:seed": "prisma db seed",
-    "migrate:reset": "prisma migrate reset --force"
+    "migrate:reset": "prisma migrate reset --force",
+    "test": "node -r ts-node/register --test tests/role.test.js"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
