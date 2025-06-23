@@ -50,20 +50,20 @@ export default function Navbar() {
   }, []);
 
   return (
-    <nav className="bg-white shadow">
-      <div className="container mx-auto px-4 flex items-center h-16">
-        <Link href="/" className="font-bold text-xl cursor-pointer">
+    <nav className="bg-gray-800 text-white shadow-md">
+      <div className="container mx-auto px-4 flex items-center justify-between h-16">
+        <Link href="/" className="font-bold text-xl hover:opacity-90">
           CO Grower Rank
         </Link>
-        <div className="ml-auto space-x-4">
-          <Link href="/" className={`${pathname === "/" ? "underline" : ""} cursor-pointer`}>
-            Home
-          </Link>
+        <div className="flex items-center space-x-6">
+          <Link href="/" className={`${pathname === "/" ? "underline" : "hover:underline"}`}>Home</Link>
 
           {profileId && (
             <Link
               href={`/profile/${profileId}`}
-              className={`${pathname === `/profile/${profileId}` ? "underline" : ""} cursor-pointer`}
+              className={`${
+                pathname === `/profile/${profileId}` ? "underline" : "hover:underline"
+              }`}
             >
               Profile
             </Link>
@@ -72,18 +72,18 @@ export default function Navbar() {
           {session && isAdmin && (
             <Link
               href="/admin"
-              className={`${pathname === "/admin" ? "underline" : ""} cursor-pointer`}
+              className={`${pathname === "/admin" ? "underline" : "hover:underline"}`}
             >
-              Admin
+              Admin Panel
             </Link>
           )}
 
           {!session ? (
             <Link
               href="/login"
-              className={`${pathname === "/login" ? "underline" : ""} cursor-pointer`}
+              className={`${pathname === "/login" ? "underline" : "hover:underline"}`}
             >
-              Log In
+              Log In / Sign Up
             </Link>
           ) : (
             <button
@@ -91,7 +91,7 @@ export default function Navbar() {
                 await supabase.auth.signOut();
                 setSession(null);
               }}
-              className="underline cursor-pointer"
+              className="hover:underline"
             >
               Sign Out
             </button>
