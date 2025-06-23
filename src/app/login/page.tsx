@@ -11,35 +11,10 @@ function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(false);
 
-  const handleAuth = async () => {
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (signInError) {
-      const { error: signUpError } = await supabase.auth.signUp({
-        email,
-        password,
-      });
-
-      if (signUpError) {
-        setError(signUpError.message);
-        return;
-      }
-
-      const { error: signIn2Error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (signIn2Error) {
-        setError(signIn2Error.message);
-        return;
-      }
-    }
-
+  const finalizeAuth = async () => {
     const {
       data: { session },
       error: finalError,
@@ -71,6 +46,53 @@ function LoginForm() {
     }
   };
 
+  const handleSignIn = async () => {
+    setLoading(true);
+    setError(null);
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (signInError) {
+      setError(signInError.message);
+      setLoading(false);
+      return;
+    }
+
+    await finalizeAuth();
+    setLoading(false);
+  };
+
+  const handleSignUp = async () => {
+    setLoading(true);
+    setError(null);
+    const { error: signUpError } = await supabase.auth.signUp({
+      email,
+      password,
+    });
+
+    if (signUpError) {
+      setError(signUpError.message);
+      setLoading(false);
+      return;
+    }
+
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (signInError) {
+      setError(signInError.message);
+      setLoading(false);
+      return;
+    }
+
+    await finalizeAuth();
+    setLoading(false);
+  };
+
   return (
     <div className="max-w-md mx-auto bg-white p-6 rounded shadow">
       {reason === "vote_redirect" && (
@@ -79,7 +101,9 @@ function LoginForm() {
           <p>You must be logged in to vote.</p>
         </div>
       )}
-      <h1 className="text-2xl mb-4 text-center font-semibold">Log In / Sign Up</h1>
+      <h1 className="text-2xl mb-4 text-center font-semibold">
+        {isSignUp ? "Sign Up" : "Log In"}
+      </h1>
       {error && (
         <div className="text-red-500 mb-2 p-3 bg-red-100 border border-red-400 rounded">
           {error}
@@ -100,11 +124,37 @@ function LoginForm() {
         className="w-full mb-6 p-2.5 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
       />
       <button
-        onClick={handleAuth}
-        className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition duration-150 cursor-pointer"
+        onClick={isSignUp ? handleSignUp : handleSignIn}
+        disabled={loading}
+        className={`w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition duration-150 ${loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
       >
-        Log In / Sign Up with Email
+        {isSignUp ? "Sign Up" : "Log In"}
       </button>
+      <p className="mt-4 text-center text-sm">
+        {isSignUp ? (
+          <>
+            Already have an account?{' '}
+            <button
+              type="button"
+              className="underline"
+              onClick={() => setIsSignUp(false)}
+            >
+              Log in
+            </button>
+          </>
+        ) : (
+          <>
+            Need an account?{' '}
+            <button
+              type="button"
+              className="underline"
+              onClick={() => setIsSignUp(true)}
+            >
+              Sign up
+            </button>
+          </>
+        )}
+      </p>
     </div>
   );
 }
