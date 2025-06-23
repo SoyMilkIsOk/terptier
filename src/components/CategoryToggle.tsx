@@ -12,7 +12,7 @@ export default function CategoryToggle({ view, setView }: CategoryToggleProps) {
   return (
     <div className="relative flex items-center w-40 h-10 bg-gray-200 rounded-full p-1 cursor-pointer" onClick={() => setView(isFlower ? "hash" : "flower")}>
       <div
-        className={`absolute left-0 w-1/2 h-full bg-blue-500 rounded-full transform transition-transform duration-300 ease-in-out ${
+        className={`absolute left-0 w-1/2 h-full bg-green-700 rounded-full transform transition-transform duration-300 ease-in-out ${
           isFlower ? "translate-x-0" : "translate-x-full"
         }`}
       />

@@ -8,7 +8,8 @@ import VoteButton from "@/components/VoteButton";
 import { createSupabaseServerClient } from "@/lib/supabaseServer";
 
 // Helper function to capitalize category
-const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+const capitalize = (s: string) =>
+  s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
 
 interface ProducerProfilePageProps {
   params: Promise<{
@@ -16,7 +17,9 @@ interface ProducerProfilePageProps {
   }>;
 }
 
-export default async function ProducerProfilePage({ params }: ProducerProfilePageProps) {
+export default async function ProducerProfilePage({
+  params,
+}: ProducerProfilePageProps) {
   const { id } = await params;
 
   const supabase = createSupabaseServerClient();
@@ -26,7 +29,9 @@ export default async function ProducerProfilePage({ params }: ProducerProfilePag
 
   let currentUserId: string | null = null;
   if (session?.user?.email) {
-    const prismaUser = await prisma.user.findUnique({ where: { email: session.user.email } });
+    const prismaUser = await prisma.user.findUnique({
+      where: { email: session.user.email },
+    });
     currentUserId = prismaUser?.id || null;
   }
 
@@ -90,7 +95,7 @@ export default async function ProducerProfilePage({ params }: ProducerProfilePag
 
   scoredProducers.sort((a, b) => b.score - a.score);
 
-  const producerIndex = scoredProducers.findIndex(p => p.id === producer.id);
+  const producerIndex = scoredProducers.findIndex((p) => p.id === producer.id);
   if (producerIndex !== -1) {
     rank = producerIndex + 1;
   }
@@ -99,7 +104,6 @@ export default async function ProducerProfilePage({ params }: ProducerProfilePag
   return (
     <div className="container mx-auto p-4 mt-8">
       <div className="bg-white shadow-xl rounded-lg p-6 md:p-8 max-w-3xl mx-auto">
-
         <div className="flex flex-col md:flex-row items-start md:items-center mb-6 pb-6 border-b border-gray-300">
           {producer.logoUrl && (
             <div className="relative w-24 h-24 md:w-32 md:h-32 mr-0 md:mr-6 mb-4 md:mb-0 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
@@ -113,34 +117,41 @@ export default async function ProducerProfilePage({ params }: ProducerProfilePag
           )}
           <div className="flex-grow text-center md:text-left">
             <div className="flex flex-col sm:flex-row sm:items-baseline items-center sm:justify-start mb-2">
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mr-0 sm:mr-3 mb-2 sm:mb-0">{producer.name}</h1>
-              <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-semibold tracking-wide">
-                {producerCategoryFormatted}
-              </span>
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mr-0 sm:mr-3 mb-2 sm:mb-0">
+                {producer.name}
+              </h1>
             </div>
-            <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 text-lg justify-center md:justify-start">
-              <div className="flex items-center mb-2 sm:mb-0">
-                <span className="mr-2 font-semibold">Avg. Rating:</span>
-                <VoteButton
-                  producerId={id}
-                  initialAverage={averageRating}
-                  userRating={null}
-                  readOnly
-                />
-              </div>
-              <div className="flex items-center mb-2 sm:mb-0">
-                <span className="mr-2 font-semibold">Your Rating:</span>
-                <VoteButton
-                  producerId={id}
-                  initialAverage={averageRating}
-                  userRating={userVoteValue}
-                  showNumber={false}
-                />
-              </div>
-              {rank > 0 && (
-                <p className="text-gray-600">Rank: <span className="font-bold">#{rank}</span> <span className="text-sm">(in {producerCategoryFormatted})</span></p>
-              )}
-            </div>
+            {rank > 0 && (
+              <p className="text-gray-600 mt-4">
+                Rank: <span className="font-bold">#{rank}</span>{" "}
+                <span className="text-sm">
+                  in{" "}
+                  <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-semibold tracking-wide">
+                    {producerCategoryFormatted}
+                  </span>
+                </span>
+              </p>
+            )}
+          </div>
+        </div>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 text-lg justify-center md:justify-start">
+          <div className="flex items-center mb-2 sm:mb-0">
+            <span className="mr-2 font-semibold">Avg. Rating:</span>
+            <VoteButton
+              producerId={id}
+              initialAverage={averageRating}
+              userRating={null}
+              readOnly
+            />
+          </div>
+          <div className="flex items-center mb-2 sm:mb-0">
+            <span className="mr-2 font-semibold">Your Rating:</span>
+            <VoteButton
+              producerId={id}
+              initialAverage={averageRating}
+              userRating={userVoteValue}
+              showNumber={false}
+            />
           </div>
         </div>
 
@@ -155,17 +166,26 @@ export default async function ProducerProfilePage({ params }: ProducerProfilePag
         */}
 
         <div className="mt-8">
-          <h3 className="text-xl font-semibold mb-4">Comments ({producer._count?.comments ?? 0})</h3>
+          <h3 className="text-xl font-semibold mb-4">
+            Comments ({producer._count?.comments ?? 0})
+          </h3>
           {userComment ? (
-            <CommentCard comment={userComment} currentUserId={currentUserId ?? undefined} highlighted />
+            <CommentCard
+              comment={userComment}
+              currentUserId={currentUserId ?? undefined}
+              highlighted
+            />
           ) : (
             <AddCommentForm producerId={id} />
           )}
           {otherComments.map((c) => (
-            <CommentCard key={c.id} comment={c} currentUserId={currentUserId ?? undefined} />
+            <CommentCard
+              key={c.id}
+              comment={c}
+              currentUserId={currentUserId ?? undefined}
+            />
           ))}
         </div>
-
       </div>
     </div>
   );

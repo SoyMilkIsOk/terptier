@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
+import Image from "next/image";
 import type { Session } from "@supabase/supabase-js";
 
 export default function Navbar() {
@@ -27,42 +28,57 @@ export default function Navbar() {
       }
     });
     // listen for changes (login/logout)
-    const { data: listener } = supabase.auth.onAuthStateChange(async (_event, sess) => {
-      setSession(sess);
-      if (sess?.user?.email) {
-        const res = await fetch("/api/users/me");
-        const data = await res.json();
-        if (data.success) {
-          setProfileId(data.id);
-          setIsAdmin(data.role === "ADMIN");
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      async (_event, sess) => {
+        setSession(sess);
+        if (sess?.user?.email) {
+          const res = await fetch("/api/users/me");
+          const data = await res.json();
+          if (data.success) {
+            setProfileId(data.id);
+            setIsAdmin(data.role === "ADMIN");
+          } else {
+            setProfileId(null);
+            setIsAdmin(false);
+          }
         } else {
           setProfileId(null);
           setIsAdmin(false);
         }
-      } else {
-        setProfileId(null);
-        setIsAdmin(false);
       }
-    });
+    );
     return () => {
       listener.subscription.unsubscribe();
     };
   }, []);
 
   return (
-    <nav className="bg-gray-800 text-white shadow-md">
-      <div className="container mx-auto px-4 flex items-center justify-between h-16">
-        <Link href="/" className="font-bold text-xl hover:opacity-90">
-          CO Grower Rank
+    <nav className="bg-green-700 text-white shadow-md">
+      <div className="container mx-auto px-4 flex items-center justify-between h-20">
+        <Link href="/" className="flex items-center hover:opacity-90">
+          <Image
+            src="/TerpTier.svg"
+            alt="TerpTier logo"
+            className="ml-4"
+            width={60}
+            height={50}
+          />
         </Link>
         <div className="flex items-center space-x-6">
-          <Link href="/" className={`${pathname === "/" ? "underline" : "hover:underline"}`}>Home</Link>
+          <Link
+            href="/"
+            className={`${pathname === "/" ? "underline" : "hover:underline"}`}
+          >
+            Home
+          </Link>
 
           {profileId && (
             <Link
               href={`/profile/${profileId}`}
               className={`${
-                pathname === `/profile/${profileId}` ? "underline" : "hover:underline"
+                pathname === `/profile/${profileId}`
+                  ? "underline"
+                  : "hover:underline"
               }`}
             >
               Profile
@@ -72,7 +88,9 @@ export default function Navbar() {
           {session && isAdmin && (
             <Link
               href="/admin"
-              className={`${pathname === "/admin" ? "underline" : "hover:underline"}`}
+              className={`${
+                pathname === "/admin" ? "underline" : "hover:underline"
+              }`}
             >
               Admin Panel
             </Link>
@@ -81,7 +99,9 @@ export default function Navbar() {
           {!session ? (
             <Link
               href="/login"
-              className={`${pathname === "/login" ? "underline" : "hover:underline"}`}
+              className={`${
+                pathname === "/login" ? "underline" : "hover:underline"
+              }`}
             >
               Log In / Sign Up
             </Link>

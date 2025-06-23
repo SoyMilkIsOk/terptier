@@ -2,7 +2,8 @@ import "../styles/globals.css";  // your tailwind imports
 import Navbar from "@/components/Navbar";
 
 export const metadata = {
-  title: "CO Grower Rank",
+  title: "TerpTier",
+  description: "TerpTier is a platform for flower and hash ratings.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
