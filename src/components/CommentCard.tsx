@@ -12,9 +12,18 @@ export interface CommentData {
   userId: string;
   producerId: string;
   updatedAt: string | Date;
+  producer?: { id: string; name: string }; // Optional producer info
 }
 
-export default function CommentCard({ comment, currentUserId }: { comment: CommentData; currentUserId?: string; }) {
+export default function CommentCard({
+  comment,
+  currentUserId,
+  highlighted,
+}: {
+  comment: CommentData;
+  currentUserId?: string;
+  highlighted?: boolean;
+}) {
   const [editing, setEditing] = useState(false);
   const [text, setText] = useState(comment.text);
   const [images, setImages] = useState<string[]>(comment.imageUrls);
@@ -86,7 +95,7 @@ export default function CommentCard({ comment, currentUserId }: { comment: Comme
     <div className="bg-gray-50 rounded-lg p-4 mb-4 shadow">
       <div className="flex justify-between mb-2">
         <div>
-          <p className="font-semibold">{comment.user.name || comment.user.email}</p>
+          <p className={`font-semibold ${highlighted ? "text-blue-600" : ""}`}>{comment.user.name || comment.user.email}</p>
           <p className="text-xs text-gray-500">Last edited {new Date(comment.updatedAt).toLocaleString()}</p>
         </div>
         {currentUserId === comment.userId && (
@@ -95,6 +104,11 @@ export default function CommentCard({ comment, currentUserId }: { comment: Comme
           </button>
         )}
       </div>
+      {comment.producer && (
+        <p className="text-sm text-gray-700 mb-1">
+          For producer: <a href={`/producer/${comment.producer.id}`} className="underline hover:text-blue-600">{comment.producer.name}</a>
+        </p>
+      )}
       <p className="whitespace-pre-wrap mb-2">{comment.text}</p>
       <div className="flex flex-wrap gap-2">
         {images.map((url) => (
