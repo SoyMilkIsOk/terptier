@@ -46,7 +46,26 @@ function LoginForm() {
     } = await supabase.auth.getSession();
 
     if (session) {
-      router.push("/admin");
+      await fetch("/api/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: session.user.id,
+          email: session.user.email,
+          name: session.user.user_metadata?.name || session.user.email,
+        }),
+      });
+      const meRes = await fetch("/api/users/me");
+      const meData = await meRes.json();
+      if (meData.success) {
+        if (meData.role === "ADMIN") {
+          router.push("/admin");
+        } else {
+          router.push(`/profile/${meData.id}`);
+        }
+      } else {
+        router.push("/");
+      }
     } else {
       setError(finalError?.message ?? "Authentication failed");
     }

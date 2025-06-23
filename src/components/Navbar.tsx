@@ -11,6 +11,7 @@ export default function Navbar() {
   const pathname = usePathname();
   const [session, setSession] = useState<Session | null>(null);
   const [profileId, setProfileId] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     // fetch initial session
@@ -21,6 +22,7 @@ export default function Navbar() {
         const data = await res.json();
         if (data.success) {
           setProfileId(data.id);
+          setIsAdmin(data.role === "ADMIN");
         }
       }
     });
@@ -32,11 +34,14 @@ export default function Navbar() {
         const data = await res.json();
         if (data.success) {
           setProfileId(data.id);
+          setIsAdmin(data.role === "ADMIN");
         } else {
           setProfileId(null);
+          setIsAdmin(false);
         }
       } else {
         setProfileId(null);
+        setIsAdmin(false);
       }
     });
     return () => {
@@ -64,7 +69,7 @@ export default function Navbar() {
             </Link>
           )}
 
-          {session && (
+          {session && isAdmin && (
             <Link
               href="/admin"
               className={`${pathname === "/admin" ? "underline" : ""} cursor-pointer`}
