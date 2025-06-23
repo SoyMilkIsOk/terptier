@@ -5,7 +5,7 @@ import { Category } from "@prisma/client"; // Import Category enum if needed for
 import CommentCard from "@/components/CommentCard";
 import AddCommentForm from "@/components/AddCommentForm";
 import VoteButton from "@/components/VoteButton";
-import { supabaseServer } from "@/lib/supabaseServer";
+import { createSupabaseServerClient } from "@/lib/supabaseServer";
 
 // Helper function to capitalize category
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
@@ -19,7 +19,7 @@ interface ProducerProfilePageProps {
 export default async function ProducerProfilePage({ params }: ProducerProfilePageProps) {
   const { id } = await params;
 
-  const supabase = supabaseServer;
+  const supabase = createSupabaseServerClient();
   const {
     data: { session },
   } = await supabase.auth.getSession();
@@ -72,6 +72,8 @@ export default async function ProducerProfilePage({ params }: ProducerProfilePag
         include: { user: true },
       })
     : null;
+
+  const otherComments = comments.filter((c) => c.id !== userComment?.id);
 
   // Calculate rank
   let rank = 0;
@@ -128,7 +130,12 @@ export default async function ProducerProfilePage({ params }: ProducerProfilePag
               </div>
               <div className="flex items-center mb-2 sm:mb-0">
                 <span className="mr-2 font-semibold">Your Rating:</span>
-                <VoteButton producerId={id} initialAverage={averageRating} userRating={userVoteValue} />
+                <VoteButton
+                  producerId={id}
+                  initialAverage={averageRating}
+                  userRating={userVoteValue}
+                  showNumber={false}
+                />
               </div>
               {rank > 0 && (
                 <p className="text-gray-600">Rank: <span className="font-bold">#{rank}</span> <span className="text-sm">(in {producerCategoryFormatted})</span></p>
@@ -149,8 +156,12 @@ export default async function ProducerProfilePage({ params }: ProducerProfilePag
 
         <div className="mt-8">
           <h3 className="text-xl font-semibold mb-4">Comments ({producer._count?.comments ?? 0})</h3>
-          {currentUserId && <AddCommentForm producerId={id} />}
-          {comments.map((c) => (
+          {userComment ? (
+            <CommentCard comment={userComment} currentUserId={currentUserId ?? undefined} highlighted />
+          ) : (
+            <AddCommentForm producerId={id} />
+          )}
+          {otherComments.map((c) => (
             <CommentCard key={c.id} comment={c} currentUserId={currentUserId ?? undefined} />
           ))}
         </div>

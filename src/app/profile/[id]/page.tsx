@@ -58,7 +58,7 @@ export default async function ProfilePage({
       </section>
 
       <section className="mb-10">
-        <h2 className="text-xl font-semibold mb-4 border-b pb-2">Liked Producers</h2>
+        <h2 className="text-xl font-semibold mb-4 border-b pb-2">Rated Producers</h2>
         {likedProducers.length > 0 ? (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {likedProducers.map((producer, index) => (
@@ -71,27 +71,10 @@ export default async function ProfilePage({
             ))}
           </div>
         ) : (
-          <p className="text-gray-600">No liked producers yet.</p>
+          <p className="text-gray-600">No rated producers yet.</p>
         )}
       </section>
 
-      <section>
-        <h2 className="text-xl font-semibold mb-4 border-b pb-2">Disliked Producers</h2>
-        {dislikedProducers.length > 0 ? (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {dislikedProducers.map((producer, index) => (
-              <ProducerCard
-                key={producer.id}
-                rank={index + 1} // Rank within the disliked list
-                producer={producer} // producer is already ProducerWithVotes
-                userVoteValue={producer.userActualVote} // User's actual vote (e.g. -1)
-              />
-            ))}
-          </div>
-        ) : (
-          <p className="text-gray-600">No disliked producers yet.</p>
-        )}
-      </section>
     </div>
   );
 }
