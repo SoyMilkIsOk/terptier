@@ -3,6 +3,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prismadb";
 import { createServerActionClient } from "@supabase/auth-helpers-nextjs"; // Correct import for Route Handlers
 import { cookies } from "next/headers";
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
 import { Role } from "@prisma/client";
 
 export async function DELETE(
@@ -11,7 +14,10 @@ export async function DELETE(
 ) {
   try {
     // 1. Authentication & Authorization
-    const supabase = createServerActionClient({ cookies }); // Use createServerActionClient for Route Handlers
+    const supabase = createServerActionClient({ cookies }, {
+      supabaseUrl,
+      supabaseKey,
+    });
     const {
       data: { session },
     } = await supabase.auth.getSession();

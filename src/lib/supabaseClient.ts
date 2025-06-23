@@ -1,8 +1,14 @@
 // src/lib/supabaseClient.ts
 import { createPagesBrowserClient } from "@supabase/auth-helpers-nextjs";
 
-console.log('🌐 Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
-console.log('🔑 Anon key present?', Boolean(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY));
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
 
+if (!supabaseUrl || !supabaseKey) {
+  throw new Error("Supabase environment variables are missing");
+}
 
-export const supabase = createPagesBrowserClient();
+export const supabase = createPagesBrowserClient({
+  supabaseUrl,
+  supabaseKey,
+});
