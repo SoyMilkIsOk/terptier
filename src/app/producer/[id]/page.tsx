@@ -4,7 +4,6 @@ import Image from "next/image";
 import { Category } from "@prisma/client"; // Import Category enum if needed for type safety
 import CommentCard from "@/components/CommentCard";
 import AddCommentForm from "@/components/AddCommentForm";
-import UpdateCommentForm from "@/components/UpdateCommentForm";
 import VoteButton from "@/components/VoteButton";
 import { supabaseServer } from "@/lib/supabaseServer";
 
@@ -153,7 +152,7 @@ export default async function ProducerProfilePage({ params }: ProducerProfilePag
         <div className="mt-8">
           <h3 className="text-xl font-semibold mb-4">Comments ({producer._count?.comments ?? 0})</h3>
           {userComment ? (
-            <UpdateCommentForm comment={userComment} />
+            <CommentCard comment={userComment} currentUserId={currentUserId ?? undefined} />
           ) : (
             <AddCommentForm producerId={id} />
           )}

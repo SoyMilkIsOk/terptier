@@ -85,7 +85,10 @@ export default function CommentCard({ comment, currentUserId }: { comment: Comme
   return (
     <div className="bg-gray-50 rounded-lg p-4 mb-4 shadow">
       <div className="flex justify-between mb-2">
-        <p className="font-semibold">{comment.user.name || comment.user.email}</p>
+        <div>
+          <p className="font-semibold">{comment.user.name || comment.user.email}</p>
+          <p className="text-xs text-gray-500">Last edited {new Date(comment.updatedAt).toLocaleString()}</p>
+        </div>
         {currentUserId === comment.userId && (
           <button onClick={() => setEditing(true)} className="text-sm text-blue-600 hover:underline">
             Edit
