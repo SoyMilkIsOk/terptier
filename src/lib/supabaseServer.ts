@@ -10,8 +10,7 @@ if (!supabaseUrl || !supabaseKey) {
 }
 
 export const createSupabaseServerClient = () =>
-  createServerComponentClient({
-    cookies,
+  createServerComponentClient({ cookies }, {
     supabaseUrl,
     supabaseKey,
   });

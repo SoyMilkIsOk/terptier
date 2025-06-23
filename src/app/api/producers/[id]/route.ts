@@ -14,8 +14,7 @@ export async function DELETE(
 ) {
   try {
     // 1. Authentication & Authorization
-    const supabase = createServerActionClient({
-      cookies,
+    const supabase = createServerActionClient({ cookies }, {
       supabaseUrl,
       supabaseKey,
     });

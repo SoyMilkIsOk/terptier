@@ -8,8 +8,7 @@ const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUP
 import { Role } from "@prisma/client";
 
 export async function POST(request: Request) {
-  const supabase = createServerActionClient({
-    cookies,
+  const supabase = createServerActionClient({ cookies }, {
     supabaseUrl,
     supabaseKey,
   });
