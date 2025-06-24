@@ -2,6 +2,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import VoteButton from "@/components/VoteButton";
 
 export interface CommentData {
   id: string;
@@ -12,6 +13,7 @@ export interface CommentData {
   producerId: string;
   updatedAt: string | Date;
   producer?: { id: string; name: string }; // Optional producer info
+  voteValue?: number | null;
 }
 
 export default function CommentCard({
@@ -107,6 +109,19 @@ export default function CommentCard({
           For producer: <a href={`/producer/${comment.producer.id}`} className="underline hover:text-blue-600">{comment.producer.name}</a>
         </p>
       )}
+      <div className="mb-2">
+        {comment.voteValue !== null && comment.voteValue !== undefined ? (
+          <VoteButton
+            producerId={comment.producerId}
+            initialAverage={comment.voteValue}
+            userRating={comment.voteValue}
+            readOnly
+            showNumber={false}
+          />
+        ) : (
+          <span className="italic text-sm text-gray-600">No rating</span>
+        )}
+      </div>
       <p className="whitespace-pre-wrap mb-2">{comment.text}</p>
       <div className="flex flex-wrap gap-2">
         {images.map((url) => (
