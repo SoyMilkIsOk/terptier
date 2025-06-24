@@ -33,5 +33,11 @@ export async function GET() {
     );
   }
 
-  return NextResponse.json({ success: true, id: user.id, role: user.role });
+  return NextResponse.json({
+    success: true,
+    id: user.id,
+    role: user.role,
+    username: user.username,
+    profilePicUrl: user.profilePicUrl,
+  });
 }

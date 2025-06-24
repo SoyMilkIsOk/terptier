@@ -21,6 +21,10 @@ enum Category {
 model User {
   id           String     @id @default(cuid()) // Reverted to CUID
   name         String?
+  username     String?    @unique
+  birthday     DateTime?
+  profilePicUrl String?
+  socialLink   String?
   email        String     @unique
   passwordHash String? // for credentials
   role         Role       @default(USER)

@@ -8,11 +8,12 @@ function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const reason = searchParams.get("reason");
-  const [email, setEmail] = useState("");
+  const prefill = searchParams.get("email") || "";
+  const message = searchParams.get("message");
+  const [email, setEmail] = useState(prefill);
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [isSignUp, setIsSignUp] = useState(false);
 
   const finalizeAuth = async () => {
     const {
@@ -64,34 +65,6 @@ function LoginForm() {
     setLoading(false);
   };
 
-  const handleSignUp = async () => {
-    setLoading(true);
-    setError(null);
-    const { error: signUpError } = await supabase.auth.signUp({
-      email,
-      password,
-    });
-
-    if (signUpError) {
-      setError(signUpError.message);
-      setLoading(false);
-      return;
-    }
-
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (signInError) {
-      setError(signInError.message);
-      setLoading(false);
-      return;
-    }
-
-    await finalizeAuth();
-    setLoading(false);
-  };
 
   return (
     <div className="max-w-md mx-auto bg-white p-6 rounded shadow">
@@ -101,9 +74,12 @@ function LoginForm() {
           <p>You must be logged in to vote.</p>
         </div>
       )}
-      <h1 className="text-2xl mb-4 text-center font-semibold">
-        {isSignUp ? "Sign Up" : "Log In"}
-      </h1>
+      {message && (
+        <div className="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-6" role="alert">
+          <p>{message}</p>
+        </div>
+      )}
+      <h1 className="text-2xl mb-4 text-center font-semibold">Log In</h1>
       {error && (
         <div className="text-red-500 mb-2 p-3 bg-red-100 border border-red-400 rounded">
           {error}
@@ -111,6 +87,8 @@ function LoginForm() {
       )}
       <input
         type="email"
+        name="email"
+        autoComplete="email"
         placeholder="Email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
@@ -118,42 +96,25 @@ function LoginForm() {
       />
       <input
         type="password"
+        name="password"
+        autoComplete="current-password"
         placeholder="Password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         className="w-full mb-6 p-2.5 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
       />
       <button
-        onClick={isSignUp ? handleSignUp : handleSignIn}
+        onClick={handleSignIn}
         disabled={loading}
         className={`w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition duration-150 ${loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
       >
-        {isSignUp ? "Sign Up" : "Log In"}
+        Log In
       </button>
       <p className="mt-4 text-center text-sm">
-        {isSignUp ? (
-          <>
-            Already have an account?{' '}
-            <button
-              type="button"
-              className="underline"
-              onClick={() => setIsSignUp(false)}
-            >
-              Log in
-            </button>
-          </>
-        ) : (
-          <>
-            Need an account?{' '}
-            <button
-              type="button"
-              className="underline"
-              onClick={() => setIsSignUp(true)}
-            >
-              Sign up
-            </button>
-          </>
-        )}
+        Need an account?{' '}
+        <a href="/signup" className="underline">
+          Sign up
+        </a>
       </p>
     </div>
   );
