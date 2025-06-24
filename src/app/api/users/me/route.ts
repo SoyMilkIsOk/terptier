@@ -5,10 +5,10 @@ import { createSupabaseServerClient } from "@/lib/supabaseServer";
 export async function GET() {
   const supabase = await createSupabaseServerClient();
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user: supabaseUser },
+  } = await supabase.auth.getUser();
 
-  if (!session?.user?.email) {
+  if (!supabaseUser?.email) {
     return NextResponse.json(
       { success: false, error: "Not authenticated" },
       { status: 401 }
@@ -16,7 +16,7 @@ export async function GET() {
   }
 
   const user = await prisma.user.findUnique({
-    where: { email: session.user.email },
+    where: { email: supabaseUser.email },
   });
 
   if (!user) {

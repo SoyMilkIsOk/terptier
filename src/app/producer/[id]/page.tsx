@@ -162,6 +162,7 @@ export default async function ProducerProfilePage({
               initialAverage={averageRating}
               userRating={userVoteValue}
               showNumber={false}
+              readOnly={!currentUserId}
             />
           </div>
         </div>
@@ -186,8 +187,10 @@ export default async function ProducerProfilePage({
               currentUserId={currentUserId ?? undefined}
               highlighted
             />
-          ) : (
+          ) : currentUserId ? (
             <AddCommentForm producerId={id} />
+          ) : (
+            <p className="italic text-gray-600 mb-4">Log in to leave a comment.</p>
           )}
           {otherComments.map((c) => (
             <CommentCard

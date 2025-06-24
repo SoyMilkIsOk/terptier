@@ -13,10 +13,10 @@ export async function DELETE(
     // 1. Authentication & Authorization
     const supabase = await createSupabaseServerClient();
     const {
-      data: { session },
-    } = await supabase.auth.getSession();
+      data: { user: supabaseUser },
+    } = await supabase.auth.getUser();
 
-    if (!session) {
+    if (!supabaseUser) {
       return NextResponse.json(
         { success: false, error: "Not authenticated" },
         { status: 401 }
@@ -25,7 +25,7 @@ export async function DELETE(
 
     // Fetch Prisma user to check role
     const prismaUser = await prisma.user.findUnique({
-      where: { email: session.user.email! }, // Assuming email is reliable for fetching user
+      where: { email: supabaseUser.email! }, // Assuming email is reliable for fetching user
     });
 
     if (!prismaUser || prismaUser.role !== Role.ADMIN) {
@@ -61,7 +61,9 @@ export async function DELETE(
       where: { id: producerId },
     });
 
-    console.log(`[API] Producer ${producerId} deleted by admin ${session.user.email}`);
+    console.log(
+      `[API] Producer ${producerId} deleted by admin ${supabaseUser.email}`
+    );
     return NextResponse.json({ success: true, message: "Producer deleted successfully" });
 
   } catch (error: any) {

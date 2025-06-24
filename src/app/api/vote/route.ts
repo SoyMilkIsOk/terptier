@@ -11,15 +11,15 @@ export async function POST(request: Request) {
     // 1) Authenticate via Supabase
     const supabase = await createSupabaseServerClient();
     const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    if (!session) {
+      data: { user: supabaseUser },
+    } = await supabase.auth.getUser();
+    if (!supabaseUser) {
       return NextResponse.json(
         { success: false, error: "Not authenticated" },
         { status: 401 }
       );
     }
-    const { email, user_metadata } = session.user;
+    const { email, user_metadata } = supabaseUser;
 
     // 2) Upsert Prisma user BY EMAIL (not by id), so it matches any seed
     const prismaUser = await prisma.user.upsert({

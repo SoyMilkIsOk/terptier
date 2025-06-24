@@ -7,15 +7,15 @@ import { Role } from "@prisma/client";
 export async function POST(request: Request) {
   const supabase = await createSupabaseServerClient();
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user: supabaseUser },
+  } = await supabase.auth.getUser();
 
-  if (!session?.user?.email) {
+  if (!supabaseUser?.email) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
 
   const user = await prisma.user.findUnique({
-    where: { email: session.user.email },
+    where: { email: supabaseUser.email },
   });
 
   if (!user || user.role !== Role.ADMIN) {
