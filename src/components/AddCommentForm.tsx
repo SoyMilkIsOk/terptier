@@ -12,15 +12,14 @@ export default function AddCommentForm({ producerId }: { producerId: string }) {
     if (e.target.files) setFiles(Array.from(e.target.files));
   };
 
-  const uploadFiles = async (uid: string) => {
+  const uploadFiles = async () => {
     const uploaded: string[] = [];
     for (const file of files) {
-      const path = `${uid}/${Date.now()}-${file.name}`;
-      const { error } = await supabase.storage.from("comment-images").upload(path, file);
-      if (!error) {
-        const { data } = supabase.storage.from("comment-images").getPublicUrl(path);
-        uploaded.push(data.publicUrl);
-      }
+      const form = new FormData();
+      form.append("file", file);
+      const res = await fetch("/api/upload", { method: "POST", body: form });
+      const data = await res.json();
+      if (data?.url) uploaded.push(data.url as string);
     }
     return uploaded;
   };
@@ -33,7 +32,7 @@ export default function AddCommentForm({ producerId }: { producerId: string }) {
       router.push("/login?reason=comment");
       return;
     }
-    const urls = await uploadFiles(session.user.id);
+    const urls = await uploadFiles();
     await fetch("/api/comments", {
       method: "POST",
       headers: { "Content-Type": "application/json" },

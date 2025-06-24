@@ -1,7 +1,6 @@
 "use client";
 import { useState } from "react";
 import Image from "next/image";
-import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
 
 export interface CommentData {
@@ -37,12 +36,11 @@ export default function CommentCard({
   const uploadFiles = async () => {
     const uploaded: string[] = [];
     for (const file of files) {
-      const path = `${currentUserId}/${Date.now()}-${file.name}`;
-      const { error } = await supabase.storage.from("comment-images").upload(path, file);
-      if (!error) {
-        const { data } = supabase.storage.from("comment-images").getPublicUrl(path);
-        uploaded.push(data.publicUrl);
-      }
+      const form = new FormData();
+      form.append("file", file);
+      const res = await fetch("/api/upload", { method: "POST", body: form });
+      const data = await res.json();
+      if (data?.url) uploaded.push(data.url as string);
     }
     return uploaded;
   };
