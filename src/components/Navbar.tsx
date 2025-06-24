@@ -15,36 +15,35 @@ export default function Navbar() {
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    // fetch initial session
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      setSession(session);
-      if (session?.user?.email) {
+    const checkSession = async (sess: Session | null) => {
+      if (sess?.user?.email) {
         const res = await fetch("/api/users/me");
         const data = await res.json();
         if (data.success) {
+          setSession(sess);
           setProfileId(data.id);
           setIsAdmin(data.role === "ADMIN");
-        }
-      }
-    });
-    // listen for changes (login/logout)
-    const { data: listener } = supabase.auth.onAuthStateChange(
-      async (_event, sess) => {
-        setSession(sess);
-        if (sess?.user?.email) {
-          const res = await fetch("/api/users/me");
-          const data = await res.json();
-          if (data.success) {
-            setProfileId(data.id);
-            setIsAdmin(data.role === "ADMIN");
-          } else {
-            setProfileId(null);
-            setIsAdmin(false);
-          }
         } else {
+          await supabase.auth.signOut();
+          setSession(null);
           setProfileId(null);
           setIsAdmin(false);
         }
+      } else {
+        setSession(null);
+        setProfileId(null);
+        setIsAdmin(false);
+      }
+    };
+
+    // fetch initial session
+    supabase.auth
+      .getSession()
+      .then(({ data: { session } }) => checkSession(session));
+    // listen for changes (login/logout)
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      async (_event, sess) => {
+        await checkSession(sess);
       }
     );
     return () => {
