@@ -40,9 +40,20 @@ export default async function ProfilePage({
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold mb-6 text-center">
-        {user.name || user.email}'s Profile
-      </h1>
+      <div className="flex flex-col items-center mb-6 space-y-2">
+        {user.profilePicUrl && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={user.profilePicUrl} alt="profile" className="w-24 h-24 rounded-full object-cover" />
+        )}
+        <h1 className="text-2xl font-semibold">
+          {user.username || user.name || user.email}
+        </h1>
+        {user.socialLink && (
+          <a href={user.socialLink} className="text-blue-600 underline break-words" target="_blank" rel="noopener noreferrer">
+            {user.socialLink}
+          </a>
+        )}
+      </div>
 
       <section className="mb-10">
         <h2 className="text-xl font-semibold mb-4 border-b pb-2">Comments</h2>
