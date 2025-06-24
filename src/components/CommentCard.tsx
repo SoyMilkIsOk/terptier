@@ -20,10 +20,12 @@ export default function CommentCard({
   comment,
   currentUserId,
   highlighted,
+  showRating = true,
 }: {
   comment: CommentData;
   currentUserId?: string;
   highlighted?: boolean;
+  showRating?: boolean;
 }) {
   const [editing, setEditing] = useState(false);
   const [text, setText] = useState(comment.text);
@@ -109,19 +111,21 @@ export default function CommentCard({
           For producer: <a href={`/producer/${comment.producer.id}`} className="underline hover:text-blue-600">{comment.producer.name}</a>
         </p>
       )}
-      <div className="mb-2">
-        {comment.voteValue !== null && comment.voteValue !== undefined ? (
-          <VoteButton
-            producerId={comment.producerId}
-            initialAverage={comment.voteValue}
-            userRating={comment.voteValue}
-            readOnly
-            showNumber={false}
-          />
-        ) : (
-          <span className="italic text-sm text-gray-600">No rating</span>
-        )}
-      </div>
+      {showRating && (
+        <div className="mb-2">
+          {comment.voteValue !== null && comment.voteValue !== undefined ? (
+            <VoteButton
+              producerId={comment.producerId}
+              initialAverage={comment.voteValue}
+              userRating={comment.voteValue}
+              readOnly
+              showNumber={false}
+            />
+          ) : (
+            <span className="italic text-sm text-gray-600">No rating</span>
+          )}
+        </div>
+      )}
       <p className="whitespace-pre-wrap mb-2">{comment.text}</p>
       <div className="flex flex-wrap gap-2">
         {images.map((url) => (

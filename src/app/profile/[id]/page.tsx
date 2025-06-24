@@ -49,7 +49,7 @@ export default async function ProfilePage({
         {user.comments.length > 0 ? (
           <div>
             {user.comments.map((c) => (
-              <CommentCard key={c.id} comment={c} currentUserId={id} />
+              <CommentCard key={c.id} comment={c} currentUserId={id} showRating={false} />
             ))}
           </div>
         ) : (
