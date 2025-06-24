@@ -1,6 +1,6 @@
 // src/app/page.tsx
 import { cookies } from "next/headers";
-import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
+import { createSupabaseServerClient } from "@/lib/supabaseServer";
 import AgeGate from "@/components/AgeGate";
 import ProducerList, { ProducerWithVotes } from "@/components/ProducerList";
 import { prisma } from "@/lib/prismadb";
@@ -17,7 +17,7 @@ export default async function HomePage({
   if (!is21) return <AgeGate />;
 
   // Initialize Supabase client
-  const supabase = createServerComponentClient({ cookies });
+  const supabase = await createSupabaseServerClient();
   const {
     data: { session },
   } = await supabase.auth.getSession();

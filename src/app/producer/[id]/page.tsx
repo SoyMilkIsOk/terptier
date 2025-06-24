@@ -22,7 +22,7 @@ export default async function ProducerProfilePage({
 }: ProducerProfilePageProps) {
   const { id } = await params;
 
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const {
     data: { session },
   } = await supabase.auth.getSession();
