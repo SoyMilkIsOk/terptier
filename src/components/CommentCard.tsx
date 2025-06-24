@@ -2,6 +2,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import VoteButton from "@/components/VoteButton";
 
 export interface CommentData {
   id: string;
@@ -12,16 +13,19 @@ export interface CommentData {
   producerId: string;
   updatedAt: string | Date;
   producer?: { id: string; name: string }; // Optional producer info
+  voteValue?: number | null;
 }
 
 export default function CommentCard({
   comment,
   currentUserId,
   highlighted,
+  showRating = true,
 }: {
   comment: CommentData;
   currentUserId?: string;
   highlighted?: boolean;
+  showRating?: boolean;
 }) {
   const [editing, setEditing] = useState(false);
   const [text, setText] = useState(comment.text);
@@ -106,6 +110,21 @@ export default function CommentCard({
         <p className="text-sm text-gray-700 mb-1">
           For producer: <a href={`/producer/${comment.producer.id}`} className="underline hover:text-blue-600">{comment.producer.name}</a>
         </p>
+      )}
+      {showRating && (
+        <div className="mb-2">
+          {comment.voteValue !== null && comment.voteValue !== undefined ? (
+            <VoteButton
+              producerId={comment.producerId}
+              initialAverage={comment.voteValue}
+              userRating={comment.voteValue}
+              readOnly
+              showNumber={false}
+            />
+          ) : (
+            <span className="italic text-sm text-gray-600">No rating</span>
+          )}
+        </div>
       )}
       <p className="whitespace-pre-wrap mb-2">{comment.text}</p>
       <div className="flex flex-wrap gap-2">

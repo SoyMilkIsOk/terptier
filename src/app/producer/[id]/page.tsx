@@ -71,14 +71,25 @@ export default async function ProducerProfilePage({
     orderBy: { updatedAt: "desc" },
   });
 
+  const commentVotes = await prisma.vote.findMany({
+    where: { producerId: id, userId: { in: comments.map((c) => c.userId) } },
+  });
+
+  const voteMap: Record<string, number> = {};
+  commentVotes.forEach((v) => {
+    voteMap[v.userId] = v.value;
+  });
+
+  const commentsWithVotes = comments.map((c) => ({
+    ...c,
+    voteValue: voteMap[c.userId] ?? null,
+  }));
+
   const userComment = currentUserId
-    ? await prisma.comment.findUnique({
-        where: { userId_producerId: { userId: currentUserId, producerId: id } },
-        include: { user: true },
-      })
+    ? commentsWithVotes.find((c) => c.userId === currentUserId) ?? null
     : null;
 
-  const otherComments = comments.filter((c) => c.id !== userComment?.id);
+  const otherComments = commentsWithVotes.filter((c) => c.userId !== currentUserId);
 
   // Calculate rank
   let rank = 0;
