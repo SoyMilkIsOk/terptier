@@ -11,7 +11,7 @@ import type { Session } from "@supabase/supabase-js";
 export default function Navbar() {
   const pathname = usePathname();
   const [session, setSession] = useState<Session | null>(null);
-  const [profileId, setProfileId] = useState<string | null>(null);
+  const [profileUsername, setProfileUsername] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
@@ -22,7 +22,7 @@ export default function Navbar() {
         const res = await fetch("/api/users/me");
         const data = await res.json();
         if (data.success) {
-          setProfileId(data.id);
+          setProfileUsername(data.username || data.id);
           setIsAdmin(data.role === "ADMIN");
         }
       }
@@ -35,14 +35,14 @@ export default function Navbar() {
           const res = await fetch("/api/users/me");
           const data = await res.json();
           if (data.success) {
-            setProfileId(data.id);
+            setProfileUsername(data.username || data.id);
             setIsAdmin(data.role === "ADMIN");
           } else {
-            setProfileId(null);
+            setProfileUsername(null);
             setIsAdmin(false);
           }
         } else {
-          setProfileId(null);
+          setProfileUsername(null);
           setIsAdmin(false);
         }
       }
@@ -72,11 +72,11 @@ export default function Navbar() {
             Home
           </Link>
 
-          {profileId && (
+          {profileUsername && (
             <Link
-              href={`/profile/${profileId}`}
+              href={`/profile/${profileUsername}`}
               className={`${
-                pathname === `/profile/${profileId}`
+                pathname === `/profile/${profileUsername}`
                   ? "underline"
                   : "hover:underline"
               }`}

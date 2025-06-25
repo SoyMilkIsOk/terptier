@@ -10,8 +10,8 @@ export default async function ProfilePage({
 }) {
   const { id } = await params;
 
-  const user = await prisma.user.findUnique({
-    where: { id }, // Query by id
+  let user = await prisma.user.findUnique({
+    where: { username: id },
     include: {
       votes: {
         // producer.votes is needed for ProducerCard to calculate total score
@@ -25,8 +25,23 @@ export default async function ProfilePage({
   });
 
   if (!user) {
+    user = await prisma.user.findUnique({
+      where: { id },
+      include: {
+        votes: {
+          include: { producer: { include: { votes: true, _count: { select: { comments: true } } } } },
+        },
+        comments: {
+          include: { producer: true, user: true },
+          orderBy: { updatedAt: "desc" },
+        },
+      },
+    });
+  }
+
+  if (!user) {
     // Consider a more user-friendly "not found" page or redirect
-    return <p>User not found. (ID: {id})</p>;
+    return <p>User not found. ({id})</p>;
   }
 
   // Process votes into liked and disliked producers
@@ -60,7 +75,7 @@ export default async function ProfilePage({
         {user.comments.length > 0 ? (
           <div>
             {user.comments.map((c) => (
-              <CommentCard key={c.id} comment={c} currentUserId={id} showRating={false} />
+              <CommentCard key={c.id} comment={c} currentUserId={user.id} showRating={false} />
             ))}
           </div>
         ) : (
