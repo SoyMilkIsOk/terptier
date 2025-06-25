@@ -13,7 +13,10 @@ export default function SignUpPage() {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [file, setFile] = useState<File | null>(null);
+  const [uploadUrl, setUploadUrl] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [usernameTaken, setUsernameTaken] = useState(false);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
@@ -29,34 +32,56 @@ export default function SignUpPage() {
     setLoading(false);
   };
 
-  const uploadFile = async () => {
-    if (!file) return null;
+  const checkUsername = async (name: string) => {
+    if (!name) return;
+    const res = await fetch(`/api/users?username=${encodeURIComponent(name)}`);
+    const data = await res.json();
+    setUsernameTaken(data.exists);
+  };
+
+  const uploadFile = async (f: File) => {
     const form = new FormData();
-    form.append("file", file);
+    form.append("file", f);
     const res = await fetch("/api/upload", { method: "POST", body: form });
     const data = await res.json();
     return data.url as string;
   };
 
-  const finalizeAuth = async (profileUrl: string | null) => {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    if (session) {
-      await fetch("/api/users", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: session.user.id,
-          email: session.user.email,
-          name: username,
-          username,
-          birthday,
-          profilePicUrl: profileUrl,
-          socialLink,
-        }),
-      });
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selected = e.target.files?.[0] || null;
+    setFile(selected);
+    setUploadUrl(null);
+    if (selected) {
+      setUploading(true);
+      try {
+        const url = await uploadFile(selected);
+        setUploadUrl(url);
+      } catch {
+        setError("Failed to upload image");
+      } finally {
+        setUploading(false);
+      }
     }
+  };
+
+  const finalizeAuth = async (
+    profileUrl: string | null,
+    id: string,
+    userEmail: string
+  ) => {
+    await fetch("/api/users", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id,
+        email: userEmail,
+        name: username,
+        username,
+        birthday,
+        profilePicUrl: profileUrl,
+        socialLink,
+      }),
+    });
   };
 
   const handleSubmit = async () => {
@@ -76,14 +101,24 @@ export default function SignUpPage() {
       return;
     }
     setLoading(true);
-    const profileUrl = await uploadFile();
-    const { error: signUpError } = await supabase.auth.signUp({ email, password });
-    if (signUpError) {
-      setError(signUpError.message);
+    const { data, error: signUpError } = await supabase.auth.signUp({
+      email,
+      password,
+    });
+    if (signUpError || !data?.user) {
+      setError(signUpError?.message || "Signup failed");
       setLoading(false);
       return;
     }
-    await finalizeAuth(profileUrl);
+    let profileUrl = uploadUrl;
+    if (!profileUrl && file) {
+      try {
+        profileUrl = await uploadFile(file);
+      } catch {
+        setError("Failed to upload image");
+      }
+    }
+    await finalizeAuth(profileUrl ?? null, data.user.id, data.user.email ?? email);
     setSuccess(true);
     setLoading(false);
   };
@@ -107,15 +142,19 @@ export default function SignUpPage() {
       {step === 1 && (
         <div className="space-y-4">
           <h1 className="text-2xl font-semibold text-center">Sign Up</h1>
-          <input
-            type="email"
-            name="email"
-            autoComplete="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full p-2.5 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-          />
+          <label className="block">
+            Email <span className="text-red-500">*</span>
+            <input
+              type="email"
+              name="email"
+              autoComplete="email"
+              required
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full mt-1 p-2.5 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+            />
+          </label>
           <button
             onClick={checkEmail}
             disabled={loading}
@@ -126,56 +165,119 @@ export default function SignUpPage() {
         </div>
       )}
       {step === 2 && (
-        <div className="space-y-4">
+        <form
+          className="space-y-4"
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSubmit();
+          }}
+          autoComplete="on"
+        >
           <h1 className="text-2xl font-semibold text-center">Create Account</h1>
-          <input
-            type="text"
-            placeholder="Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            className="w-full p-2.5 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-          />
-          <input
-            type="date"
-            value={birthday}
-            onChange={(e) => setBirthday(e.target.value)}
-            className="w-full p-2.5 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-          />
-          <input
-            type="url"
-            placeholder="Social link (optional)"
-            value={socialLink}
-            onChange={(e) => setSocialLink(e.target.value)}
-            className="w-full p-2.5 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-          />
-          <input type="file" onChange={(e) => setFile(e.target.files?.[0] || null)} />
-          <input
-            type="password"
-            name="new-password"
-            autoComplete="new-password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full p-2.5 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-          />
-          <input
-            type="password"
-            name="confirm-password"
-            autoComplete="new-password"
-            placeholder="Confirm Password"
-            value={confirm}
-            onChange={(e) => setConfirm(e.target.value)}
-            className="w-full p-2.5 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-          />
+          <input type="hidden" name="email" value={email} autoComplete="email" />
+          <div>
+            <label className="block">
+              Username <span className="text-red-500">*</span>
+              <input
+                type="text"
+                name="username"
+                autoComplete="username"
+                required
+                placeholder="Username"
+                value={username}
+                onChange={(e) => {
+                  setUsername(e.target.value);
+                  setUsernameTaken(false);
+                }}
+                onBlur={(e) => checkUsername(e.target.value)}
+                title={usernameTaken ? "Username already taken" : ""}
+                className="w-full mt-1 p-2.5 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              />
+            </label>
+            {usernameTaken && (
+              <p className="text-red-500 text-sm">Username already taken</p>
+            )}
+          </div>
+          <div>
+            <label className="block">
+              Birthday <span className="text-red-500">*</span>
+              <input
+                type="date"
+                name="birthday"
+                required
+                value={birthday}
+                onChange={(e) => setBirthday(e.target.value)}
+                className="w-full mt-1 p-2.5 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              />
+            </label>
+          </div>
+          <div>
+            <label className="block">Social link (optional)</label>
+            <input
+              type="url"
+              placeholder="https://example.com"
+              value={socialLink}
+              onChange={(e) => setSocialLink(e.target.value)}
+              className="w-full mt-1 p-2.5 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
+          <div>
+            <label className="block">Profile Picture</label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              className="mt-1"
+            />
+            {uploading && <p className="text-sm text-gray-500">Uploading...</p>}
+            {uploadUrl && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={uploadUrl}
+                alt="Profile preview"
+                className="mt-2 w-20 h-20 rounded-full object-cover"
+              />
+            )}
+          </div>
+          <div>
+            <label className="block">
+              Password <span className="text-red-500">*</span>
+              <input
+                type="password"
+                name="new-password"
+                autoComplete="new-password"
+                required
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full mt-1 p-2.5 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              />
+            </label>
+          </div>
+          <div>
+            <label className="block">
+              Confirm Password <span className="text-red-500">*</span>
+              <input
+                type="password"
+                name="confirm-password"
+                autoComplete="new-password"
+                required
+                placeholder="Confirm Password"
+                value={confirm}
+                onChange={(e) => setConfirm(e.target.value)}
+                className="w-full mt-1 p-2.5 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              />
+            </label>
+          </div>
           <p className="text-sm text-gray-600">Password must be at least 8 characters.</p>
           <button
-            onClick={handleSubmit}
+            type="submit"
             disabled={loading}
             className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md"
           >
             Submit
           </button>
-        </div>
+        </form>
       )}
     </div>
   );

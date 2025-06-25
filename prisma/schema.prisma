@@ -51,7 +51,7 @@ model Producer {
 
 model Vote {
   id         String   @id @default(cuid())
-  user       User     @relation(fields: [userId], references: [id])
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId     String
   producer   Producer @relation(fields: [producerId], references: [id], onDelete: Cascade) // Added onDelete: Cascade
   producerId String
@@ -66,7 +66,7 @@ model Comment {
   id         String   @id @default(cuid())
   text       String
   imageUrls  String[]
-  user       User     @relation(fields: [userId], references: [id])
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId     String
   producer   Producer @relation(fields: [producerId], references: [id], onDelete: Cascade)
   producerId String
