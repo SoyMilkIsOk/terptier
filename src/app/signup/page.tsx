@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 
@@ -13,6 +13,8 @@ export default function SignUpPage() {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [file, setFile] = useState<File | null>(null);
+  const [uploadUrl, setUploadUrl] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [usernameTaken, setUsernameTaken] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -37,13 +39,29 @@ export default function SignUpPage() {
     setUsernameTaken(data.exists);
   };
 
-  const uploadFile = async () => {
-    if (!file) return null;
+  const uploadFile = async (f: File) => {
     const form = new FormData();
-    form.append("file", file);
+    form.append("file", f);
     const res = await fetch("/api/upload", { method: "POST", body: form });
     const data = await res.json();
     return data.url as string;
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selected = e.target.files?.[0] || null;
+    setFile(selected);
+    setUploadUrl(null);
+    if (selected) {
+      setUploading(true);
+      try {
+        const url = await uploadFile(selected);
+        setUploadUrl(url);
+      } catch {
+        setError("Failed to upload image");
+      } finally {
+        setUploading(false);
+      }
+    }
   };
 
   const finalizeAuth = async (
@@ -92,8 +110,15 @@ export default function SignUpPage() {
       setLoading(false);
       return;
     }
-    const profileUrl = await uploadFile();
-    await finalizeAuth(profileUrl, data.user.id, data.user.email ?? email);
+    let profileUrl = uploadUrl;
+    if (!profileUrl && file) {
+      try {
+        profileUrl = await uploadFile(file);
+      } catch {
+        setError("Failed to upload image");
+      }
+    }
+    await finalizeAuth(profileUrl ?? null, data.user.id, data.user.email ?? email);
     setSuccess(true);
     setLoading(false);
   };
@@ -165,6 +190,7 @@ export default function SignUpPage() {
                   setUsernameTaken(false);
                 }}
                 onBlur={(e) => checkUsername(e.target.value)}
+                title={usernameTaken ? "Username already taken" : ""}
                 className="w-full mt-1 p-2.5 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
               />
             </label>
@@ -195,7 +221,24 @@ export default function SignUpPage() {
               className="w-full mt-1 p-2.5 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
-          <input type="file" onChange={(e) => setFile(e.target.files?.[0] || null)} />
+          <div>
+            <label className="block">Profile Picture</label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              className="mt-1"
+            />
+            {uploading && <p className="text-sm text-gray-500">Uploading...</p>}
+            {uploadUrl && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={uploadUrl}
+                alt="Profile preview"
+                className="mt-2 w-20 h-20 rounded-full object-cover"
+              />
+            )}
+          </div>
           <div>
             <label className="block">
               Password <span className="text-red-500">*</span>
