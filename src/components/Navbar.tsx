@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import Image from "next/image";
+import { LogIn, LogOut } from "lucide-react";
 import type { Session } from "@supabase/supabase-js";
 
 export default function Navbar() {
@@ -135,21 +136,23 @@ export default function Navbar() {
           {!session ? (
             <Link
               href="/login"
-              className={`${
-                pathname === "/login" ? "underline" : "hover:underline"
-              }`}
+              className="flex items-center space-x-1 bg-white text-green-700 px-3 py-1 rounded-full hover:bg-green-50"
             >
-              Log In / Sign Up
+              <LogIn className="w-4 h-4" />
+              <span>Log In / Sign Up</span>
             </Link>
           ) : (
             <button
+              type="button"
               onClick={async () => {
                 await supabase.auth.signOut();
                 setSession(null);
+                location.reload();
               }}
-              className="hover:underline"
+              className="flex items-center space-x-1 bg-red-600 hover:bg-red-700 px-3 py-1 rounded-md"
             >
-              Sign Out
+              <LogOut className="w-4 h-4 text-white" />
+              <span className="text-white">Sign Out</span>
             </button>
           )}
         </div>
@@ -185,20 +188,24 @@ export default function Navbar() {
             <Link
               href="/login"
               onClick={() => setMenuOpen(false)}
-              className="w-full text-center py-1"
+              className="w-full text-center py-1 bg-white text-green-700 rounded-full flex items-center justify-center space-x-1"
             >
-              Log In / Sign Up
+              <LogIn className="w-4 h-4" />
+              <span>Log In / Sign Up</span>
             </Link>
           ) : (
             <button
+              type="button"
               onClick={async () => {
                 await supabase.auth.signOut();
                 setSession(null);
                 setMenuOpen(false);
+                location.reload();
               }}
-              className="w-full py-1 text-center"
+              className="w-full py-1 text-center bg-red-600 hover:bg-red-700 rounded-md text-white flex items-center justify-center space-x-1"
             >
-              Sign Out
+              <LogOut className="w-4 h-4" />
+              <span>Sign Out</span>
             </button>
           )}
         </div>

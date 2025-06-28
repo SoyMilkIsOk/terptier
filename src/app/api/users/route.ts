@@ -27,29 +27,43 @@ export async function POST(request: Request) {
 
   const role = email === process.env.ADMIN_EMAIL ? Role.ADMIN : Role.USER;
 
-  // Upsert a Prisma User record matching the Supabase user
-  // Use email as the unique key to support existing accounts
-  await prisma.user.upsert({
-    where: { email },
-    update: {
-      name,
-      username,
-      birthday: birthday ? new Date(birthday) : undefined,
-      profilePicUrl,
-      socialLink,
-      role,
-    },
-    create: {
-      id,
-      email,
-      name,
-      username,
-      birthday: birthday ? new Date(birthday) : undefined,
-      profilePicUrl,
-      socialLink,
-      role,
-    },
-  });
+  try {
+    // Upsert a Prisma User record matching the Supabase user
+    // Use email as the unique key to support existing accounts
+    await prisma.user.upsert({
+      where: { email },
+      update: {
+        name,
+        username,
+        birthday: birthday ? new Date(birthday) : undefined,
+        profilePicUrl,
+        socialLink,
+        role,
+      },
+      create: {
+        id,
+        email,
+        name,
+        username,
+        birthday: birthday ? new Date(birthday) : undefined,
+        profilePicUrl,
+        socialLink,
+        role,
+      },
+    });
 
-  return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true });
+  } catch (err: any) {
+    if (err.code === "P2002" && err.meta?.target?.includes("username")) {
+      return NextResponse.json(
+        { ok: false, error: "Username already taken" },
+        { status: 400 }
+      );
+    }
+    console.error("Failed to upsert user", err);
+    return NextResponse.json(
+      { ok: false, error: "Failed to create user" },
+      { status: 500 }
+    );
+  }
 }

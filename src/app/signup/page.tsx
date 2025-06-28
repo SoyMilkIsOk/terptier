@@ -19,7 +19,6 @@ export default function SignUpPage() {
   const [error, setError] = useState<string | null>(null);
   const [usernameTaken, setUsernameTaken] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
 
   const checkEmail = async () => {
     setLoading(true);
@@ -70,7 +69,7 @@ export default function SignUpPage() {
     id: string,
     userEmail: string
   ) => {
-    await fetch("/api/users", {
+    const res = await fetch("/api/users", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -83,6 +82,10 @@ export default function SignUpPage() {
         socialLink,
       }),
     });
+    const data = await res.json();
+    if (!res.ok || !data.ok) {
+      throw new Error(data.error || "Failed to create user");
+    }
   };
 
   const handleSubmit = async () => {
@@ -119,19 +122,22 @@ export default function SignUpPage() {
         setError("Failed to upload image");
       }
     }
-    await finalizeAuth(profileUrl ?? null, data.user.id, data.user.email ?? email);
-    setSuccess(true);
+    try {
+      await finalizeAuth(
+        profileUrl ?? null,
+        data.user.id,
+        data.user.email ?? email
+      );
+      router.push(
+        `/login?email=${encodeURIComponent(email)}&message=Account%20created%20successfully`
+      );
+    } catch (err: any) {
+      setError(err.message);
+      setStep(2);
+    }
     setLoading(false);
   };
 
-  if (success) {
-    return (
-      <div className="max-w-md mx-auto bg-white p-6 rounded shadow text-center">
-        <p className="mb-4">Check your email for confirmation.</p>
-        <a href="/login" className="underline">Return to login</a>
-      </div>
-    );
-  }
 
   return (
     <div className="max-w-md mx-auto bg-white p-6 rounded shadow">
@@ -175,7 +181,18 @@ export default function SignUpPage() {
           autoComplete="on"
         >
           <h1 className="text-2xl font-semibold text-center">Create Account</h1>
-          <input type="hidden" name="email" value={email} autoComplete="email" />
+          <div>
+            <label className="block">
+              Email
+              <input
+                type="email"
+                name="email"
+                value={email}
+                readOnly
+                className="w-full mt-1 p-2.5 border border-gray-300 rounded-md bg-gray-100"
+              />
+            </label>
+          </div>
           <div>
             <label className="block">
               Username <span className="text-red-500">*</span>
@@ -247,7 +264,7 @@ export default function SignUpPage() {
               </div>
             )}
           </div>
-          <div>
+          <div className="relative group">
             <label className="block">
               Password <span className="text-red-500">*</span>
               <input
@@ -261,6 +278,9 @@ export default function SignUpPage() {
                 className="w-full mt-1 p-2.5 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
               />
             </label>
+            <div className="absolute right-0 top-full mt-1 hidden group-focus-within:block group-hover:block bg-white border text-xs p-2 rounded shadow">
+              Use at least 8 characters, including numbers and symbols.
+            </div>
           </div>
           <div>
             <label className="block">
