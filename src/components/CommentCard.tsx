@@ -3,6 +3,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import VoteButton from "@/components/VoteButton";
+import UploadButton from "./UploadButton";
 
 export interface CommentData {
   id: string;
@@ -87,7 +88,7 @@ export default function CommentCard({
             </div>
           ))}
         </div>
-        <input type="file" multiple onChange={handleFileChange} className="mb-3" />
+        <UploadButton multiple onChange={handleFileChange} className="mb-3" />
         <button onClick={save} className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md">Save</button>
       </div>
     );

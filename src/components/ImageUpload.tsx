@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import UploadButton from "./UploadButton";
 
 export default function ImageUpload({ value, onChange }: { value: string | null; onChange: (url: string | null) => void }) {
   const [loading, setLoading] = useState(false);
@@ -34,7 +35,7 @@ export default function ImageUpload({ value, onChange }: { value: string | null;
           </button>
         </div>
       ) : (
-        <input type="file" accept="image/*" onChange={handleChange} />
+        <UploadButton onChange={handleChange} />
       )}
       {loading && <span className="text-sm animate-pulse">Uploading...</span>}
     </div>

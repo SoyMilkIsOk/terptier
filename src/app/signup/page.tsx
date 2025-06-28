@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
+import UploadButton from "@/components/UploadButton";
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -223,12 +224,7 @@ export default function SignUpPage() {
           </div>
           <div>
             <label className="block">Profile Picture</label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleFileChange}
-              className="mt-1"
-            />
+            <UploadButton onChange={handleFileChange} className="mt-1" />
             {uploading && <p className="text-sm text-gray-500">Uploading...</p>}
             {uploadUrl && (
               // eslint-disable-next-line @next/next/no-img-element

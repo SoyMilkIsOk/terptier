@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
+import UploadButton from "./UploadButton";
 
 export default function AddCommentForm({ producerId }: { producerId: string }) {
   const [text, setText] = useState("");
@@ -51,7 +52,7 @@ export default function AddCommentForm({ producerId }: { producerId: string }) {
         className="w-full border rounded-md p-2"
         placeholder="Leave a comment"
       />
-      <input type="file" multiple onChange={handleFileChange} />
+      <UploadButton multiple onChange={handleFileChange} />
       <button
         onClick={submit}
         className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md"
