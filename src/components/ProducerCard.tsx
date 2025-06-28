@@ -9,19 +9,21 @@ import type { ProducerWithVotes } from "./ProducerList";
 export default function ProducerCard({
   rank,
   producer,
-  userVoteValue, // Added userVoteValue prop
+  userVoteValue,
   isTopTen,
   color = "green",
+  rankSuffix = "",
 }: {
   rank: number;
   producer: ProducerWithVotes;
-  userVoteValue?: number | null; // Added userVoteValue prop type
+  userVoteValue?: number | null;
   isTopTen?: boolean;
   color?: "gold" | "silver" | "bronze" | "gray" | "green";
+  rankSuffix?: string;
 }) {
   const total = producer.votes.reduce((sum, v) => sum + v.value, 0);
   const average = producer.votes.length ? total / producer.votes.length : 0;
-  const userVote = userVoteValue; // Use the passed prop
+  const userVote = userVoteValue;
 
   const colorClasses: Record<string, string> = {
     gold: "bg-gradient-to-br from-yellow-300 to-yellow-600 text-yellow-100",
@@ -40,8 +42,6 @@ export default function ProducerCard({
       ? "glow-bronze"
       : "";
 
-  console.log(`[ProducerCard.tsx] producer ${producer.id}: received userVoteValue =`, userVoteValue, "Passing to VoteButton:", userVote);
-
   const link = `/producer/${producer.slug ?? producer.id}`;
 
   return (
@@ -50,7 +50,10 @@ export default function ProducerCard({
       className={`${isTopTen === false ? "bg-gray-100" : "bg-white"} ${glowClass} p-4 rounded shadow flex items-center space-x-4 hover:bg-gray-50 transition`}
     >
       <div className={`flex items-center justify-center ${colorClasses[color]} rounded-md w-10 h-10 font-bold`}>
-        #{rank}
+        {rank}
+        {rankSuffix && (
+          <sup className="text-[0.6rem] ml-0.5 align-super">{rankSuffix}</sup>
+        )}
       </div>
       {producer.profileImage || producer.logoUrl ? (
         <img
