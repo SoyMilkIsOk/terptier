@@ -125,6 +125,7 @@ export default async function ProfilePage({
                   producer={producer}
                   userVoteValue={producer.userActualVote}
                   color={color}
+                  showRank={false}
                 />
               );
             })}
