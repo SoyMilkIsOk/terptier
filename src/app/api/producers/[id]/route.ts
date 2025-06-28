@@ -78,3 +78,52 @@ export async function DELETE(
     );
   }
 }
+
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const supabase = createServerActionClient({ cookies }, {
+      supabaseUrl,
+      supabaseKey,
+    });
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session) {
+      return NextResponse.json(
+        { success: false, error: "Not authenticated" },
+        { status: 401 }
+      );
+    }
+
+    const prismaUser = await prisma.user.findUnique({
+      where: { email: session.user.email! },
+    });
+
+    if (!prismaUser || prismaUser.role !== Role.ADMIN) {
+      return NextResponse.json(
+        { success: false, error: "Forbidden: Admin access required" },
+        { status: 403 }
+      );
+    }
+
+    const { id } = await params;
+    const data = await request.json();
+
+    await prisma.producer.update({
+      where: { id },
+      data,
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    console.error("[API PUT /api/producers/[id]] Error:", error);
+    return NextResponse.json(
+      { success: false, error: error.message || "Internal server error" },
+      { status: 500 }
+    );
+  }
+}

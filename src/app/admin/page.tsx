@@ -15,6 +15,7 @@ export default function AdminPage() {
   const [error, setError] = useState<string | null>(null);
   const [confirmData, setConfirmData] = useState<{id: string, name: string} | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [editing, setEditing] = useState<Producer | null>(null);
 
   useEffect(() => {
     const fetchProducers = async () => {
@@ -62,6 +63,10 @@ export default function AdminPage() {
 
   const handleDelete = (producerId: string, producerName: string) => {
     setConfirmData({ id: producerId, name: producerName });
+  };
+
+  const handleEdit = (producer: Producer) => {
+    setEditing(producer);
   };
 
   const confirmDelete = async () => {
@@ -131,7 +136,13 @@ export default function AdminPage() {
                       {p.category || 'N/A'}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                    <button
+                      onClick={() => handleEdit(p)}
+                      className="text-blue-600 hover:text-blue-800"
+                    >
+                      Edit
+                    </button>
                     <button
                       onClick={() => handleDelete(p.id, p.name || 'this producer')}
                       className="text-red-600 hover:text-red-800 transition-colors duration-150"
@@ -164,6 +175,11 @@ export default function AdminPage() {
               Delete
             </button>
           </div>
+        </Modal>
+      )}
+      {editing && (
+        <Modal isOpen={true} onClose={() => setEditing(null)}>
+          <AddProducerForm producer={editing} onSaved={() => { setEditing(null); window.location.reload(); }} />
         </Modal>
       )}
       {message && (

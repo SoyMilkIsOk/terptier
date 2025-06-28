@@ -40,6 +40,10 @@ model Producer {
   name        String
   category    Category
   logoUrl     String?
+  profileImage String?
+  website     String?
+  ingredients String?
+  slug        String?  @unique
   createdAt   DateTime @default(now())
   createdBy   User?    @relation(fields: [createdById], references: [id])
   createdById String?

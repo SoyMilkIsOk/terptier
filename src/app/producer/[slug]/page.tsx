@@ -1,10 +1,12 @@
-// src/app/producer/[id]/page.tsx
+// src/app/producer/[slug]/page.tsx
 import { prisma } from "@/lib/prismadb";
 import Image from "next/image";
 import { Category } from "@prisma/client"; // Import Category enum if needed for type safety
 import CommentCard from "@/components/CommentCard";
 import AddCommentForm from "@/components/AddCommentForm";
 import VoteButton from "@/components/VoteButton";
+import IngredientsButton from "@/components/IngredientsButton";
+import { ExternalLink } from "lucide-react";
 import { createSupabaseServerClient } from "@/lib/supabaseServer";
 
 // Helper function to capitalize category
@@ -13,14 +15,14 @@ const capitalize = (s: string) =>
 
 interface ProducerProfilePageProps {
   params: Promise<{
-    id: string;
+    slug: string;
   }>;
 }
 
 export default async function ProducerProfilePage({
   params,
 }: ProducerProfilePageProps) {
-  const { id } = await params;
+  const { slug } = await params;
 
   const supabase = createSupabaseServerClient();
   const {
@@ -35,8 +37,8 @@ export default async function ProducerProfilePage({
     currentUserId = prismaUser?.id || null;
   }
 
-  const producer = await prisma.producer.findUnique({
-    where: { id },
+  const producer = await prisma.producer.findFirst({
+    where: { OR: [{ slug }, { id: slug }] },
     include: {
       votes: true, // To calculate total score
       comments: false,
@@ -59,20 +61,20 @@ export default async function ProducerProfilePage({
   const userVoteRecord = currentUserId
     ? await prisma.vote.findUnique({
         where: {
-          userId_producerId: { userId: currentUserId, producerId: id },
+          userId_producerId: { userId: currentUserId, producerId: producer.id },
         },
       })
     : null;
   const userVoteValue = userVoteRecord?.value ?? null;
 
   const comments = await prisma.comment.findMany({
-    where: { producerId: id },
+    where: { producerId: producer.id },
     include: { user: true },
     orderBy: { updatedAt: "desc" },
   });
 
   const commentVotes = await prisma.vote.findMany({
-    where: { producerId: id, userId: { in: comments.map((c) => c.userId) } },
+    where: { producerId: producer.id, userId: { in: comments.map((c) => c.userId) } },
   });
 
   const voteMap: Record<string, number> = {};
@@ -116,10 +118,10 @@ export default async function ProducerProfilePage({
     <div className="container mx-auto p-4 mt-8">
       <div className="bg-white shadow-xl rounded-lg p-6 md:p-8 max-w-3xl mx-auto">
         <div className="flex flex-col md:flex-row items-start md:items-center mb-6 pb-6 border-b border-gray-300">
-          {producer.logoUrl && (
+          {(producer.profileImage || producer.logoUrl) && (
             <div className="relative w-24 h-24 md:w-32 md:h-32 mr-0 md:mr-6 mb-4 md:mb-0 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
               <Image
-                src={producer.logoUrl}
+                src={producer.profileImage || producer.logoUrl!}
                 alt={`${producer.name} logo`}
                 layout="fill"
                 className="object-contain"
@@ -127,10 +129,16 @@ export default async function ProducerProfilePage({
             </div>
           )}
           <div className="flex-grow text-center md:text-left">
-            <div className="flex flex-col sm:flex-row sm:items-baseline items-center sm:justify-start mb-2">
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mr-0 sm:mr-3 mb-2 sm:mb-0">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-start mb-2 space-x-2">
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2 sm:mb-0">
                 {producer.name}
               </h1>
+              {producer.website && (
+                <a href={producer.website} target="_blank" rel="noopener noreferrer" className="text-blue-600" aria-label="Website">
+                  <ExternalLink className="w-5 h-5" />
+                </a>
+              )}
+              {producer.ingredients && <IngredientsButton ingredients={producer.ingredients} />}
             </div>
             {rank > 0 && (
               <p className="text-gray-600 mt-4">
@@ -149,7 +157,7 @@ export default async function ProducerProfilePage({
           <div className="flex items-center mb-2 sm:mb-0">
             <span className="mr-2 font-semibold">Avg. Rating:</span>
             <VoteButton
-              producerId={id}
+              producerId={producer.id}
               initialAverage={averageRating}
               userRating={null}
               readOnly
@@ -158,7 +166,7 @@ export default async function ProducerProfilePage({
           <div className="flex items-center mb-2 sm:mb-0">
             <span className="mr-2 font-semibold">Your Rating:</span>
             <VoteButton
-              producerId={id}
+              producerId={producer.id}
               initialAverage={averageRating}
               userRating={userVoteValue}
               showNumber={false}
@@ -187,7 +195,7 @@ export default async function ProducerProfilePage({
               highlighted
             />
           ) : (
-            <AddCommentForm producerId={id} />
+            <AddCommentForm producerId={producer.id} />
           )}
           {otherComments.map((c) => (
             <CommentCard
