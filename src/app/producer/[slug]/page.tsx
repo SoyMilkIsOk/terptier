@@ -173,15 +173,15 @@ export default async function ProducerProfilePage({
               readOnly
             />
           </div>
-          <div className="flex items-center mb-2 sm:mb-0">
+            <div className="flex items-center mb-2 sm:mb-0">
             <span className="mr-1.5 font-semibold">Your Rating:</span>
             <VoteButton
               producerId={producer.id}
-              initialAverage={averageRating}
+              initialAverage={userVoteValue ?? 0}
               userRating={userVoteValue}
               showNumber={true}
             />
-          </div>
+            </div>
         </div>
 
         {/* Placeholder for description or other details */}
