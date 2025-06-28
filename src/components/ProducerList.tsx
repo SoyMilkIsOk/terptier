@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import SearchBar from "./SearchBar";
 import ProducerCard from "./ProducerCard";
 import CategoryToggle from "./CategoryToggle"; // Import CategoryToggle
 import type { Producer, Vote } from "@prisma/client";
@@ -23,26 +23,36 @@ interface Props {
 }
 
 export default function ProducerList({ initialData, userVotes, initialView }: Props) {
-  const router = useRouter();
-  const searchParams = useSearchParams();
   const [view, setView] = useState<"flower" | "hash">(initialView ?? "flower");
+  const [searchTerm, setSearchTerm] = useState<string>("");
 
-  // Sync state with url search params
+  // Initialize view from localStorage if available
   useEffect(() => {
-    const param = searchParams.get("view");
-    if (param === "flower" || param === "hash") {
-      setView(param);
+    const stored = localStorage.getItem("terptier_view");
+    if (stored === "flower" || stored === "hash") {
+      setView(stored);
     }
-  }, [searchParams]);
+  }, []);
+
+  // Persist view selection
+  useEffect(() => {
+    localStorage.setItem("terptier_view", view);
+  }, [view]);
 
   const updateView = (v: "flower" | "hash") => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("view", v);
-    router.push(`/?${params.toString()}`);
     setView(v);
   };
-  const list =
-    view === "flower" ? initialData.flower : initialData.hash;
+  const list = view === "flower" ? initialData.flower : initialData.hash;
+
+  const filteredList = list.filter((producer) => {
+    if (!searchTerm) return true;
+    try {
+      const regex = new RegExp(searchTerm, "i");
+      return regex.test(producer.name);
+    } catch {
+      return producer.name.toLowerCase().includes(searchTerm.toLowerCase());
+    }
+  });
 
   console.log("[ProducerList.tsx] userVotes prop:", userVotes);
 
@@ -52,8 +62,9 @@ export default function ProducerList({ initialData, userVotes, initialView }: Pr
         <CategoryToggle view={view} setView={updateView} />
       </div>
 
+      <SearchBar onSearch={setSearchTerm} />
       <div className="grid md:grid-cols-2 gap-4">
-        {list.map((producer, i) => {
+        {filteredList.map((producer, i) => {
           const userVoteValue = userVotes?.[producer.id];
           console.log(`[ProducerList.tsx] Mapping producer ${producer.id}: userVoteValue =`, userVoteValue);
           return (
