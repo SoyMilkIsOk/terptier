@@ -149,7 +149,7 @@ export default function Navbar() {
                 setSession(null);
                 location.reload();
               }}
-              className="flex items-center space-x-1 bg-red-600 hover:bg-red-700 px-3 py-1 rounded-md"
+              className="flex items-center space-x-1 bg-red-600 hover:bg-red-700 px-3 py-1 rounded-full cursor-pointer"
             >
               <LogOut className="w-4 h-4 text-white" />
               <span className="text-white">Sign Out</span>
@@ -202,7 +202,7 @@ export default function Navbar() {
                 setMenuOpen(false);
                 location.reload();
               }}
-              className="text-center px-3 py-1 bg-red-600 hover:bg-red-700 rounded-md text-white flex items-center justify-center space-x-1"
+              className="text-center px-3 py-1 bg-red-600 hover:bg-red-700 rounded-full cursor-pointer text-white flex items-center justify-center space-x-1"
             >
               <LogOut className="w-4 h-4" />
               <span>Sign Out</span>
