@@ -17,13 +17,17 @@ export type ProducerWithVotes = Producer & {
 interface Props {
   initialData: {
     flower: ProducerWithVotes[];
-    hash:   ProducerWithVotes[];
+    hash: ProducerWithVotes[];
   };
   userVotes?: Record<string, number>; // Added userVotes to Props
   initialView?: "flower" | "hash";
 }
 
-export default function ProducerList({ initialData, userVotes, initialView }: Props) {
+export default function ProducerList({
+  initialData,
+  userVotes,
+  initialView,
+}: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [view, setView] = useState<"flower" | "hash">(initialView ?? "flower");
@@ -63,7 +67,7 @@ export default function ProducerList({ initialData, userVotes, initialView }: Pr
     if (!searchTerm) return true;
     try {
       const escaped = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-      const regex = new RegExp(`\\b${escaped}`, "i");
+      const regex = new RegExp(`(?<!['’])\\b${escaped}`, "i");
       return regex.test(producer.name);
     } catch {
       return producer.name.toLowerCase().startsWith(searchTerm.toLowerCase());
@@ -82,7 +86,10 @@ export default function ProducerList({ initialData, userVotes, initialView }: Pr
       <div className="grid md:grid-cols-2 gap-4">
         {filteredList.map((producer, i) => {
           const userVoteValue = userVotes?.[producer.id];
-          console.log(`[ProducerList.tsx] Mapping producer ${producer.id}: userVoteValue =`, userVoteValue);
+          console.log(
+            `[ProducerList.tsx] Mapping producer ${producer.id}: userVoteValue =`,
+            userVoteValue
+          );
           return (
             <ProducerCard
               key={producer.id}
