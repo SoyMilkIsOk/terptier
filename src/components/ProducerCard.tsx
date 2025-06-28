@@ -9,29 +9,51 @@ import type { ProducerWithVotes } from "./ProducerList";
 export default function ProducerCard({
   rank,
   producer,
-  userVoteValue, // Added userVoteValue prop
+  userVoteValue,
   isTopTen,
+  color = "green",
+  rankSuffix = "",
 }: {
   rank: number;
   producer: ProducerWithVotes;
-  userVoteValue?: number | null; // Added userVoteValue prop type
+  userVoteValue?: number | null;
   isTopTen?: boolean;
+  color?: "gold" | "silver" | "bronze" | "gray" | "green";
+  rankSuffix?: string;
 }) {
   const total = producer.votes.reduce((sum, v) => sum + v.value, 0);
   const average = producer.votes.length ? total / producer.votes.length : 0;
-  const userVote = userVoteValue; // Use the passed prop
+  const userVote = userVoteValue;
 
-  console.log(`[ProducerCard.tsx] producer ${producer.id}: received userVoteValue =`, userVoteValue, "Passing to VoteButton:", userVote);
+  const colorClasses: Record<string, string> = {
+    gold: "bg-gradient-to-br from-yellow-300 to-yellow-600 text-yellow-100",
+    silver: "bg-gradient-to-br from-gray-300 to-gray-500 text-gray-100",
+    bronze: "bg-gradient-to-br from-orange-300 to-orange-700 text-orange-100",
+    gray: "bg-gray-400 text-white",
+    green: "bg-green-600 text-white",
+  };
+
+  const glowClass =
+    color === "gold"
+      ? "glow-gold"
+      : color === "silver"
+      ? "glow-silver"
+      : color === "bronze"
+      ? "glow-bronze"
+      : "";
 
   const link = `/producer/${producer.slug ?? producer.id}`;
 
   return (
     <Link
       href={link}
-      className={`${isTopTen === false ? "bg-gray-100" : "bg-white"} p-4 rounded shadow flex items-center space-x-4 hover:bg-gray-50 transition`}
+      className={`${isTopTen === false ? "bg-gray-100" : "bg-white"} ${glowClass} p-4 rounded shadow flex items-center space-x-4 hover:bg-gray-50 transition`}
     >
-      <div className="flex items-center justify-center bg-green-600 text-white rounded-md w-10 h-10 font-bold">
-        #{rank}
+      <div className={`flex items-center justify-center ${colorClasses[color]} rounded-full w-10 h-10 font-bold`}>
+        {rank}
+        {rankSuffix && (
+          <sup className="text-[0.5rem] ml-0.25 align-super">{rankSuffix}</sup>
+        )}
       </div>
       {producer.profileImage || producer.logoUrl ? (
         <img

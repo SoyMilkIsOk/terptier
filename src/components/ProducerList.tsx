@@ -74,7 +74,15 @@ export default function ProducerList({
     }
   });
 
-  console.log("[ProducerList.tsx] userVotes prop:", userVotes);
+  const getSuffix = (n: number) => {
+    const j = n % 10;
+    const k = n % 100;
+    if (j === 1 && k !== 11) return "st";
+    if (j === 2 && k !== 12) return "nd";
+    if (j === 3 && k !== 13) return "rd";
+    return "th";
+  };
+
 
   return (
     <>
@@ -86,17 +94,23 @@ export default function ProducerList({
       <div className="grid md:grid-cols-2 gap-4">
         {filteredList.map((producer, i) => {
           const userVoteValue = userVotes?.[producer.id];
-          console.log(
-            `[ProducerList.tsx] Mapping producer ${producer.id}: userVoteValue =`,
-            userVoteValue
-          );
+          const rank = i + 1;
+          let color: "gold" | "silver" | "bronze" | "gray" | "green" = "green";
+          if (rank === 1) color = "gold";
+          else if (rank === 2) color = "silver";
+          else if (rank === 3) color = "bronze";
+          else if (rank > 10) color = "gray";
+          const suffix = getSuffix(rank);
+
           return (
             <ProducerCard
               key={producer.id}
-              rank={i + 1}
+              rank={rank}
+              rankSuffix={suffix}
               producer={producer}
-              userVoteValue={userVoteValue} // Pass down the specific user vote
+              userVoteValue={userVoteValue}
               isTopTen={i < 10}
+              color={color}
             />
           );
         })}

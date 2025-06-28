@@ -106,14 +106,28 @@ export default async function ProfilePage({
         <h2 className="text-xl font-semibold mb-4 border-b pb-2">Rated Producers</h2>
         {likedProducers.length > 0 ? (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {likedProducers.map((producer, index) => (
-              <ProducerCard
-                key={producer.id}
-                rank={index + 1} // Rank within the liked list
-                producer={producer} // producer is already ProducerWithVotes
-                userVoteValue={producer.userActualVote} // User's actual vote (e.g. 1)
-              />
-            ))}
+            {likedProducers.map((producer, index) => {
+              const rank = index + 1;
+              const j = rank % 10;
+              const k = rank % 100;
+              const suffix = j === 1 && k !== 11 ? "st" : j === 2 && k !== 12 ? "nd" : j === 3 && k !== 13 ? "rd" : "th";
+              let color: "gold" | "silver" | "bronze" | "gray" | "green" = "green";
+              if (rank === 1) color = "gold";
+              else if (rank === 2) color = "silver";
+              else if (rank === 3) color = "bronze";
+              else if (rank > 10) color = "gray";
+
+              return (
+                <ProducerCard
+                  key={producer.id}
+                  rank={rank}
+                  rankSuffix={suffix}
+                  producer={producer}
+                  userVoteValue={producer.userActualVote}
+                  color={color}
+                />
+              );
+            })}
           </div>
         ) : (
           <p className="text-gray-600">No rated producers yet.</p>
