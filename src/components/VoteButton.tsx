@@ -13,6 +13,7 @@ export default function VoteButton({
   readOnly = false,
   navigateOnClick = false,
   showNumber = true,
+  linkSlug,
 }: {
   producerId: string;
   initialAverage: number;
@@ -20,6 +21,7 @@ export default function VoteButton({
   readOnly?: boolean;
   navigateOnClick?: boolean;
   showNumber?: boolean;
+  linkSlug?: string;
 }) {
   const router = useRouter();
   const [session, setSession] = useState<Session | null>(null);
@@ -39,7 +41,7 @@ export default function VoteButton({
   const cast = async (val: number) => {
     if (readOnly) {
       if (navigateOnClick) {
-        router.push(`/producer/${producerId}`);
+        router.push(`/producer/${linkSlug ?? producerId}`);
       }
       return;
     }

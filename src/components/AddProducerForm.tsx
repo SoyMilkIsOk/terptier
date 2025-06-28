@@ -1,39 +1,95 @@
 "use client";
 import { useState } from "react";
+import ImageUpload from "./ImageUpload";
+import type { Producer } from "@prisma/client";
 
-export default function AddProducerForm() {
-  const [name, setName] = useState("");
-  const [category, setCategory] = useState<"FLOWER"|"HASH">("FLOWER");
+export default function AddProducerForm({
+  producer,
+  onSaved,
+}: {
+  producer?: Producer;
+  onSaved?: () => void;
+}) {
+  const [name, setName] = useState(producer?.name ?? "");
+  const [category, setCategory] = useState<"FLOWER" | "HASH">(
+    producer?.category ?? "FLOWER"
+  );
+  const [website, setWebsite] = useState(producer?.website ?? "");
+  const [ingredients, setIngredients] = useState(producer?.ingredients ?? "");
+  const [slug, setSlug] = useState(producer?.slug ?? "");
+  const [profileImage, setProfileImage] = useState<string | null>(
+    producer?.profileImage ?? null
+  );
 
-  const add = async () => {
-    await fetch("/api/admin/create-producer", {
-      method: "POST",
-      headers: { "Content-Type":"application/json" },
-      body: JSON.stringify({ name, category })
-    });
+  const save = async () => {
+    const body = {
+      name,
+      category,
+      website,
+      ingredients,
+      slug,
+      profileImage,
+    };
+    if (producer) {
+      await fetch(`/api/producers/${producer.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+    } else {
+      await fetch("/api/admin/create-producer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+    }
     setName("");
+    setWebsite("");
+    setIngredients("");
+    setSlug("");
+    setProfileImage(null);
     // ideally revalidate or refresh the page:
-    window.location.reload();
+    if (onSaved) onSaved();
+    else window.location.reload();
   };
 
   return (
-    <div className="mb-6 space-x-2">
+    <div className="mb-6 space-y-2">
+      <ImageUpload value={profileImage} onChange={setProfileImage} />
       <input
         placeholder="Producer name"
         value={name}
-        onChange={e=>setName(e.target.value)}
-        className="border p-2 rounded"
+        onChange={(e) => setName(e.target.value)}
+        className="border p-2 rounded w-full"
+      />
+      <input
+        placeholder="Website"
+        value={website}
+        onChange={(e) => setWebsite(e.target.value)}
+        className="border p-2 rounded w-full"
+      />
+      <textarea
+        placeholder="Ingredients"
+        value={ingredients}
+        onChange={(e) => setIngredients(e.target.value)}
+        className="border p-2 rounded w-full"
+      />
+      <input
+        placeholder="Slug"
+        value={slug}
+        onChange={(e) => setSlug(e.target.value)}
+        className="border p-2 rounded w-full"
       />
       <select
         value={category}
-        onChange={e=>setCategory(e.target.value as any)}
-        className="border p-2 rounded"
+        onChange={(e) => setCategory(e.target.value as any)}
+        className="border p-2 rounded w-full"
       >
         <option value="FLOWER">Flower</option>
         <option value="HASH">Hash</option>
       </select>
-      <button onClick={add} className="bg-green-600 text-white px-4 py-2 rounded cursor-pointer">
-        Add
+      <button onClick={save} className="bg-green-600 text-white px-4 py-2 rounded cursor-pointer">
+        {producer ? "Save" : "Add"}
       </button>
     </div>
   );

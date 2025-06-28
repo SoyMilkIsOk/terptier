@@ -28,7 +28,24 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const { name, category } = await request.json();
-  await prisma.producer.create({ data: { name, category, createdById: user.id } });
+  const {
+    name,
+    category,
+    website,
+    ingredients,
+    slug,
+    profileImage,
+  } = await request.json();
+  await prisma.producer.create({
+    data: {
+      name,
+      category,
+      website,
+      ingredients,
+      slug,
+      profileImage,
+      createdById: user.id,
+    },
+  });
   return NextResponse.json({ ok: true });
 }
