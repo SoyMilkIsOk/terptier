@@ -12,7 +12,7 @@ export default function IngredientsButton({ ingredients }: { ingredients: string
         className="flex items-center text-blue-600 hover:text-blue-800 cursor-pointer"
         aria-label="Ingredients"
       >
-        <Info className="w-5 h-5" />
+        <Info className="w-6 h-6" />
       </button>
       <Modal isOpen={open} onClose={() => setOpen(false)}>
         <p className="whitespace-pre-wrap text-sm">{ingredients}</p>

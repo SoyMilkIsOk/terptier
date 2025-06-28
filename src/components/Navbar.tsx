@@ -83,7 +83,7 @@ export default function Navbar() {
           />
         </Link>
         <div
-          className="absolute right-4 top-1/2 -translate-y-1/2 md:hidden"
+          className="absolute right-8 top-1/2 -translate-y-1/2 md:hidden"
         >
           <button
             onClick={() => setMenuOpen(!menuOpen)}

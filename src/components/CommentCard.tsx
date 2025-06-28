@@ -85,7 +85,7 @@ export default function CommentCard({
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
-          className="w-full border rounded-md p-2 mb-3"
+          className="w-full border rounded-md p-2"
         />
         <div className="flex flex-wrap gap-2 mb-3">
           {images.map((url) => (
@@ -93,16 +93,16 @@ export default function CommentCard({
               <img src={url} className="w-20 h-20 object-cover rounded" />
               <button
                 onClick={() => removeImage(url)}
-                className="absolute -top-1 -right-1 bg-white rounded-full text-xs px-1 cursor-pointer border"
+                className="absolute -top-1 -right-1 bg-white rounded-full text-xs px-1.25 cursor-pointer border"
               >
                 x
               </button>
             </div>
           ))}
         </div>
-        <UploadButton multiple onChange={handleFileChange} className="mb-3" />
+        <UploadButton multiple onChange={handleFileChange}/>
         {uploading && <p className="text-sm text-gray-500 mb-3">Uploading...</p>}
-        <button onClick={save} className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-md">Save</button>
+        <button onClick={save} className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-md ml-2">Save</button>
       </div>
     );
   }
@@ -126,7 +126,7 @@ export default function CommentCard({
           <div className="ml-2">
             <Link
               href={`/profile/${comment.user.username ?? comment.user.id}`}
-              className={`font-semibold ${highlighted ? "text-blue-600" : "hover:underline"}`}
+              className={`font-semibold ${highlighted ? "text-green-600" : "hover:underline"}`}
             >
               {comment.user.username || comment.user.name || comment.user.email}
             </Link>

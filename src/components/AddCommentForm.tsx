@@ -54,7 +54,7 @@ export default function AddCommentForm({ producerId }: { producerId: string }) {
   };
 
   return (
-    <div className="bg-white shadow rounded-lg p-4 mb-6 space-y-3">
+    <div className="bg-white shadow rounded-lg p-4 mb-6">
       <textarea
         value={text}
         onChange={(e) => setText(e.target.value)}
@@ -71,7 +71,7 @@ export default function AddCommentForm({ producerId }: { producerId: string }) {
       />
       <button
         onClick={submit}
-        className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-md"
+        className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 ml-2 rounded-md"
       >
         Submit
       </button>

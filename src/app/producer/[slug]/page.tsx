@@ -115,11 +115,11 @@ export default async function ProducerProfilePage({
   const producerCategoryFormatted = capitalize(producer.category);
 
   return (
-    <div className="container mx-auto p-4 mt-8">
-      <div className="bg-white shadow-xl rounded-lg p-6 md:p-8 max-w-3xl mx-auto">
+    <div className="container mx-auto p-4">
+      <div className="bg-white shadow-xl rounded-lg p-6 md:p-8 max-w-3xl mx-auto relative">
         <div className="flex flex-col md:flex-row items-start md:items-center mb-6 pb-6 border-b border-gray-300">
           {(producer.profileImage || producer.logoUrl) && (
-            <div className="relative w-24 h-24 md:w-32 md:h-32 mr-0 md:mr-6 mb-4 md:mb-0 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100">
+            <div className="w-24 h-24 md:w-32 md:h-32 mr-0 md:mr-6 mb-4 md:mb-0 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100 relative">
               <Image
                 src={producer.profileImage || producer.logoUrl!}
                 alt={`${producer.name} logo`}
@@ -129,11 +129,11 @@ export default async function ProducerProfilePage({
             </div>
           )}
           <div className="flex-grow text-center md:text-left">
-            <div className="flex items-center mb-2 relative">
+            <div className="flex items-center mb-2">
               <h1 className="text-3xl md:text-4xl font-bold text-gray-800">
                 {producer.name}
               </h1>
-              <div className="flex items-center space-x-2 absolute right-0 top-0 sm:static">
+              <div className="flex items-center space-x-4 absolute right-6 top-6">
                 {producer.website && (
                   <a
                     href={producer.website}
@@ -142,7 +142,7 @@ export default async function ProducerProfilePage({
                     className="text-blue-600"
                     aria-label="Website"
                   >
-                    <ExternalLink className="w-5 h-5" />
+                    <ExternalLink className="w-6 h-6" />
                   </a>
                 )}
                 {producer.ingredients && (
@@ -174,12 +174,12 @@ export default async function ProducerProfilePage({
             />
           </div>
           <div className="flex items-center mb-2 sm:mb-0">
-            <span className="mr-2 font-semibold">Your Rating:</span>
+            <span className="mr-1.5 font-semibold">Your Rating:</span>
             <VoteButton
               producerId={producer.id}
               initialAverage={averageRating}
               userRating={userVoteValue}
-              showNumber={false}
+              showNumber={true}
             />
           </div>
         </div>
