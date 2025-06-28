@@ -6,16 +6,26 @@ export default function UploadButton({
   onChange,
   multiple = false,
   className = "",
+  disabled = false,
+  onClick,
 }: {
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   multiple?: boolean;
   className?: string;
+  disabled?: boolean;
+  onClick?: () => void;
 }) {
   const id = useId();
   return (
     <label
       htmlFor={id}
-      className={`inline-flex items-center bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-md cursor-pointer ${className}`}
+      className={`inline-flex items-center ${disabled ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700 cursor-pointer"} text-white p-2 rounded-md ${className}`}
+      onClick={(e) => {
+        if (disabled) {
+          e.preventDefault();
+          onClick?.();
+        }
+      }}
     >
       <Upload className="w-4 h-4" />
       <input
@@ -25,6 +35,7 @@ export default function UploadButton({
         multiple={multiple}
         onChange={onChange}
         className="hidden"
+        disabled={disabled}
       />
     </label>
   );

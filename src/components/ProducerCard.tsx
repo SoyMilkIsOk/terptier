@@ -47,6 +47,7 @@ export default function ProducerCard({
           initialAverage={average}
           userRating={userVote}
           readOnly
+          compact
           navigateOnClick
           linkSlug={producer.slug ?? producer.id}
         />

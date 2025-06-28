@@ -10,17 +10,15 @@ interface ModalProps {
 export default function Modal({ isOpen, onClose, children }: ModalProps) {
   if (!isOpen) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-white rounded shadow-lg p-4 max-w-sm w-full">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-2">
+      <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md relative">
+        <button
+          onClick={onClose}
+          className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+        >
+          ✕
+        </button>
         {children}
-        <div className="mt-4 text-right">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 cursor-pointer"
-          >
-            Close
-          </button>
-        </div>
       </div>
     </div>
   );

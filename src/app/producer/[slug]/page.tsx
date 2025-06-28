@@ -129,16 +129,26 @@ export default async function ProducerProfilePage({
             </div>
           )}
           <div className="flex-grow text-center md:text-left">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-start mb-2 space-x-2">
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2 sm:mb-0">
+            <div className="flex items-center justify-between mb-2">
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-800">
                 {producer.name}
               </h1>
-              {producer.website && (
-                <a href={producer.website} target="_blank" rel="noopener noreferrer" className="text-blue-600" aria-label="Website">
-                  <ExternalLink className="w-5 h-5" />
-                </a>
-              )}
-              {producer.ingredients && <IngredientsButton ingredients={producer.ingredients} />}
+              <div className="flex items-center space-x-2">
+                {producer.website && (
+                  <a
+                    href={producer.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600"
+                    aria-label="Website"
+                  >
+                    <ExternalLink className="w-5 h-5" />
+                  </a>
+                )}
+                {producer.ingredients && (
+                  <IngredientsButton ingredients={producer.ingredients} />
+                )}
+              </div>
             </div>
             {rank > 0 && (
               <p className="text-gray-600 mt-4">

@@ -13,6 +13,7 @@ export default function Navbar() {
   const [session, setSession] = useState<Session | null>(null);
   const [profileUsername, setProfileUsername] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     // fetch initial session
@@ -64,7 +65,19 @@ export default function Navbar() {
             height={50}
           />
         </Link>
-        <div className="flex items-center space-x-6">
+        <button
+          className="md:hidden relative w-8 h-8 focus:outline-none"
+          onClick={() => setMenuOpen((o) => !o)}
+          aria-label="Menu"
+        >
+          <span
+            className={`absolute top-2 left-1/2 w-6 h-0.5 bg-white transition-transform duration-300 ${menuOpen ? "rotate-45 -translate-x-1/2 translate-y-1" : "-translate-x-1/2"}`}
+          />
+          <span
+            className={`absolute bottom-2 left-1/2 w-6 h-0.5 bg-white transition-transform duration-300 ${menuOpen ? "-rotate-45 -translate-x-1/2 -translate-y-1" : "-translate-x-1/2"}`}
+          />
+        </button>
+        <div className="hidden md:flex items-center space-x-6">
           <Link
             href="/"
             className={`${pathname === "/" ? "underline" : "hover:underline"}`}
@@ -118,6 +131,55 @@ export default function Navbar() {
           )}
         </div>
       </div>
+      {menuOpen && (
+        <div className="md:hidden px-4 pb-4 space-y-2 bg-green-700 text-white">
+          <Link
+            href="/"
+            onClick={() => setMenuOpen(false)}
+            className="block py-1"
+          >
+            Home
+          </Link>
+          {profileUsername && (
+            <Link
+              href={`/profile/${profileUsername}`}
+              onClick={() => setMenuOpen(false)}
+              className="block py-1"
+            >
+              Profile
+            </Link>
+          )}
+          {session && isAdmin && (
+            <Link
+              href="/admin"
+              onClick={() => setMenuOpen(false)}
+              className="block py-1"
+            >
+              Admin Panel
+            </Link>
+          )}
+          {!session ? (
+            <Link
+              href="/login"
+              onClick={() => setMenuOpen(false)}
+              className="block py-1"
+            >
+              Log In / Sign Up
+            </Link>
+          ) : (
+            <button
+              onClick={async () => {
+                await supabase.auth.signOut();
+                setSession(null);
+                setMenuOpen(false);
+              }}
+              className="block py-1 text-left w-full"
+            >
+              Sign Out
+            </button>
+          )}
+        </div>
+      )}
     </nav>
   );
 }

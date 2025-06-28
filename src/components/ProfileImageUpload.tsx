@@ -53,7 +53,7 @@ export default function ProfileImageUpload({
             alt="profile"
             className="w-24 h-24 rounded-full object-cover"
           />
-          <div className="absolute inset-0 rounded-full bg-black/50 opacity-0 hover:opacity-100 flex items-center justify-center transition">
+          <div className="absolute inset-0 rounded-full bg-black/50 opacity-100 sm:opacity-0 sm:hover:opacity-100 flex items-center justify-center transition">
             <UploadButton onChange={handleChange} className="bg-white text-black" />
           </div>
           <button

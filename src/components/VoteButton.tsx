@@ -14,6 +14,7 @@ export default function VoteButton({
   navigateOnClick = false,
   showNumber = true,
   linkSlug,
+  compact = false,
 }: {
   producerId: string;
   initialAverage: number;
@@ -22,6 +23,7 @@ export default function VoteButton({
   navigateOnClick?: boolean;
   showNumber?: boolean;
   linkSlug?: string;
+  compact?: boolean;
 }) {
   const router = useRouter();
   const [session, setSession] = useState<Session | null>(null);
@@ -61,7 +63,7 @@ export default function VoteButton({
   };
 
   return (
-    <div className="flex items-center space-x-1">
+    <div className={`flex items-center ${compact ? "space-x-0.5" : "space-x-1"}`}>
       {[1, 2, 3, 4, 5].map((n) => {
         const display = readOnly ? initialAverage : rating;
         const fraction = Math.max(0, Math.min(display - (n - 1), 1));
@@ -71,13 +73,13 @@ export default function VoteButton({
             onClick={() => cast(n)}
             className={`p-0.5 ${!readOnly || navigateOnClick ? "cursor-pointer" : ""}`}
           >
-            <div className="relative w-5 h-5">
-              <Star className="absolute w-5 h-5 text-gray-400" />
+            <div className={`relative ${compact ? "w-4 h-4" : "w-5 h-5"}`}>
+              <Star className={`absolute ${compact ? "w-4 h-4" : "w-5 h-5"} text-gray-400`} />
               <div
                 className="absolute overflow-hidden top-0 left-0"
                 style={{ width: `${fraction * 100}%` }}
               >
-                <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
+                <Star className={`${compact ? "w-4 h-4" : "w-5 h-5"} text-yellow-400 fill-yellow-400`} />
               </div>
             </div>
           </button>

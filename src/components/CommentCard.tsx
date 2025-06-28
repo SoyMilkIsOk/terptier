@@ -2,6 +2,8 @@
 import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { Leaf } from "lucide-react";
 import VoteButton from "@/components/VoteButton";
 import UploadButton from "./UploadButton";
 
@@ -9,11 +11,17 @@ export interface CommentData {
   id: string;
   text: string;
   imageUrls: string[];
-  user: { id: string; name: string | null; email: string };
+  user: {
+    id: string;
+    name: string | null;
+    email: string;
+    username: string | null;
+    profilePicUrl: string | null;
+  };
   userId: string;
   producerId: string;
   updatedAt: string | Date;
-  producer?: { id: string; name: string; slug: string | null }; // Optional producer info
+  producer?: { id: string; name: string; slug: string | null };
   voteValue?: number | null;
 }
 
@@ -63,6 +71,11 @@ export default function CommentCard({
     setImages((prev) => prev.filter((u) => u !== url));
   };
 
+  const deleteComment = async () => {
+    await fetch(`/api/comments?id=${comment.id}`, { method: "DELETE" });
+    router.refresh();
+  };
+
   if (editing) {
     return (
       <div className="bg-white shadow rounded-lg p-4 mb-4">
@@ -94,14 +107,40 @@ export default function CommentCard({
   return (
     <div className="bg-gray-50 rounded-lg p-4 mb-4 shadow">
       <div className="flex justify-between mb-2">
-        <div>
-          <p className={`font-semibold ${highlighted ? "text-blue-600" : ""}`}>{comment.user.name || comment.user.email}</p>
-          <p className="text-xs text-gray-500">Last edited {new Date(comment.updatedAt).toLocaleString()}</p>
+        <div className="flex items-center">
+          {comment.user.profilePicUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={comment.user.profilePicUrl}
+              alt="profile"
+              className="w-10 h-10 rounded-full object-cover"
+            />
+          ) : (
+            <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center">
+              <Leaf className="w-5 h-5 text-white" />
+            </div>
+          )}
+          <div className="ml-2">
+            <Link
+              href={`/profile/${comment.user.username ?? comment.user.id}`}
+              className={`font-semibold ${highlighted ? "text-blue-600" : "hover:underline"}`}
+            >
+              {comment.user.username || comment.user.name || comment.user.email}
+            </Link>
+            <p className="text-xs text-gray-500">
+              Last edited {new Date(comment.updatedAt).toLocaleString()}
+            </p>
+          </div>
         </div>
         {currentUserId === comment.userId && (
-          <button onClick={() => setEditing(true)} className="text-sm text-blue-600 hover:underline">
-            Edit
-          </button>
+          <div className="flex items-center space-x-2">
+            <button onClick={() => setEditing(true)} className="text-sm text-blue-600 hover:underline">
+              Edit
+            </button>
+            <button onClick={deleteComment} className="text-sm text-red-600 hover:underline">
+              Delete
+            </button>
+          </div>
         )}
       </div>
       {comment.producer && (
