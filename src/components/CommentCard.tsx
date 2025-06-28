@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Leaf, Trash2, FilePenLine } from "lucide-react";
 import VoteButton from "@/components/VoteButton";
 import UploadButton from "./UploadButton";
+import { deleteBlob } from "@/utils/blob";
 
 export interface CommentData {
   id: string;
@@ -42,17 +43,26 @@ export default function CommentCard({
   const [uploading, setUploading] = useState(false);
   const router = useRouter();
 
+  const MAX_SIZE = 5 * 1024 * 1024;
+
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files) return;
+    const file = e.target.files?.[0];
+    if (!file || images.length > 0) return;
+    if (!file.type.startsWith("image/")) {
+      alert("Only images are allowed");
+      return;
+    }
+    if (file.size > MAX_SIZE) {
+      alert("Image is too large");
+      return;
+    }
     setUploading(true);
-    for (const file of Array.from(e.target.files)) {
-      const form = new FormData();
-      form.append("file", file);
-      const res = await fetch("/api/upload", { method: "POST", body: form });
-      const data = await res.json();
-      if (data?.url) {
-        setImages((prev) => [...prev, data.url as string]);
-      }
+    const form = new FormData();
+    form.append("file", file);
+    const res = await fetch("/api/upload", { method: "POST", body: form });
+    const data = await res.json();
+    if (data?.url) {
+      setImages([data.url as string]);
     }
     setUploading(false);
   };
@@ -67,7 +77,8 @@ export default function CommentCard({
     router.refresh();
   };
 
-  const removeImage = (url: string) => {
+  const removeImage = async (url: string) => {
+    await deleteBlob(url);
     setImages((prev) => prev.filter((u) => u !== url));
   };
 
@@ -100,7 +111,7 @@ export default function CommentCard({
             </div>
           ))}
         </div>
-        <UploadButton multiple onChange={handleFileChange}/>
+        <UploadButton onChange={handleFileChange}/>
         {uploading && <p className="text-sm text-gray-500 mb-3">Uploading...</p>}
         <button onClick={save} className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-md ml-2">Save</button>
       </div>

@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import UploadButton from "./UploadButton";
+import { deleteBlob } from "@/utils/blob";
 
 export default function ProfileImageUpload({
   initialUrl,
@@ -10,7 +11,17 @@ export default function ProfileImageUpload({
   const [url, setUrl] = useState<string | null>(initialUrl);
   const [loading, setLoading] = useState(false);
 
+  const MAX_SIZE = 5 * 1024 * 1024;
+
   const upload = async (file: File) => {
+    if (!file.type.startsWith("image/")) {
+      alert("Only images are allowed");
+      return;
+    }
+    if (file.size > MAX_SIZE) {
+      alert("Image is too large");
+      return;
+    }
     setLoading(true);
     const form = new FormData();
     form.append("file", file);
@@ -34,6 +45,7 @@ export default function ProfileImageUpload({
 
   const remove = async () => {
     setLoading(true);
+    if (url) await deleteBlob(url);
     setUrl(null);
     await fetch("/api/users/me", {
       method: "PATCH",
