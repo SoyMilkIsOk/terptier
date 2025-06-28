@@ -7,7 +7,7 @@ import { usePathname } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import Image from "next/image";
 import type { Session, User } from "@supabase/supabase-js";
-import { UserPlus } from "lucide-react";
+import { UserPlus, LogOut } from "lucide-react";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -149,10 +149,12 @@ export default function Navbar() {
               onClick={async () => {
                 await supabase.auth.signOut();
                 setUser(null);
+                window.location.reload();
               }}
-              className="hover:underline"
+              className="flex items-center space-x-1 bg-white text-red-600 px-3 py-1 rounded-md hover:bg-gray-100"
             >
-              Sign Out
+              <LogOut className="w-4 h-4" />
+              <span>Sign Out</span>
             </button>
           )}
         </div>
@@ -199,10 +201,12 @@ export default function Navbar() {
                 await supabase.auth.signOut();
                 setUser(null);
                 setMenuOpen(false);
+                window.location.reload();
               }}
-              className="w-full py-1 text-center"
+              className="w-full py-1 text-center flex items-center justify-center space-x-1 bg-white text-red-600 rounded-md hover:bg-gray-100"
             >
-              Sign Out
+              <LogOut className="w-4 h-4" />
+              <span>Sign Out</span>
             </button>
           )}
         </div>
