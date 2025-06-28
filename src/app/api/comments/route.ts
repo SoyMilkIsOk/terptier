@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prismadb";
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
+import { del } from "@vercel/blob";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -126,6 +127,16 @@ export async function DELETE(request: NextRequest) {
       { success: false, error: "Not authorized" },
       { status: 403 }
     );
+  }
+
+  if (comment.imageUrls?.length) {
+    for (const url of comment.imageUrls) {
+      try {
+        await del(new URL(url).pathname);
+      } catch (err) {
+        console.error("Failed to delete blob", err);
+      }
+    }
   }
 
   await prisma.comment.delete({ where: { id } });
