@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import UploadButton from "@/components/UploadButton";
+import { deleteBlob } from "@/utils/blob";
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -39,6 +40,8 @@ export default function SignUpPage() {
     setUsernameTaken(data.exists);
   };
 
+  const MAX_SIZE = 5 * 1024 * 1024;
+
   const uploadFile = async (f: File) => {
     const form = new FormData();
     form.append("file", f);
@@ -52,6 +55,14 @@ export default function SignUpPage() {
     setFile(selected);
     setUploadUrl(null);
     if (selected) {
+      if (!selected.type.startsWith("image/")) {
+        alert("Only images are allowed");
+        return;
+      }
+      if (selected.size > MAX_SIZE) {
+        alert("Image is too large");
+        return;
+      }
       setUploading(true);
       try {
         const url = await uploadFile(selected);
@@ -265,7 +276,8 @@ export default function SignUpPage() {
                 />
                 <button
                   type="button"
-                  onClick={() => {
+                  onClick={async () => {
+                    if (uploadUrl) await deleteBlob(uploadUrl);
                     setUploadUrl(null);
                     setFile(null);
                   }}
