@@ -86,3 +86,49 @@ export async function POST(request: NextRequest) {
 
   return NextResponse.json({ success: true, comment });
 }
+
+export async function DELETE(request: NextRequest) {
+  const supabase = createServerComponentClient({ cookies });
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session?.user?.email) {
+    return NextResponse.json(
+      { success: false, error: "Not authenticated" },
+      { status: 401 }
+    );
+  }
+
+  const { searchParams } = new URL(request.url);
+  const id = searchParams.get("id");
+  if (!id) {
+    return NextResponse.json(
+      { success: false, error: "Missing id" },
+      { status: 400 }
+    );
+  }
+
+  const prismaUser = await prisma.user.findUnique({
+    where: { email: session.user.email },
+  });
+
+  if (!prismaUser) {
+    return NextResponse.json(
+      { success: false, error: "User not found" },
+      { status: 404 }
+    );
+  }
+
+  const comment = await prisma.comment.findUnique({ where: { id } });
+  if (!comment || comment.userId !== prismaUser.id) {
+    return NextResponse.json(
+      { success: false, error: "Not authorized" },
+      { status: 403 }
+    );
+  }
+
+  await prisma.comment.delete({ where: { id } });
+
+  return NextResponse.json({ success: true });
+}

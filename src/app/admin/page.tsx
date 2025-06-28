@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import AddProducerForm from "@/components/AddProducerForm";
 import Modal from "@/components/Modal";
 import type { Producer } from "@prisma/client";
-import { XCircle } from "lucide-react";
+import { XCircle, FilePenLine } from "lucide-react";
 
 export default function AdminPage() {
   const router = useRouter();
@@ -140,8 +140,9 @@ export default function AdminPage() {
                     <button
                       onClick={() => handleEdit(p)}
                       className="text-blue-600 hover:text-blue-800"
+                      aria-label={`Edit ${p.name || 'this producer'}`}
                     >
-                      Edit
+                      <FilePenLine size={20} />
                     </button>
                     <button
                       onClick={() => handleDelete(p.id, p.name || 'this producer')}

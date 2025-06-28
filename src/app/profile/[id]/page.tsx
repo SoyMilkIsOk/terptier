@@ -57,7 +57,7 @@ export default async function ProfilePage({
     return <p>User not found. ({id})</p>;
   }
 
-  const isOwner = session?.user?.id === user.id;
+  const isOwner = session?.user?.email === user.email;
 
   // Process votes into liked and disliked producers
   const likedProducers = user.votes

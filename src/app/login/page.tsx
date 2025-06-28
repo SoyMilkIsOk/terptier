@@ -106,7 +106,7 @@ function LoginForm() {
       <button
         onClick={handleSignIn}
         disabled={loading}
-        className={`w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition duration-150 ${loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+        className={`w-full py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-md transition duration-150 ${loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
       >
         Log In
       </button>
