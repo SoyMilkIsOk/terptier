@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prismadb";
+import { del } from "@vercel/blob";
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
 
@@ -125,6 +126,18 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json(
       { success: false, error: "Not authorized" },
       { status: 403 }
+    );
+  }
+
+  if (comment.imageUrls && comment.imageUrls.length) {
+    await Promise.all(
+      comment.imageUrls.map(async (url) => {
+        try {
+          await del(url);
+        } catch (err) {
+          console.error("Failed to delete blob", err);
+        }
+      })
     );
   }
 
