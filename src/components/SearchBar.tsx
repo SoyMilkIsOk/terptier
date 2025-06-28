@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function SearchBar({
   onSearch,
@@ -10,25 +10,22 @@ export default function SearchBar({
 }) {
   const [query, setQuery] = useState(initialQuery);
 
-  const submit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSearch(query.trim());
-  };
+  // Trigger search automatically with a short debounce
+  useEffect(() => {
+    const id = setTimeout(() => {
+      onSearch(query.trim());
+    }, 300);
+    return () => clearTimeout(id);
+  }, [query, onSearch]);
 
   return (
-    <form onSubmit={submit} className="mb-4 flex justify-center">
+    <div className="mb-4 flex justify-center">
       <input
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder="Search producers..."
-        className="border rounded-l px-3 py-2 w-2/3 md:w-1/3"
+        className="border px-3 py-2 rounded w-2/3 md:w-1/3"
       />
-      <button
-        type="submit"
-        className="bg-green-600 text-white px-4 py-2 rounded-r"
-      >
-        Search
-      </button>
-    </form>
+    </div>
   );
 }
