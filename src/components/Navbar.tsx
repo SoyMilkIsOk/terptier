@@ -188,7 +188,7 @@ export default function Navbar() {
             <Link
               href="/login"
               onClick={() => setMenuOpen(false)}
-              className="w-full text-center py-1 bg-white text-green-700 rounded-full flex items-center justify-center space-x-1"
+              className="text-center py-1 px-3 bg-white text-green-700 rounded-full flex items-center justify-center space-x-1"
             >
               <LogIn className="w-4 h-4" />
               <span>Log In / Sign Up</span>
@@ -202,7 +202,7 @@ export default function Navbar() {
                 setMenuOpen(false);
                 location.reload();
               }}
-              className="w-full py-1 text-center bg-red-600 hover:bg-red-700 rounded-md text-white flex items-center justify-center space-x-1"
+              className="text-center px-3 py-1 bg-red-600 hover:bg-red-700 rounded-md text-white flex items-center justify-center space-x-1"
             >
               <LogOut className="w-4 h-4" />
               <span>Sign Out</span>

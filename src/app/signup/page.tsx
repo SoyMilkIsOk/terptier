@@ -105,6 +105,18 @@ export default function SignUpPage() {
       return;
     }
     setLoading(true);
+
+    // ensure the username is available before creating the Supabase user
+    const usernameRes = await fetch(
+      `/api/users?username=${encodeURIComponent(username)}`
+    );
+    const usernameData = await usernameRes.json();
+    if (usernameData.exists) {
+      setUsernameTaken(true);
+      setError("Username already taken");
+      setLoading(false);
+      return;
+    }
     const { data, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
