@@ -9,7 +9,7 @@ export default function IngredientsButton({ ingredients }: { ingredients: string
     <>
       <button
         onClick={() => setOpen(true)}
-        className="flex items-center text-blue-600 hover:text-blue-800"
+        className="flex items-center text-blue-600 hover:text-blue-800 cursor-pointer"
         aria-label="Ingredients"
       >
         <Info className="w-5 h-5" />

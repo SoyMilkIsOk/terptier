@@ -102,7 +102,7 @@ export default function CommentCard({
         </div>
         <UploadButton multiple onChange={handleFileChange} className="mb-3" />
         {uploading && <p className="text-sm text-gray-500 mb-3">Uploading...</p>}
-        <button onClick={save} className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md">Save</button>
+        <button onClick={save} className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-md">Save</button>
       </div>
     );
   }

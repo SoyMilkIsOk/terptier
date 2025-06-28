@@ -83,21 +83,20 @@ export default function Navbar() {
           />
         </Link>
         <div
-          className={`absolute right-4 top-1/2 transform -translate-y-1/4 md:hidden ${menuOpen ? "top-1/3" : ""}`}
+          className="absolute right-4 top-1/2 -translate-y-1/2 md:hidden"
         >
           <button
             onClick={() => setMenuOpen(!menuOpen)}
-            className="flex flex-col justify-center items-center w-8 h-8 focus:outline-none"
+            className="relative w-8 h-8 focus:outline-none"
             aria-label="Toggle menu"
           >
             <span
-              className={`block h-0.5 w-6 bg-white transition-transform duration-300 ease-in-out ${menuOpen ? "rotate-45 translate-y-1.5" : ""}`}
+              className={`absolute left-1/2 w-6 h-0.5 bg-white transition-transform duration-300 ease-in-out ${menuOpen ? "rotate-45 top-3.5" : "top-2"}`}
+              style={{ transformOrigin: "center" }}
             />
             <span
-              className={`block h-0.5 w-6 bg-white my-1 transition-opacity duration-300 ease-in-out ${menuOpen ? "opacity-0" : "opacity-100"}`}
-            />
-            <span
-              className={`block h-0.5 w-6 bg-white transition-transform duration-300 ease-in-out ${menuOpen ? "-rotate-45 -translate-y-1.5" : ""}`}
+              className={`absolute left-1/2 w-6 h-0.5 bg-white transition-transform duration-300 ease-in-out ${menuOpen ? "-rotate-45 top-3.5" : "top-5"}`}
+              style={{ transformOrigin: "center" }}
             />
           </button>
         </div>

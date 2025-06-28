@@ -19,7 +19,7 @@ export default function UploadButton({
   return (
     <label
       htmlFor={id}
-      className={`inline-flex items-center ${disabled ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700 cursor-pointer"} text-white p-2 rounded-md ${className}`}
+      className={`inline-flex items-center ${disabled ? "bg-gray-400 cursor-not-allowed" : "bg-green-600 hover:bg-green-700 cursor-pointer"} text-white p-2 rounded-md ${className}`}
       onClick={(e) => {
         if (disabled) {
           e.preventDefault();

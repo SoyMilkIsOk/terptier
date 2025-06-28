@@ -51,17 +51,17 @@ export async function PATCH(request: Request) {
     data: { session },
   } = await supabase.auth.getSession();
 
-  if (!session?.user?.id) {
-    return NextResponse.json(
-      { success: false, error: "Not authenticated" },
-      { status: 401 },
-    );
+  if (!session?.user?.email) {
+      return NextResponse.json(
+        { success: false, error: "Not authenticated" },
+        { status: 401 },
+      );
   }
 
   const { profilePicUrl } = await request.json();
 
   await prisma.user.update({
-    where: { id: session.user.id },
+    where: { email: session.user.email },
     data: { profilePicUrl },
   });
 

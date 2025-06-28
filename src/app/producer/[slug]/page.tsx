@@ -129,11 +129,11 @@ export default async function ProducerProfilePage({
             </div>
           )}
           <div className="flex-grow text-center md:text-left">
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center mb-2 relative">
               <h1 className="text-3xl md:text-4xl font-bold text-gray-800">
                 {producer.name}
               </h1>
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 absolute right-0 top-0 sm:static">
                 {producer.website && (
                   <a
                     href={producer.website}
