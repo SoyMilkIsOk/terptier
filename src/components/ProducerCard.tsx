@@ -13,6 +13,7 @@ export default function ProducerCard({
   isTopTen,
   color = "green",
   rankSuffix = "",
+  showRank = true,
 }: {
   rank: number;
   producer: ProducerWithVotes;
@@ -20,6 +21,7 @@ export default function ProducerCard({
   isTopTen?: boolean;
   color?: "gold" | "silver" | "bronze" | "gray" | "green";
   rankSuffix?: string;
+  showRank?: boolean;
 }) {
   const total = producer.votes.reduce((sum, v) => sum + v.value, 0);
   const average = producer.votes.length ? total / producer.votes.length : 0;
@@ -49,12 +51,16 @@ export default function ProducerCard({
       href={link}
       className={`${isTopTen === false ? "bg-gray-100" : "bg-white"} ${glowClass} p-4 rounded shadow flex items-center space-x-4 hover:bg-gray-50 transition`}
     >
-      <div className={`flex items-center justify-center ${colorClasses[color]} rounded-full w-10 h-10 font-bold`}>
-        {rank}
-        {rankSuffix && (
-          <sup className="text-[0.5rem] ml-0.25 align-super">{rankSuffix}</sup>
-        )}
-      </div>
+      {showRank && (
+        <div
+          className={`flex items-center justify-center ${colorClasses[color]} rounded-full w-10 h-10 font-bold`}
+        >
+          {rank}
+          {rankSuffix && (
+            <sup className="text-[0.5rem] ml-0.25 align-super">{rankSuffix}</sup>
+          )}
+        </div>
+      )}
       {producer.profileImage || producer.logoUrl ? (
         <img
           src={producer.profileImage || producer.logoUrl!}
