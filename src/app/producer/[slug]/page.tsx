@@ -24,15 +24,15 @@ export default async function ProducerProfilePage({
 }: ProducerProfilePageProps) {
   const { slug } = await params;
 
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user },
+  } = await supabase.auth.getUser();
 
   let currentUserId: string | null = null;
-  if (session?.user?.email) {
+  if (user?.email) {
     const prismaUser = await prisma.user.findUnique({
-      where: { email: session.user.email },
+      where: { email: user.email },
     });
     currentUserId = prismaUser?.id || null;
   }

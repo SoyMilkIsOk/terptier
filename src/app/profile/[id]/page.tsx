@@ -16,12 +16,14 @@ export default async function ProfilePage({
   const { id } = await params;
 
   // Calling cookies() ensures this page is rendered dynamically per request
-  cookies();
+  const cookieStore = await cookies();
 
-  const supabase = createServerComponentClient({ cookies });
+  const supabase = createServerComponentClient({
+    cookies: () => Promise.resolve(cookieStore),
+  });
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user: authUser },
+  } = await supabase.auth.getUser();
 
   let user = await prisma.user.findUnique({
     where: { username: id },
@@ -57,7 +59,7 @@ export default async function ProfilePage({
     return <p>User not found. ({id})</p>;
   }
 
-  const isOwner = session?.user?.email === user.email;
+  const isOwner = authUser?.email === user.email;
 
   // Process votes into liked and disliked producers
   const likedProducers = user.votes

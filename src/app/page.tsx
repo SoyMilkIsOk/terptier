@@ -17,16 +17,18 @@ export default async function HomePage({
   if (!is21) return <AgeGate />;
 
   // Initialize Supabase client
-  const supabase = createServerComponentClient({ cookies });
+  const supabase = createServerComponentClient({
+    cookies: () => Promise.resolve(cookieStore),
+  });
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user },
+  } = await supabase.auth.getUser();
 
   let userVotes: Record<string, number> = {};
 
-  if (session?.user?.email) {
+  if (user?.email) {
     const prismaUser = await prisma.user.findUnique({
-      where: { email: session.user.email },
+      where: { email: user.email },
     });
 
     if (prismaUser) {
@@ -42,15 +44,26 @@ export default async function HomePage({
   console.log("[HomePage] Constructed userVotes map:", JSON.stringify(userVotes, null, 2)); // Enhanced log
 
   // 2) Fetch all producers with their votes
-  const flowerRaw = (await prisma.producer.findMany({
-    where:    { category: Category.FLOWER },
-    include:  { votes: true, _count: { select: { comments: true } } },
-  })) as ProducerWithVotes[];
+  let flowerRaw: ProducerWithVotes[] = [];
+  let hashRaw: ProducerWithVotes[] = [];
+  try {
+    flowerRaw = (await prisma.producer.findMany({
+      where: { category: Category.FLOWER },
+      include: { votes: true, _count: { select: { comments: true } } },
+    })) as ProducerWithVotes[];
 
-  const hashRaw = (await prisma.producer.findMany({
-    where:    { category: Category.HASH },
-    include:  { votes: true, _count: { select: { comments: true } } },
-  })) as ProducerWithVotes[];
+    hashRaw = (await prisma.producer.findMany({
+      where: { category: Category.HASH },
+      include: { votes: true, _count: { select: { comments: true } } },
+    })) as ProducerWithVotes[];
+  } catch (err) {
+    console.error("[HomePage] Failed to query producers:", err);
+    return (
+      <div className="p-4 text-center text-red-600">
+        Failed to load producers. Please try again later.
+      </div>
+    );
+  }
 
   // 3) Sort by average rating desc
   const score = (p: ProducerWithVotes) => {

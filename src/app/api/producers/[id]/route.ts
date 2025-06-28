@@ -14,15 +14,19 @@ export async function DELETE(
 ) {
   try {
     // 1. Authentication & Authorization
-    const supabase = createServerActionClient({ cookies }, {
-      supabaseUrl,
-      supabaseKey,
-    });
+    const cookieStore = await cookies();
+    const supabase = createServerActionClient(
+      { cookies: () => Promise.resolve(cookieStore) },
+      {
+        supabaseUrl,
+        supabaseKey,
+      }
+    );
     const {
-      data: { session },
-    } = await supabase.auth.getSession();
+      data: { user },
+    } = await supabase.auth.getUser();
 
-    if (!session) {
+    if (!user) {
       return NextResponse.json(
         { success: false, error: "Not authenticated" },
         { status: 401 }
@@ -31,7 +35,7 @@ export async function DELETE(
 
     // Fetch Prisma user to check role
     const prismaUser = await prisma.user.findUnique({
-      where: { email: session.user.email! }, // Assuming email is reliable for fetching user
+      where: { email: user.email! }, // Assuming email is reliable for fetching user
     });
 
     if (!prismaUser || prismaUser.role !== Role.ADMIN) {
@@ -67,7 +71,9 @@ export async function DELETE(
       where: { id: producerId },
     });
 
-    console.log(`[API] Producer ${producerId} deleted by admin ${session.user.email}`);
+    console.log(
+      `[API] Producer ${producerId} deleted by admin ${user.email}`
+    );
     return NextResponse.json({ success: true, message: "Producer deleted successfully" });
 
   } catch (error: any) {
@@ -84,15 +90,19 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const supabase = createServerActionClient({ cookies }, {
-      supabaseUrl,
-      supabaseKey,
-    });
+    const cookieStore = await cookies();
+    const supabase = createServerActionClient(
+      { cookies: () => Promise.resolve(cookieStore) },
+      {
+        supabaseUrl,
+        supabaseKey,
+      }
+    );
     const {
-      data: { session },
-    } = await supabase.auth.getSession();
+      data: { user },
+    } = await supabase.auth.getUser();
 
-    if (!session) {
+    if (!user) {
       return NextResponse.json(
         { success: false, error: "Not authenticated" },
         { status: 401 }
@@ -100,7 +110,7 @@ export async function PUT(
     }
 
     const prismaUser = await prisma.user.findUnique({
-      where: { email: session.user.email! },
+      where: { email: user.email! },
     });
 
     if (!prismaUser || prismaUser.role !== Role.ADMIN) {

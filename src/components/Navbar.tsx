@@ -6,21 +6,21 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import Image from "next/image";
-import type { Session } from "@supabase/supabase-js";
+import type { Session, User } from "@supabase/supabase-js";
 import { UserPlus } from "lucide-react";
 
 export default function Navbar() {
   const pathname = usePathname();
-  const [session, setSession] = useState<Session | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [profileUsername, setProfileUsername] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
-    // fetch initial session
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      setSession(session);
-      if (session?.user?.email) {
+    // fetch initial user
+    supabase.auth.getUser().then(async ({ data: { user: currentUser } }) => {
+      setUser(currentUser);
+      if (currentUser?.email) {
         try {
           const res = await fetch("/api/users/me");
           if (res.ok) {
@@ -37,9 +37,10 @@ export default function Navbar() {
     });
     // listen for changes (login/logout)
     const { data: listener } = supabase.auth.onAuthStateChange(
-      async (_event, sess) => {
-        setSession(sess);
-        if (sess?.user?.email) {
+      async () => {
+        const { data: { user: newUser } } = await supabase.auth.getUser();
+        setUser(newUser);
+        if (newUser?.email) {
           try {
             const res = await fetch("/api/users/me");
             if (res.ok) {
@@ -122,7 +123,7 @@ export default function Navbar() {
             </Link>
           )}
 
-          {session && isAdmin && (
+          {user && isAdmin && (
             <Link
               href="/admin"
               className={`${
@@ -133,7 +134,7 @@ export default function Navbar() {
             </Link>
           )}
 
-          {!session ? (
+          {!user ? (
             <Link
               href="/login"
               className={`flex items-center space-x-1 bg-white text-green-700 px-3 py-1 rounded-md ${
@@ -147,7 +148,7 @@ export default function Navbar() {
             <button
               onClick={async () => {
                 await supabase.auth.signOut();
-                setSession(null);
+                setUser(null);
               }}
               className="hover:underline"
             >
@@ -174,7 +175,7 @@ export default function Navbar() {
               Profile
             </Link>
           )}
-          {session && isAdmin && (
+          {user && isAdmin && (
             <Link
               href="/admin"
               onClick={() => setMenuOpen(false)}
@@ -183,7 +184,7 @@ export default function Navbar() {
               Admin Panel
             </Link>
           )}
-          {!session ? (
+          {!user ? (
             <Link
               href="/login"
               onClick={() => setMenuOpen(false)}
@@ -196,7 +197,7 @@ export default function Navbar() {
             <button
               onClick={async () => {
                 await supabase.auth.signOut();
-                setSession(null);
+                setUser(null);
                 setMenuOpen(false);
               }}
               className="w-full py-1 text-center"

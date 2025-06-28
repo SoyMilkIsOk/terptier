@@ -7,26 +7,30 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
 
 export async function GET() {
-  const supabase = createServerActionClient({ cookies }, {
-    supabaseUrl,
-    supabaseKey,
-  });
+  const cookieStore = await cookies();
+  const supabase = createServerActionClient(
+    { cookies: () => Promise.resolve(cookieStore) },
+    {
+      supabaseUrl,
+      supabaseKey,
+    }
+  );
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (!session?.user?.email) {
+  if (!user?.email) {
     return NextResponse.json(
       { success: false, error: "Not authenticated" },
       { status: 401 }
     );
   }
 
-  const user = await prisma.user.findUnique({
-    where: { email: session.user.email },
+  const userRecord = await prisma.user.findUnique({
+    where: { email: user.email },
   });
 
-  if (!user) {
+  if (!userRecord) {
     return NextResponse.json(
       { success: false, error: "User not found" },
       { status: 404 }
@@ -35,23 +39,27 @@ export async function GET() {
 
   return NextResponse.json({
     success: true,
-    id: user.id,
-    role: user.role,
-    username: user.username,
-    profilePicUrl: user.profilePicUrl,
+    id: userRecord.id,
+    role: userRecord.role,
+    username: userRecord.username,
+    profilePicUrl: userRecord.profilePicUrl,
   });
 }
 
 export async function PATCH(request: Request) {
-  const supabase = createServerActionClient({ cookies }, {
-    supabaseUrl,
-    supabaseKey,
-  });
+  const cookieStore = await cookies();
+  const supabase = createServerActionClient(
+    { cookies: () => Promise.resolve(cookieStore) },
+    {
+      supabaseUrl,
+      supabaseKey,
+    }
+  );
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (!session?.user?.email) {
+  if (!user?.email) {
       return NextResponse.json(
         { success: false, error: "Not authenticated" },
         { status: 401 },
@@ -61,7 +69,7 @@ export async function PATCH(request: Request) {
   const { profilePicUrl } = await request.json();
 
   await prisma.user.update({
-    where: { email: session.user.email },
+    where: { email: user.email },
     data: { profilePicUrl },
   });
 

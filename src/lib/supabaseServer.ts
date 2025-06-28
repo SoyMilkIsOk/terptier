@@ -9,8 +9,13 @@ if (!supabaseUrl || !supabaseKey) {
   throw new Error("Supabase environment variables are missing");
 }
 
-export const createSupabaseServerClient = () =>
-  createServerComponentClient({ cookies }, {
-    supabaseUrl,
-    supabaseKey,
-  });
+export const createSupabaseServerClient = async () => {
+  const cookieStore = await cookies();
+  return createServerComponentClient(
+    { cookies: () => Promise.resolve(cookieStore) },
+    {
+      supabaseUrl,
+      supabaseKey,
+    }
+  );
+};

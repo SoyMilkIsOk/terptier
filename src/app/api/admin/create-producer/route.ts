@@ -8,23 +8,27 @@ const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUP
 import { Role } from "@prisma/client";
 
 export async function POST(request: Request) {
-  const supabase = createServerActionClient({ cookies }, {
-    supabaseUrl,
-    supabaseKey,
-  });
+  const cookieStore = await cookies();
+  const supabase = createServerActionClient(
+    { cookies: () => Promise.resolve(cookieStore) },
+    {
+      supabaseUrl,
+      supabaseKey,
+    }
+  );
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (!session?.user?.email) {
+  if (!user?.email) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
 
-  const user = await prisma.user.findUnique({
-    where: { email: session.user.email },
+  const userRecord = await prisma.user.findUnique({
+    where: { email: user.email },
   });
 
-  if (!user || user.role !== Role.ADMIN) {
+  if (!userRecord || userRecord.role !== Role.ADMIN) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
@@ -44,7 +48,7 @@ export async function POST(request: Request) {
       ingredients,
       slug,
       profileImage,
-      createdById: user.id,
+      createdById: userRecord.id,
     },
   });
   return NextResponse.json({ ok: true });

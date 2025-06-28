@@ -3,12 +3,12 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
 import UploadButton from "./UploadButton";
-import type { Session } from "@supabase/supabase-js";
+import type { User } from "@supabase/supabase-js";
 
 export default function AddCommentForm({ producerId }: { producerId: string }) {
   const [text, setText] = useState("");
   const [files, setFiles] = useState<File[]>([]);
-  const [session, setSession] = useState<Session | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const router = useRouter();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -16,10 +16,11 @@ export default function AddCommentForm({ producerId }: { producerId: string }) {
   };
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => setSession(data.session));
-    const { data: listener } = supabase.auth.onAuthStateChange((_e, sess) =>
-      setSession(sess)
-    );
+    supabase.auth.getUser().then(({ data }) => setUser(data.user));
+    const { data: listener } = supabase.auth.onAuthStateChange(async () => {
+      const { data: { user: u } } = await supabase.auth.getUser();
+      setUser(u);
+    });
     return () => {
       listener.subscription.unsubscribe();
     };
@@ -38,7 +39,7 @@ export default function AddCommentForm({ producerId }: { producerId: string }) {
   };
 
   const submit = async () => {
-    if (!session?.user) {
+    if (!user) {
       router.push("/login?reason=comment");
       return;
     }
@@ -64,9 +65,9 @@ export default function AddCommentForm({ producerId }: { producerId: string }) {
       <UploadButton
         multiple
         onChange={handleFileChange}
-        disabled={!session?.user}
+        disabled={!user}
         onClick={() => {
-          if (!session?.user) router.push("/login?reason=comment");
+          if (!user) router.push("/login?reason=comment");
         }}
       />
       <button
