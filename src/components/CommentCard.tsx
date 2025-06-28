@@ -108,7 +108,7 @@ export default function CommentCard({
       </div>
       {comment.producer && (
         <p className="text-sm text-gray-700 mb-1">
-          For producer: <a href={`/producer/${comment.producer.id}`} className="underline hover:text-blue-600">{comment.producer.name}</a>
+          For producer: <a href={`/producer/${comment.producer.slug ?? comment.producer.id}`} className="underline hover:text-blue-600">{comment.producer.name}</a>
         </p>
       )}
       {showRating && (
