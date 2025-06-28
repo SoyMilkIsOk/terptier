@@ -6,12 +6,17 @@ import { prisma } from "@/lib/prismadb";
 import { cookies } from "next/headers";
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 
+export const dynamic = "force-dynamic";
+
 export default async function ProfilePage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+
+  // Calling cookies() ensures this page is rendered dynamically per request
+  cookies();
 
   const supabase = createServerComponentClient({ cookies });
   const {

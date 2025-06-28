@@ -54,7 +54,7 @@ export default function ProfileImageUpload({
             className="w-24 h-24 rounded-full object-cover"
           />
           <div className="absolute inset-0 rounded-full bg-black/50 opacity-0 hover:opacity-100 flex items-center justify-center transition">
-            <UploadButton onChange={handleChange} label="Change" className="bg-white text-black px-2 py-1" />
+            <UploadButton onChange={handleChange} className="bg-white text-black" />
           </div>
           <button
             type="button"
@@ -66,7 +66,7 @@ export default function ProfileImageUpload({
         </>
       ) : (
         <div className="w-24 h-24 rounded-full bg-gray-300 flex items-center justify-center">
-          <UploadButton onChange={handleChange} label="Upload" />
+          <UploadButton onChange={handleChange} />
         </div>
       )}
       {loading && (
