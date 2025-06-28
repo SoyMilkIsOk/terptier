@@ -49,10 +49,10 @@ export default function ProducerCard({
       href={link}
       className={`${isTopTen === false ? "bg-gray-100" : "bg-white"} ${glowClass} p-4 rounded shadow flex items-center space-x-4 hover:bg-gray-50 transition`}
     >
-      <div className={`flex items-center justify-center ${colorClasses[color]} rounded-md w-10 h-10 font-bold`}>
+      <div className={`flex items-center justify-center ${colorClasses[color]} rounded-full w-10 h-10 font-bold`}>
         {rank}
         {rankSuffix && (
-          <sup className="text-[0.6rem] ml-0.5 align-super">{rankSuffix}</sup>
+          <sup className="text-[0.5rem] ml-0.25 align-super">{rankSuffix}</sup>
         )}
       </div>
       {producer.profileImage || producer.logoUrl ? (

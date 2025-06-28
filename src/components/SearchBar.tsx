@@ -24,7 +24,7 @@ export default function SearchBar({
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder="Search producers..."
-        className="border px-3 py-2 rounded w-2/3 md:w-1/3"
+        className="border px-3 py-2 rounded-full w-5/6 md:w-2/3"
       />
     </div>
   );
