@@ -90,13 +90,21 @@ export default function ProducerList({
             `[ProducerList.tsx] Mapping producer ${producer.id}: userVoteValue =`,
             userVoteValue
           );
+          const rank = i + 1;
+          let color: "gold" | "silver" | "bronze" | "gray" | "green" = "green";
+          if (rank === 1) color = "gold";
+          else if (rank === 2) color = "silver";
+          else if (rank === 3) color = "bronze";
+          else if (rank > 10) color = "gray";
+
           return (
             <ProducerCard
               key={producer.id}
-              rank={i + 1}
+              rank={rank}
               producer={producer}
               userVoteValue={userVoteValue} // Pass down the specific user vote
               isTopTen={i < 10}
+              color={color}
             />
           );
         })}
