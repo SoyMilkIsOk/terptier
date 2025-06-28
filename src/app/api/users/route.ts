@@ -28,10 +28,10 @@ export async function POST(request: Request) {
   const role = email === process.env.ADMIN_EMAIL ? Role.ADMIN : Role.USER;
 
   // Upsert a Prisma User record matching the Supabase user
+  // Use email as the unique key to support existing accounts
   await prisma.user.upsert({
-    where: { id },
+    where: { email },
     update: {
-      email,
       name,
       username,
       birthday: birthday ? new Date(birthday) : undefined,

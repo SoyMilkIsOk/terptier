@@ -20,11 +20,17 @@ export default function Navbar() {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
       if (session?.user?.email) {
-        const res = await fetch("/api/users/me");
-        const data = await res.json();
-        if (data.success) {
-          setProfileUsername(data.username || data.id);
-          setIsAdmin(data.role === "ADMIN");
+        try {
+          const res = await fetch("/api/users/me");
+          if (res.ok) {
+            const data = await res.json();
+            if (data.success) {
+              setProfileUsername(data.username || data.id);
+              setIsAdmin(data.role === "ADMIN");
+            }
+          }
+        } catch (err) {
+          console.error("Failed to fetch user", err);
         }
       }
     });
@@ -33,12 +39,23 @@ export default function Navbar() {
       async (_event, sess) => {
         setSession(sess);
         if (sess?.user?.email) {
-          const res = await fetch("/api/users/me");
-          const data = await res.json();
-          if (data.success) {
-            setProfileUsername(data.username || data.id);
-            setIsAdmin(data.role === "ADMIN");
-          } else {
+          try {
+            const res = await fetch("/api/users/me");
+            if (res.ok) {
+              const data = await res.json();
+              if (data.success) {
+                setProfileUsername(data.username || data.id);
+                setIsAdmin(data.role === "ADMIN");
+              } else {
+                setProfileUsername(null);
+                setIsAdmin(false);
+              }
+            } else {
+              setProfileUsername(null);
+              setIsAdmin(false);
+            }
+          } catch (err) {
+            console.error("Failed to fetch user", err);
             setProfileUsername(null);
             setIsAdmin(false);
           }
