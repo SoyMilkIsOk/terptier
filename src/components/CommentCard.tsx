@@ -3,7 +3,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Leaf } from "lucide-react";
+import { Leaf, Trash2, FilePenLine } from "lucide-react";
 import VoteButton from "@/components/VoteButton";
 import UploadButton from "./UploadButton";
 
@@ -72,7 +72,10 @@ export default function CommentCard({
   };
 
   const deleteComment = async () => {
-    await fetch(`/api/comments?id=${comment.id}`, { method: "DELETE" });
+    await fetch(`/api/comments?id=${comment.id}`, {
+      method: "DELETE",
+      credentials: "include",
+    });
     router.refresh();
   };
 
@@ -134,11 +137,19 @@ export default function CommentCard({
         </div>
         {currentUserId === comment.userId && (
           <div className="flex items-center space-x-2">
-            <button onClick={() => setEditing(true)} className="text-sm text-blue-600 hover:underline">
-              Edit
+            <button
+              onClick={() => setEditing(true)}
+              className="text-blue-600 hover:text-blue-800"
+              aria-label="Edit comment"
+            >
+              <FilePenLine className="w-4 h-4" />
             </button>
-            <button onClick={deleteComment} className="text-sm text-red-600 hover:underline">
-              Delete
+            <button
+              onClick={deleteComment}
+              className="text-red-600 hover:text-red-800"
+              aria-label="Delete comment"
+            >
+              <Trash2 className="w-4 h-4" />
             </button>
           </div>
         )}

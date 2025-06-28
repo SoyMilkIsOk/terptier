@@ -93,7 +93,7 @@ export async function DELETE(request: NextRequest) {
     data: { session },
   } = await supabase.auth.getSession();
 
-  if (!session?.user?.id) {
+  if (!session?.user?.email) {
     return NextResponse.json(
       { success: false, error: "Not authenticated" },
       { status: 401 }
@@ -109,8 +109,19 @@ export async function DELETE(request: NextRequest) {
     );
   }
 
+  const prismaUser = await prisma.user.findUnique({
+    where: { email: session.user.email },
+  });
+
+  if (!prismaUser) {
+    return NextResponse.json(
+      { success: false, error: "User not found" },
+      { status: 404 }
+    );
+  }
+
   const comment = await prisma.comment.findUnique({ where: { id } });
-  if (!comment || comment.userId !== session.user.id) {
+  if (!comment || comment.userId !== prismaUser.id) {
     return NextResponse.json(
       { success: false, error: "Not authorized" },
       { status: 403 }

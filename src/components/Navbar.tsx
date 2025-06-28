@@ -54,7 +54,7 @@ export default function Navbar() {
   }, []);
 
   return (
-    <nav className="bg-green-700 text-white shadow-md">
+    <nav className="bg-green-700 text-white shadow-md relative">
       <div className="container mx-auto px-4 flex items-center justify-between h-20">
         <Link href="/" className="flex items-center hover:opacity-90">
           <Image
@@ -65,18 +65,25 @@ export default function Navbar() {
             height={50}
           />
         </Link>
-        <button
-          className="md:hidden relative w-8 h-8 focus:outline-none"
-          onClick={() => setMenuOpen((o) => !o)}
-          aria-label="Menu"
+        <div
+          className={`absolute right-4 top-1/2 transform -translate-y-1/4 md:hidden ${menuOpen ? "top-1/3" : ""}`}
         >
-          <span
-            className={`absolute top-2 left-1/2 w-6 h-0.5 bg-white transition-transform duration-300 ${menuOpen ? "rotate-45 -translate-x-1/2 translate-y-1" : "-translate-x-1/2"}`}
-          />
-          <span
-            className={`absolute bottom-2 left-1/2 w-6 h-0.5 bg-white transition-transform duration-300 ${menuOpen ? "-rotate-45 -translate-x-1/2 -translate-y-1" : "-translate-x-1/2"}`}
-          />
-        </button>
+          <button
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="flex flex-col justify-center items-center w-8 h-8 focus:outline-none"
+            aria-label="Toggle menu"
+          >
+            <span
+              className={`block h-0.5 w-6 bg-white transition-transform duration-300 ease-in-out ${menuOpen ? "rotate-45 translate-y-1.5" : ""}`}
+            />
+            <span
+              className={`block h-0.5 w-6 bg-white my-1 transition-opacity duration-300 ease-in-out ${menuOpen ? "opacity-0" : "opacity-100"}`}
+            />
+            <span
+              className={`block h-0.5 w-6 bg-white transition-transform duration-300 ease-in-out ${menuOpen ? "-rotate-45 -translate-y-1.5" : ""}`}
+            />
+          </button>
+        </div>
         <div className="hidden md:flex items-center space-x-6">
           <Link
             href="/"
@@ -132,11 +139,11 @@ export default function Navbar() {
         </div>
       </div>
       {menuOpen && (
-        <div className="md:hidden px-4 pb-4 space-y-2 bg-green-700 text-white">
+        <div className="md:hidden bg-green-700 pt-4 pb-6 space-y-4 flex flex-col items-center text-white">
           <Link
             href="/"
             onClick={() => setMenuOpen(false)}
-            className="block py-1"
+            className="w-full text-center py-1"
           >
             Home
           </Link>
@@ -144,7 +151,7 @@ export default function Navbar() {
             <Link
               href={`/profile/${profileUsername}`}
               onClick={() => setMenuOpen(false)}
-              className="block py-1"
+              className="w-full text-center py-1"
             >
               Profile
             </Link>
@@ -153,7 +160,7 @@ export default function Navbar() {
             <Link
               href="/admin"
               onClick={() => setMenuOpen(false)}
-              className="block py-1"
+              className="w-full text-center py-1"
             >
               Admin Panel
             </Link>
@@ -162,7 +169,7 @@ export default function Navbar() {
             <Link
               href="/login"
               onClick={() => setMenuOpen(false)}
-              className="block py-1"
+              className="w-full text-center py-1"
             >
               Log In / Sign Up
             </Link>
@@ -173,7 +180,7 @@ export default function Navbar() {
                 setSession(null);
                 setMenuOpen(false);
               }}
-              className="block py-1 text-left w-full"
+              className="w-full py-1 text-center"
             >
               Sign Out
             </button>
