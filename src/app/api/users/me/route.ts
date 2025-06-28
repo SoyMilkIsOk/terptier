@@ -41,3 +41,29 @@ export async function GET() {
     profilePicUrl: user.profilePicUrl,
   });
 }
+
+export async function PATCH(request: Request) {
+  const supabase = createServerActionClient({ cookies }, {
+    supabaseUrl,
+    supabaseKey,
+  });
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session?.user?.id) {
+    return NextResponse.json(
+      { success: false, error: "Not authenticated" },
+      { status: 401 },
+    );
+  }
+
+  const { profilePicUrl } = await request.json();
+
+  await prisma.user.update({
+    where: { id: session.user.id },
+    data: { profilePicUrl },
+  });
+
+  return NextResponse.json({ success: true });
+}
