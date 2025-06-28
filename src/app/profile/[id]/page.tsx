@@ -1,7 +1,10 @@
 // src/app/profile/[id]/page.tsx
 import ProducerCard from "@/components/ProducerCard";
 import CommentCard from "@/components/CommentCard";
+import ProfileImageUpload from "@/components/ProfileImageUpload";
 import { prisma } from "@/lib/prismadb";
+import { cookies } from "next/headers";
+import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 
 export default async function ProfilePage({
   params,
@@ -9,6 +12,11 @@ export default async function ProfilePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+
+  const supabase = createServerComponentClient({ cookies });
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
 
   let user = await prisma.user.findUnique({
     where: { username: id },
@@ -44,6 +52,8 @@ export default async function ProfilePage({
     return <p>User not found. ({id})</p>;
   }
 
+  const isOwner = session?.user?.id === user.id;
+
   // Process votes into liked and disliked producers
   const likedProducers = user.votes
     .filter((vote) => vote.value > 0)
@@ -56,9 +66,13 @@ export default async function ProfilePage({
   return (
     <div>
       <div className="flex flex-col items-center mb-6 space-y-2">
-        {user.profilePicUrl && (
+        {isOwner ? (
+          <ProfileImageUpload initialUrl={user.profilePicUrl} />
+        ) : user.profilePicUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={user.profilePicUrl} alt="profile" className="w-24 h-24 rounded-full object-cover" />
+        ) : (
+          <div className="w-24 h-24 rounded-full bg-gray-300" />
         )}
         <h1 className="text-2xl font-semibold">
           {user.username || user.name || user.email}

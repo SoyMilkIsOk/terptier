@@ -227,12 +227,24 @@ export default function SignUpPage() {
             <UploadButton onChange={handleFileChange} className="mt-1" />
             {uploading && <p className="text-sm text-gray-500">Uploading...</p>}
             {uploadUrl && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={uploadUrl}
-                alt="Profile preview"
-                className="mt-2 w-20 h-20 rounded-full object-cover"
-              />
+              <div className="relative mt-2 w-20 h-20">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={uploadUrl}
+                  alt="Profile preview"
+                  className="w-20 h-20 rounded-full object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setUploadUrl(null);
+                    setFile(null);
+                  }}
+                  className="absolute -top-1 -right-1 bg-white rounded-full text-xs px-1 border"
+                >
+                  x
+                </button>
+              </div>
             )}
           </div>
           <div>

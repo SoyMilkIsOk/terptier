@@ -31,34 +31,30 @@ export default function CommentCard({
   const [editing, setEditing] = useState(false);
   const [text, setText] = useState(comment.text);
   const [images, setImages] = useState<string[]>(comment.imageUrls);
-  const [files, setFiles] = useState<File[]>([]);
+  const [uploading, setUploading] = useState(false);
   const router = useRouter();
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) setFiles(Array.from(e.target.files));
-  };
-
-  const uploadFiles = async () => {
-    const uploaded: string[] = [];
-    for (const file of files) {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files) return;
+    setUploading(true);
+    for (const file of Array.from(e.target.files)) {
       const form = new FormData();
       form.append("file", file);
       const res = await fetch("/api/upload", { method: "POST", body: form });
       const data = await res.json();
-      if (data?.url) uploaded.push(data.url as string);
+      if (data?.url) {
+        setImages((prev) => [...prev, data.url as string]);
+      }
     }
-    return uploaded;
+    setUploading(false);
   };
 
   const save = async () => {
-    const newUrls = await uploadFiles();
-    const allImages = [...images, ...newUrls];
     await fetch("/api/comments", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ producerId: comment.producerId, text, images: allImages }),
+      body: JSON.stringify({ producerId: comment.producerId, text, images }),
     });
-    setFiles([]);
     setEditing(false);
     router.refresh();
   };
@@ -89,6 +85,7 @@ export default function CommentCard({
           ))}
         </div>
         <UploadButton multiple onChange={handleFileChange} className="mb-3" />
+        {uploading && <p className="text-sm text-gray-500 mb-3">Uploading...</p>}
         <button onClick={save} className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md">Save</button>
       </div>
     );
