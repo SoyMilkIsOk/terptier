@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import Image from "next/image";
 import type { Session } from "@supabase/supabase-js";
+import { UserPlus } from "lucide-react";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -135,11 +136,12 @@ export default function Navbar() {
           {!session ? (
             <Link
               href="/login"
-              className={`${
-                pathname === "/login" ? "underline" : "hover:underline"
+              className={`flex items-center space-x-1 bg-white text-green-700 px-3 py-1 rounded-md ${
+                pathname === "/login" ? "" : "hover:bg-gray-100"
               }`}
             >
-              Log In / Sign Up
+              <UserPlus className="w-4 h-4" />
+              <span>Log In / Sign Up</span>
             </Link>
           ) : (
             <button
@@ -185,9 +187,10 @@ export default function Navbar() {
             <Link
               href="/login"
               onClick={() => setMenuOpen(false)}
-              className="w-full text-center py-1"
+              className="w-full text-center py-1 flex items-center justify-center space-x-1 bg-white text-green-700 rounded-md"
             >
-              Log In / Sign Up
+              <UserPlus className="w-4 h-4" />
+              <span>Log In / Sign Up</span>
             </Link>
           ) : (
             <button

@@ -19,7 +19,7 @@ export default function SignUpPage() {
   const [error, setError] = useState<string | null>(null);
   const [usernameTaken, setUsernameTaken] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
+  const [passwordFocused, setPasswordFocused] = useState(false);
 
   const checkEmail = async () => {
     setLoading(true);
@@ -86,6 +86,15 @@ export default function SignUpPage() {
   };
 
   const handleSubmit = async () => {
+    setError(null);
+    // verify username availability in case the user didn't leave the field
+    const res = await fetch(`/api/users?username=${encodeURIComponent(username)}`);
+    const userCheck = await res.json();
+    if (userCheck.exists) {
+      setUsernameTaken(true);
+      setError("Username already taken");
+      return;
+    }
     if (password !== confirm) {
       setError("Passwords do not match");
       return;
@@ -102,11 +111,11 @@ export default function SignUpPage() {
       return;
     }
     setLoading(true);
-    const { data, error: signUpError } = await supabase.auth.signUp({
+    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
     });
-    if (signUpError || !data?.user) {
+    if (signUpError || !signUpData?.user) {
       setError(signUpError?.message || "Signup failed");
       setLoading(false);
       return;
@@ -119,19 +128,10 @@ export default function SignUpPage() {
         setError("Failed to upload image");
       }
     }
-    await finalizeAuth(profileUrl ?? null, data.user.id, data.user.email ?? email);
-    setSuccess(true);
+    await finalizeAuth(profileUrl ?? null, signUpData.user.id, signUpData.user.email ?? email);
     setLoading(false);
+    router.push(`/login?email=${encodeURIComponent(email)}&message=Account created successfully`);
   };
-
-  if (success) {
-    return (
-      <div className="max-w-md mx-auto bg-white p-6 rounded shadow text-center">
-        <p className="mb-4">Check your email for confirmation.</p>
-        <a href="/login" className="underline">Return to login</a>
-      </div>
-    );
-  }
 
   return (
     <div className="max-w-md mx-auto bg-white p-6 rounded shadow">
@@ -258,8 +258,16 @@ export default function SignUpPage() {
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                onFocus={() => setPasswordFocused(true)}
+                onBlur={() => setPasswordFocused(false)}
                 className="w-full mt-1 p-2.5 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                title="Use at least 8 characters with a mix of letters, numbers, and symbols"
               />
+              {passwordFocused && (
+                <p className="text-xs text-gray-600 mt-1">
+                  Use at least 8 characters with a mix of letters, numbers and symbols.
+                </p>
+              )}
             </label>
           </div>
           <div>
@@ -277,7 +285,6 @@ export default function SignUpPage() {
               />
             </label>
           </div>
-          <p className="text-sm text-gray-600">Password must be at least 8 characters.</p>
           <button
             type="submit"
             disabled={loading}

@@ -110,9 +110,9 @@ function LoginForm() {
       >
         Log In
       </button>
-      <p className="mt-4 text-center text-sm">
+      <p className="mt-4 text-center text-base text-green-700">
         Need an account?{' '}
-        <a href="/signup" className="underline">
+        <a href="/signup" className="underline font-semibold text-green-700 hover:text-green-800">
           Sign up
         </a>
       </p>
