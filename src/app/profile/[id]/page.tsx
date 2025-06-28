@@ -19,8 +19,8 @@ export default async function ProfilePage({
   const cookieStore = await cookies();
 
   const supabase = createServerComponentClient({
-    cookies: () => Promise.resolve(cookieStore),
-  });
+    cookies: () => cookieStore,
+  } as any);
   const {
     data: { user: authUser },
   } = await supabase.auth.getUser();

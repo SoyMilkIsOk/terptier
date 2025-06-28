@@ -9,7 +9,7 @@ const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUP
 export async function GET() {
   const cookieStore = await cookies();
   const supabase = createServerActionClient(
-    { cookies: () => Promise.resolve(cookieStore) },
+    { cookies: () => cookieStore } as any,
     {
       supabaseUrl,
       supabaseKey,
@@ -49,7 +49,7 @@ export async function GET() {
 export async function PATCH(request: Request) {
   const cookieStore = await cookies();
   const supabase = createServerActionClient(
-    { cookies: () => Promise.resolve(cookieStore) },
+    { cookies: () => cookieStore } as any,
     {
       supabaseUrl,
       supabaseKey,

@@ -16,7 +16,7 @@ export async function DELETE(
     // 1. Authentication & Authorization
     const cookieStore = await cookies();
     const supabase = createServerActionClient(
-      { cookies: () => Promise.resolve(cookieStore) },
+      { cookies: () => cookieStore } as any,
       {
         supabaseUrl,
         supabaseKey,
@@ -92,7 +92,7 @@ export async function PUT(
   try {
     const cookieStore = await cookies();
     const supabase = createServerActionClient(
-      { cookies: () => Promise.resolve(cookieStore) },
+      { cookies: () => cookieStore } as any,
       {
         supabaseUrl,
         supabaseKey,

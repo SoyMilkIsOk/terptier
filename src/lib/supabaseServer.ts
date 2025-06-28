@@ -12,7 +12,7 @@ if (!supabaseUrl || !supabaseKey) {
 export const createSupabaseServerClient = async () => {
   const cookieStore = await cookies();
   return createServerComponentClient(
-    { cookies: () => Promise.resolve(cookieStore) },
+    { cookies: () => cookieStore } as any,
     {
       supabaseUrl,
       supabaseKey,

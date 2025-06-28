@@ -18,8 +18,8 @@ export default async function HomePage({
 
   // Initialize Supabase client
   const supabase = createServerComponentClient({
-    cookies: () => Promise.resolve(cookieStore),
-  });
+    cookies: () => cookieStore,
+  } as any);
   const {
     data: { user },
   } = await supabase.auth.getUser();

@@ -30,9 +30,11 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   const cookieStore = await cookies();
-  const supabase = createServerComponentClient({
-    cookies: () => Promise.resolve(cookieStore),
-  });
+  const supabase = createServerComponentClient(
+    {
+      cookies: () => cookieStore,
+    } as any
+  );
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -92,9 +94,11 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   const cookieStore = await cookies();
-  const supabase = createServerComponentClient({
-    cookies: () => Promise.resolve(cookieStore),
-  });
+  const supabase = createServerComponentClient(
+    {
+      cookies: () => cookieStore,
+    } as any
+  );
   const {
     data: { user },
   } = await supabase.auth.getUser();

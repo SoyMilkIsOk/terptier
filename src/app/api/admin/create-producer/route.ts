@@ -10,7 +10,7 @@ import { Role } from "@prisma/client";
 export async function POST(request: Request) {
   const cookieStore = await cookies();
   const supabase = createServerActionClient(
-    { cookies: () => Promise.resolve(cookieStore) },
+    { cookies: () => cookieStore } as any,
     {
       supabaseUrl,
       supabaseKey,
