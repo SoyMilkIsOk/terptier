@@ -58,6 +58,7 @@ export default async function ProfilePage({
   }
 
   const isOwner = session?.user?.email === user.email;
+  const currentViewerId = session?.user?.id;
 
   // Process votes into liked and disliked producers
   const likedProducers = user.votes
@@ -94,7 +95,7 @@ export default async function ProfilePage({
         {user.comments.length > 0 ? (
           <div>
             {user.comments.map((c) => (
-              <CommentCard key={c.id} comment={c} currentUserId={user.id} showRating={false} />
+              <CommentCard key={c.id} comment={c} currentUserId={currentViewerId} showRating={false} />
             ))}
           </div>
         ) : (
