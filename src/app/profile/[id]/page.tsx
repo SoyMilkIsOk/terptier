@@ -112,11 +112,6 @@ export default async function ProfilePage({
               const j = rank % 10;
               const k = rank % 100;
               const suffix = j === 1 && k !== 11 ? "st" : j === 2 && k !== 12 ? "nd" : j === 3 && k !== 13 ? "rd" : "th";
-              let color: "gold" | "silver" | "bronze" | "gray" | "green" = "green";
-              if (rank === 1) color = "gold";
-              else if (rank === 2) color = "silver";
-              else if (rank === 3) color = "bronze";
-              else if (rank > 10) color = "gray";
 
               return (
                 <ProducerCard
@@ -125,7 +120,8 @@ export default async function ProfilePage({
                   rankSuffix={suffix}
                   producer={producer}
                   userVoteValue={producer.userActualVote}
-                  color={color}
+                  color="none"
+                  useColors={false}
                   showRank={false}
                 />
               );
