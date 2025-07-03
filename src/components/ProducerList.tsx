@@ -21,12 +21,14 @@ interface Props {
   };
   userVotes?: Record<string, number>; // Added userVotes to Props
   initialView?: "flower" | "hash";
+  useColors?: boolean;
 }
 
 export default function ProducerList({
   initialData,
   userVotes,
   initialView,
+  useColors = true,
 }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -102,6 +104,8 @@ export default function ProducerList({
           else if (rank > 10) color = "gray";
           const suffix = getSuffix(rank);
 
+          const finalColor = useColors ? color : ("none" as const);
+
           return (
             <ProducerCard
               key={producer.id}
@@ -110,7 +114,8 @@ export default function ProducerList({
               producer={producer}
               userVoteValue={userVoteValue}
               isTopTen={i < 10}
-              color={color}
+              color={finalColor}
+              useColors={useColors}
             />
           );
         })}

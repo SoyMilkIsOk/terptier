@@ -14,14 +14,16 @@ export default function ProducerCard({
   color = "green",
   rankSuffix = "",
   showRank = true,
+  useColors = true,
 }: {
   rank: number;
   producer: ProducerWithVotes;
   userVoteValue?: number | null;
   isTopTen?: boolean;
-  color?: "gold" | "silver" | "bronze" | "gray" | "green";
+  color?: "gold" | "silver" | "bronze" | "gray" | "green" | "none";
   rankSuffix?: string;
   showRank?: boolean;
+  useColors?: boolean;
 }) {
   const total = producer.votes.reduce((sum, v) => sum + v.value, 0);
   const average = producer.votes.length ? total / producer.votes.length : 0;
@@ -33,18 +35,21 @@ export default function ProducerCard({
     bronze: "bg-gradient-to-br from-orange-300 to-orange-700 text-orange-100",
     gray: "bg-gray-400 text-white",
     green: "bg-green-600 text-white",
+    none: "bg-gray-200 text-gray-700",
   };
 
   const glowClass =
-    color === "gold"
+    useColors && color === "gold"
       ? "glow-gold"
-      : color === "silver"
+      : useColors && color === "silver"
       ? "glow-silver"
-      : color === "bronze"
+      : useColors && color === "bronze"
       ? "glow-bronze"
       : "";
 
   const link = `/producer/${producer.slug ?? producer.id}`;
+
+  const badgeClasses = `flex items-center justify-center ${colorClasses[useColors ? color : "none"]} rounded-full w-10 h-10 font-bold`;
 
   return (
     <Link
@@ -52,9 +57,7 @@ export default function ProducerCard({
       className={`${isTopTen === false ? "bg-gray-100" : "bg-white"} ${glowClass} p-4 rounded shadow flex items-center space-x-4 hover:bg-gray-50 transition`}
     >
       {showRank && (
-        <div
-          className={`flex items-center justify-center ${colorClasses[color]} rounded-full w-10 h-10 font-bold`}
-        >
+        <div className={badgeClasses}>
           {rank}
           {rankSuffix && (
             <sup className="text-[0.5rem] ml-0.25 align-super">{rankSuffix}</sup>
