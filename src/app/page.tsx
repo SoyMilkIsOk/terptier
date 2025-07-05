@@ -1,76 +1,48 @@
-// src/app/page.tsx
-import { cookies } from "next/headers";
-import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
-import AgeGate from "@/components/AgeGate";
-import ProducerList, { ProducerWithVotes } from "@/components/ProducerList";
-import { prisma } from "@/lib/prismadb";
-import { Category, Vote } from "@prisma/client";
+'use client'
 
-export default async function HomePage({
-  searchParams,
-}: {
-  searchParams: Promise<{ view?: string }>;
-}) {
-  // 1) Age‐gate
-  const cookieStore = await cookies();
-  const is21 = cookieStore.get("ageVerify")?.value === "true";
-  if (!is21) return <AgeGate />;
+import { motion } from 'framer-motion'
+import Link from 'next/link'
 
-  // Initialize Supabase client
-  const supabase = createServerComponentClient({ cookies });
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  let userVotes: Record<string, number> = {};
-
-  if (session?.user?.email) {
-    const prismaUser = await prisma.user.findUnique({
-      where: { email: session.user.email },
-    });
-
-    if (prismaUser) {
-      const votes = await prisma.vote.findMany({
-        where: { userId: prismaUser.id },
-      });
-
-      votes.forEach((vote) => {
-        userVotes[vote.producerId] = vote.value;
-      });
-    }
-  }
-  console.log("[HomePage] Constructed userVotes map:", JSON.stringify(userVotes, null, 2)); // Enhanced log
-
-  // 2) Fetch all producers with their votes
-  const flowerRaw = (await prisma.producer.findMany({
-    where:    { category: Category.FLOWER },
-    include:  { votes: true, _count: { select: { comments: true } } },
-  })) as ProducerWithVotes[];
-
-  const hashRaw = (await prisma.producer.findMany({
-    where:    { category: Category.HASH },
-    include:  { votes: true, _count: { select: { comments: true } } },
-  })) as ProducerWithVotes[];
-
-  // 3) Sort by average rating desc
-  const score = (p: ProducerWithVotes) => {
-    const total = p.votes.reduce((sum, v) => sum + v.value, 0);
-    return p.votes.length > 0 ? total / p.votes.length : 0;
-  };
-
-  const flower = flowerRaw.sort((a, b) => score(b) - score(a));
-
-  const hash = hashRaw.sort((a, b) => score(b) - score(a));
-
-  const { view } = await searchParams;
-  const initialViewParam = view === "hash" ? "hash" : "flower";
-
-  // 4) Render the client list with initialData and userVotes
+export default function Home() {
   return (
-    <ProducerList
-      initialData={{ flower, hash }}
-      userVotes={userVotes}
-      initialView={initialViewParam}
-    />
-  );
+    <div className="relative flex flex-col items-center justify-center text-center min-h-[calc(100vh-80px)] overflow-hidden">
+      <div className="absolute inset-0 -z-10 bg-rainbow-animated" />
+      <motion.h1
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.7 }}
+        className="text-white text-5xl md:text-7xl font-extrabold mb-4 drop-shadow-lg"
+      >
+        TerpTier
+      </motion.h1>
+      <motion.p
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.7, delay: 0.2 }}
+        className="text-white text-xl md:text-2xl font-medium mb-2"
+      >
+        Top Tier Terps, Colorado Style.
+      </motion.p>
+      <motion.p
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.7, delay: 0.4 }}
+        className="text-white max-w-xl mb-6"
+      >
+        Rank & discover the best cannabis producers in CO. Join the community and share your favorites!
+      </motion.p>
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.7, delay: 0.6 }}
+      >
+        <Link
+          href="/rankings"
+          className="bg-white text-green-700 font-semibold px-6 py-3 rounded-full shadow hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-white"
+        >
+          Explore the Rankings
+        </Link>
+      </motion.div>
+    </div>
+  )
 }
