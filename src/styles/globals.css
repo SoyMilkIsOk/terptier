@@ -23,3 +23,22 @@
   --glow-color: rgba(205, 127, 50, 0.8);
   animation: glow 2s infinite;
 }
+
+@keyframes rainbowGradient {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.bg-rainbow-animated {
+  background: linear-gradient(270deg, #ff0080, #ff8c00, #ffd600, #3aff00, #00ffd6, #0080ff, #a100ff);
+  background-size: 1400% 1400%;
+  animation: rainbowGradient 30s ease infinite;
+}
+
+body {
+  font-family: var(--font-inter, sans-serif);
+}

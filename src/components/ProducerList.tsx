@@ -53,14 +53,14 @@ export default function ProducerList({
     localStorage.setItem("terptier_view", view);
     const params = new URLSearchParams(searchParams.toString());
     params.set("view", view);
-    router.replace(`/?${params.toString()}`, { scroll: false });
+    router.replace(`/rankings?${params.toString()}`, { scroll: false });
   }, [view, router, searchParams]);
 
   const updateView = (v: "flower" | "hash") => {
     setView(v);
     const params = new URLSearchParams(searchParams.toString());
     params.set("view", v);
-    router.replace(`/?${params.toString()}`, { scroll: false });
+    router.replace(`/rankings?${params.toString()}`, { scroll: false });
     localStorage.setItem("terptier_view", v);
   };
   const list = view === "flower" ? initialData.flower : initialData.hash;

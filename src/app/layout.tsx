@@ -1,6 +1,8 @@
+import { Inter } from "next/font/google";
 import "../styles/globals.css"; // your tailwind imports
 import Navbar from "@/components/Navbar";
 import type { Metadata } from "next";
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
   title: "TerpTier",
@@ -13,7 +15,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html className={inter.className} lang="en">
       <body className="min-h-screen bg-gray-50">
         <Navbar />
         <main className="container mx-auto px-4 py-6">{children}</main>
