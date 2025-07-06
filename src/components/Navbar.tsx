@@ -108,6 +108,12 @@ export default function Navbar() {
           >
             Home
           </Link>
+          <Link
+            href="/rankings"
+            className={`${pathname === "/rankings" ? "underline" : "hover:underline"}`}
+          >
+            Rankings
+          </Link>
 
           {profileUsername && (
             <Link
@@ -165,6 +171,13 @@ export default function Navbar() {
             className="w-full text-center py-1"
           >
             Home
+          </Link>
+          <Link
+            href="/rankings"
+            onClick={() => setMenuOpen(false)}
+            className="w-full text-center py-1"
+          >
+            Rankings
           </Link>
           {profileUsername && (
             <Link
