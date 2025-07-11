@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, useAnimation, useScroll, useTransform } from "framer-motion";
 import { ChevronRight, Star, Users, TrendingUp, Cannabis } from "lucide-react";
 import Link from "next/link";
@@ -8,8 +8,6 @@ import Link from "next/link";
 export default function HeroHome() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const { scrollY } = useScroll();
-  const y1 = useTransform(scrollY, [0, 300], [0, -50]);
-  const y2 = useTransform(scrollY, [0, 300], [0, -100]);
   const controls = useAnimation();
 
   useEffect(() => {
@@ -25,17 +23,26 @@ export default function HeroHome() {
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
-  const particles = useMemo(
-    () =>
-      Array.from({ length: 20 }).map(() => ({
-        left: `${Math.random() * 100}%`,
-        top: `${Math.random() * 100}%`,
-        x: Math.random() * 50 - 25,
-        delay: Math.random() * 2,
-        duration: 3 + Math.random() * 4,
-      })),
-    []
-  );
+  type Particle = {
+    left: string;
+    top: string;
+    x: number;
+    delay: number;
+    duration: number;
+  };
+
+  const [particles, setParticles] = useState<Particle[]>([]);
+
+  useEffect(() => {
+    const generated = Array.from({ length: 20 }).map(() => ({
+      left: `${Math.random() * 100}%`,
+      top: `${Math.random() * 100}%`,
+      x: Math.random() * 50 - 25,
+      delay: Math.random() * 2,
+      duration: 3 + Math.random() * 4,
+    }));
+    setParticles(generated);
+  }, []);
 
   const containerVariants = {
     hidden: { opacity: 0 },
