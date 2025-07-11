@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import SearchBar from "./SearchBar";
 import ProducerCard from "./ProducerCard";
 import CategoryToggle from "./CategoryToggle"; // Import CategoryToggle
@@ -32,6 +32,7 @@ export default function ProducerList({
 }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
   const [view, setView] = useState<"flower" | "hash">(initialView ?? "flower");
   const [searchTerm, setSearchTerm] = useState<string>("");
 
@@ -53,14 +54,14 @@ export default function ProducerList({
     localStorage.setItem("terptier_view", view);
     const params = new URLSearchParams(searchParams.toString());
     params.set("view", view);
-    router.replace(`/?${params.toString()}`, { scroll: false });
-  }, [view, router, searchParams]);
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  }, [view, router, searchParams, pathname]);
 
   const updateView = (v: "flower" | "hash") => {
     setView(v);
     const params = new URLSearchParams(searchParams.toString());
     params.set("view", v);
-    router.replace(`/?${params.toString()}`, { scroll: false });
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
     localStorage.setItem("terptier_view", v);
   };
   const list = view === "flower" ? initialData.flower : initialData.hash;
