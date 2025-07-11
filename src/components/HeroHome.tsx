@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { motion, useAnimation, useScroll, useTransform } from "framer-motion";
 import { ChevronRight, Star, Users, TrendingUp, Cannabis } from "lucide-react";
 import Link from "next/link";
@@ -24,6 +24,18 @@ export default function HeroHome() {
     window.addEventListener("mousemove", handleMouseMove);
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
+
+  const particles = useMemo(
+    () =>
+      Array.from({ length: 20 }).map(() => ({
+        left: `${Math.random() * 100}%`,
+        top: `${Math.random() * 100}%`,
+        x: Math.random() * 50 - 25,
+        delay: Math.random() * 2,
+        duration: 3 + Math.random() * 4,
+      })),
+    []
+  );
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -62,23 +74,23 @@ export default function HeroHome() {
             background: `radial-gradient(circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(255,0,150,0.1) 0%, rgba(0,255,255,0.1) 25%, rgba(255,255,0,0.1) 50%, rgba(255,0,255,0.1) 75%, transparent 100%)`,
           }}
         />
-        {[...Array(20)].map((_, i) => (
+        {particles.map((p, i) => (
           <motion.div
             key={i}
             className="absolute w-2 h-2 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full opacity-30"
             style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
+              left: p.left,
+              top: p.top,
             }}
             animate={{
               y: [0, -100, 0],
-              x: [0, Math.random() * 50 - 25, 0],
+              x: [0, p.x, 0],
               opacity: [0.3, 0.8, 0.3],
             }}
             transition={{
-              duration: 3 + Math.random() * 4,
+              duration: p.duration,
               repeat: Infinity,
-              delay: Math.random() * 2,
+              delay: p.delay,
             }}
           />
         ))}
