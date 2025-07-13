@@ -1,6 +1,7 @@
 import "../styles/globals.css"; // your tailwind imports
 import Navbar from "@/components/Navbar";
 import MainContainer from "@/components/MainContainer";
+import Footer from "@/components/Footer";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -15,9 +16,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="min-h-screen bg-gray-50">
+      <body className="min-h-screen bg-gray-50 flex flex-col">
         <Navbar />
         <MainContainer>{children}</MainContainer>
+        <Footer />
       </body>
     </html>
   );
