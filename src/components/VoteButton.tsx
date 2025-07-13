@@ -98,7 +98,9 @@ export default function VoteButton({
         </span>
       )}
       {showTooltip && (
-        <div className="absolute -top-6 left-0 bg-green-500 text-white text-xs px-2 py-1 rounded">
+        <div
+          className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-full bg-green-500 text-white text-xs px-2 py-1 rounded shadow-lg"
+        >
           Vote submitted!
         </div>
       )}
