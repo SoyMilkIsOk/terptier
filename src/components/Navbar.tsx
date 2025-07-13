@@ -103,12 +103,6 @@ export default function Navbar() {
         </div>
         <div className="hidden md:flex items-center space-x-6">
           <Link
-            href="/"
-            className={`${pathname === "/" ? "underline" : "hover:underline"}`}
-          >
-            Home
-          </Link>
-          <Link
             href="/rankings"
             className={`${pathname === "/rankings" ? "underline" : "hover:underline"}`}
           >
@@ -165,13 +159,6 @@ export default function Navbar() {
       </div>
       {menuOpen && (
         <div className="md:hidden bg-green-700 pt-4 pb-6 space-y-4 flex flex-col items-center text-white">
-          <Link
-            href="/"
-            onClick={() => setMenuOpen(false)}
-            className="w-full text-center py-1"
-          >
-            Home
-          </Link>
           <Link
             href="/rankings"
             onClick={() => setMenuOpen(false)}

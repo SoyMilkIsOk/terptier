@@ -28,6 +28,7 @@ export default function VoteButton({
   const router = useRouter();
   const [session, setSession] = useState<Session | null>(null);
   const [rating, setRating] = useState(userRating ?? 0);
+  const [showTooltip, setShowTooltip] = useState(false);
 
   useEffect(() => {
     if (readOnly) return;
@@ -54,16 +55,22 @@ export default function VoteButton({
     }
 
     setRating(val);
-    await fetch("/api/vote", {
+    const res = await fetch("/api/vote", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ producerId, value: val }),
     });
+    if (res.ok) {
+      setShowTooltip(true);
+      setTimeout(() => setShowTooltip(false), 2000);
+    }
     router.refresh();
   };
 
   return (
-    <div className={`flex items-center ${compact ? "space-x-0.5" : "space-x-1"}`}>
+    <div
+      className={`relative flex items-center ${compact ? "space-x-0.5" : "space-x-1"}`}
+    >
       {[1, 2, 3, 4, 5].map((n) => {
         const display = readOnly ? initialAverage : rating;
         const fraction = Math.max(0, Math.min(display - (n - 1), 1));
@@ -89,6 +96,13 @@ export default function VoteButton({
         <span className="ml-2 text-sm text-gray-700">
           {initialAverage.toFixed(1)}
         </span>
+      )}
+      {showTooltip && (
+        <div
+          className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-full bg-green-500 text-white text-xs px-2 py-1 rounded shadow-lg"
+        >
+          Vote submitted!
+        </div>
       )}
     </div>
   );

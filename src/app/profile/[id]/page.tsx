@@ -2,6 +2,7 @@
 import ProducerCard from "@/components/ProducerCard";
 import CommentCard from "@/components/CommentCard";
 import ProfileImageUpload from "@/components/ProfileImageUpload";
+import BackButton from "@/components/BackButton";
 import { prisma } from "@/lib/prismadb";
 import { cookies } from "next/headers";
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
@@ -71,6 +72,9 @@ export default async function ProfilePage({
 
   return (
     <div>
+      <div className="mb-4">
+        <BackButton />
+      </div>
       <div className="flex flex-col items-center mb-6 space-y-2">
         {isOwner ? (
           <ProfileImageUpload initialUrl={user.profilePicUrl} />

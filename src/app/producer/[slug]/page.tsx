@@ -6,6 +6,7 @@ import CommentCard from "@/components/CommentCard";
 import AddCommentForm from "@/components/AddCommentForm";
 import VoteButton from "@/components/VoteButton";
 import IngredientsButton from "@/components/IngredientsButton";
+import BackButton from "@/components/BackButton";
 import { ExternalLink } from "lucide-react";
 import { createSupabaseServerClient } from "@/lib/supabaseServer";
 
@@ -116,6 +117,9 @@ export default async function ProducerProfilePage({
 
   return (
     <div className="container mx-auto p-4">
+      <div className="mb-4">
+        <BackButton />
+      </div>
       <div className="bg-white shadow-xl rounded-lg p-6 md:p-8 max-w-3xl mx-auto relative">
         <div className="flex flex-col md:flex-row items-start md:items-center mb-6 pb-6 border-b border-gray-300">
           {(producer.profileImage || producer.logoUrl) && (
