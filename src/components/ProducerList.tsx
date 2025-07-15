@@ -89,12 +89,12 @@ export default function ProducerList({
 
   return (
     <>
-      <div className="flex justify-center mb-4">
+      <div className="flex justify-center my-4">
         <CategoryToggle view={view} setView={updateView} />
       </div>
 
       <SearchBar onSearch={setSearchTerm} />
-      <div className="grid md:grid-cols-2 gap-4">
+      <div className="grid md:grid-cols-2 gap-4 mx-4 mb-4">
         {filteredList.map((producer, i) => {
           const userVoteValue = userVotes?.[producer.id];
           const rank = i + 1;

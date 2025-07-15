@@ -194,6 +194,22 @@ export default function HeroHome() {
               </div>
             </motion.button>
           </Link>
+          <Link href="/about">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="group relative cursor-pointer overflow-hidden bg-gradient-to-r from-purple-700 to-pink-600 backdrop-blur-sm text-white font-semibold px-8 py-4 rounded-full border border-white/20 hover:bg-white/20 transition-all duration-300"
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-500 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+              <div className="relative flex items-center justify-center gap-2">
+                <span>How It Works</span>
+                <ChevronRight
+                  size={20}
+                  className="group-hover:translate-x-1 transition-transform"
+                />
+              </div>
+            </motion.button>
+          </Link>
           <Link href="/signup">
             <motion.button
               whileHover={{ scale: 1.05 }}

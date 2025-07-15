@@ -71,7 +71,7 @@ export default async function ProfilePage({
     .map((vote) => ({ ...vote.producer, userActualVote: vote.value })); // Pass producer and the user's vote value
 
   return (
-    <div>
+    <div className="m-4">
       <div className="mb-4">
         <BackButton />
       </div>
