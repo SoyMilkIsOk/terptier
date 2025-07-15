@@ -158,9 +158,9 @@ export default function HeroHome() {
           variants={itemVariants}
           className="text-xl md:text-3xl font-light mb-4 text-white/90 max-w-3xl leading-relaxed"
         >
-          Top Tier Terps,{" "}
+          Find Colorado's{" "}
           <span className="bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent font-semibold">
-            Colorado Style
+            Top Tier Terps
           </span>
         </motion.p>
         <motion.p
@@ -186,7 +186,7 @@ export default function HeroHome() {
             >
               <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-green-600 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
               <div className="relative flex items-center justify-center gap-2">
-                <span>Explore Rankings</span>
+                <span>Explore Brands</span>
                 <ChevronRight
                   size={20}
                   className="group-hover:translate-x-1 transition-transform"

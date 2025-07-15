@@ -172,7 +172,7 @@ export default function AboutPage() {
             <div className="mt-8 pt-8 border-t border-gray-200">
               <p className="text-gray-600">
                 Proudly built by <Link href="https://terpmetrix.com" className="font-bold text-green-600">
-                <Image src="/terpmetrix.png" alt="terpmetrix logo" width={30} height={50} className="inline-block ml-1" />
+                <Image src="/terpmetrix.png" alt="terpmetrix logo" width={30} height={10} className="inline-block ml-1" />
                 </Link>
               </p>
             </div>
