@@ -3,6 +3,7 @@ import Navbar from "@/components/Navbar";
 import MainContainer from "@/components/MainContainer";
 import Footer from "@/components/Footer";
 import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/next"
 
 export const metadata: Metadata = {
   title: "TerpTier",
@@ -20,6 +21,7 @@ export default function RootLayout({
         <Navbar />
         <MainContainer>{children}</MainContainer>
         <Footer />
+        <Analytics />
       </body>
     </html>
   );
