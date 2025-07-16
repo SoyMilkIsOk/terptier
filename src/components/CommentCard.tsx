@@ -40,6 +40,7 @@ export default function CommentCard({
   const [editing, setEditing] = useState(false);
   const [text, setText] = useState(comment.text);
   const [images, setImages] = useState<string[]>(comment.imageUrls);
+  const [expandedImage, setExpandedImage] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const router = useRouter();
 
@@ -188,9 +189,41 @@ export default function CommentCard({
       <p className="whitespace-pre-wrap mb-2">{comment.text}</p>
       <div className="flex flex-wrap gap-2">
         {images.map((url) => (
-          <Image key={url} src={url} alt="comment image" width={80} height={80} className="object-cover rounded" />
+          <Image
+            key={url}
+            src={url}
+            alt="comment image"
+            width={80}
+            height={80}
+            className="object-cover rounded cursor-pointer"
+            onClick={() => setExpandedImage(url)}
+          />
         ))}
       </div>
+      {expandedImage && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/75"
+          onClick={() => setExpandedImage(null)}
+        >
+          <button
+            aria-label="Close image"
+            className="absolute top-4 right-4 text-white text-3xl"
+            onClick={(e) => {
+              e.stopPropagation();
+              setExpandedImage(null);
+            }}
+          >
+            &times;
+          </button>
+          <Image
+            src={expandedImage}
+            alt="expanded comment image"
+            width={800}
+            height={800}
+            className="max-h-[90vh] w-auto h-auto object-contain rounded"
+          />
+        </div>
+      )}
     </div>
   );
 }
