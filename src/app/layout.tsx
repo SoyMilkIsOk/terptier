@@ -5,6 +5,7 @@ import Footer from "@/components/Footer";
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next"
 import { SpeedInsights } from "@vercel/speed-insights/next"
+import { GoogleAnalytics } from '@next/third-parties/google'
 
 export const metadata: Metadata = {
   title: "TerpTier",
@@ -24,6 +25,7 @@ export default function RootLayout({
         <Footer />
         <Analytics />
         <SpeedInsights />
+        <GoogleAnalytics gaId="G-SVL6LBN7QS" />
       </body>
     </html>
   );
