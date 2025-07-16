@@ -6,11 +6,13 @@ import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import SearchBar from "./SearchBar";
 import ProducerCard from "./ProducerCard";
 import CategoryToggle from "./CategoryToggle"; // Import CategoryToggle
+import AttributesFilter from "./AttributesFilter";
 import type { Producer, Vote } from "@prisma/client";
 
 // merge the generated Prisma Producer with its votes
 export type ProducerWithVotes = Producer & {
   votes: Vote[];
+  attributes: string[];
   _count?: { comments: number };
 };
 
@@ -35,6 +37,7 @@ export default function ProducerList({
   const pathname = usePathname();
   const [view, setView] = useState<"flower" | "hash">(initialView ?? "flower");
   const [searchTerm, setSearchTerm] = useState<string>("");
+  const [selectedAttributes, setSelectedAttributes] = useState<string[]>([]);
 
   // Initialize view from url params or localStorage
   useEffect(() => {
@@ -67,13 +70,23 @@ export default function ProducerList({
   const list = view === "flower" ? initialData.flower : initialData.hash;
 
   const filteredList = list.filter((producer) => {
-    if (!searchTerm) return true;
+    if (!searchTerm && selectedAttributes.length === 0) return true;
     try {
       const escaped = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
       const regex = new RegExp(`(?<!['’])\\b${escaped}`, "i");
-      return regex.test(producer.name);
+      const nameMatch = searchTerm ? regex.test(producer.name) : true;
+      const attrMatch = selectedAttributes.every((a) =>
+        (producer.attributes || []).includes(a)
+      );
+      return nameMatch && attrMatch;
     } catch {
-      return producer.name.toLowerCase().startsWith(searchTerm.toLowerCase());
+      const nameMatch = searchTerm
+        ? producer.name.toLowerCase().startsWith(searchTerm.toLowerCase())
+        : true;
+      const attrMatch = selectedAttributes.every((a) =>
+        (producer.attributes || []).includes(a)
+      );
+      return nameMatch && attrMatch;
     }
   });
 
@@ -94,6 +107,10 @@ export default function ProducerList({
       </div>
 
       <SearchBar onSearch={setSearchTerm} />
+      <AttributesFilter
+        selected={selectedAttributes}
+        onChange={setSelectedAttributes}
+      />
       <div className="grid md:grid-cols-2 gap-4 mx-4 mb-4">
         {filteredList.map((producer, i) => {
           const userVoteValue = userVotes?.[producer.id];

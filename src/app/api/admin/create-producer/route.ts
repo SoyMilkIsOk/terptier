@@ -33,6 +33,7 @@ export async function POST(request: Request) {
     category,
     website,
     ingredients,
+    attributes,
     slug,
     profileImage,
   } = await request.json();
@@ -42,6 +43,7 @@ export async function POST(request: Request) {
       category,
       website,
       ingredients,
+      attributes,
       slug,
       profileImage,
       createdById: user.id,

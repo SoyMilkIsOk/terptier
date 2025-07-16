@@ -43,6 +43,7 @@ model Producer {
   profileImage String?
   website     String?
   ingredients String?
+  attributes  String[] @default([])
   slug        String?  @unique
   createdAt   DateTime @default(now())
   createdBy   User?    @relation(fields: [createdById], references: [id])
