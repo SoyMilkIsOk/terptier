@@ -5,6 +5,7 @@ import Link from "next/link";
 import VoteButton from "./VoteButton";
 import { MessageCircle } from "lucide-react";
 import type { ProducerWithVotes } from "./ProducerList";
+import { ATTRIBUTE_OPTIONS } from "@/constants/attributes";
 
 export default function ProducerCard({
   rank,
@@ -82,6 +83,22 @@ export default function ProducerCard({
           navigateOnClick
           linkSlug={producer.slug ?? producer.id}
         />
+        {producer.attributes && producer.attributes.length > 0 && (
+          <div className="flex flex-wrap gap-1 mt-2">
+            {producer.attributes.map((a) => {
+              const opt = ATTRIBUTE_OPTIONS.find((o) => o.key === a);
+              return (
+                <span
+                  key={a}
+                  className="text-xs bg-gray-200 rounded-full px-2 py-0.5 flex items-center gap-1"
+                >
+                  <span>{opt?.icon}</span>
+                  <span>{opt?.label || a}</span>
+                </span>
+              );
+            })}
+          </div>
+        )}
       </div>
       <div className="flex items-center text-sm text-gray-600">
         <MessageCircle className="w-4 h-4 mr-1" />

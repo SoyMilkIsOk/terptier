@@ -3,11 +3,14 @@ import { useState } from "react";
 import ImageUpload from "./ImageUpload";
 import type { Producer } from "@prisma/client";
 
+type ProducerWithAttrs = Producer & { attributes: string[] };
+import { ATTRIBUTE_OPTIONS } from "@/constants/attributes";
+
 export default function AddProducerForm({
   producer,
   onSaved,
 }: {
-  producer?: Producer;
+  producer?: ProducerWithAttrs;
   onSaved?: () => void;
 }) {
   const [name, setName] = useState(producer?.name ?? "");
@@ -17,6 +20,7 @@ export default function AddProducerForm({
   const [website, setWebsite] = useState(producer?.website ?? "");
   const [ingredients, setIngredients] = useState(producer?.ingredients ?? "");
   const [slug, setSlug] = useState(producer?.slug ?? "");
+  const [attributes, setAttributes] = useState<string[]>(producer?.attributes ?? []);
   const [profileImage, setProfileImage] = useState<string | null>(
     producer?.profileImage ?? null
   );
@@ -29,6 +33,7 @@ export default function AddProducerForm({
       ingredients,
       slug,
       profileImage,
+      attributes,
     };
     if (producer) {
       await fetch(`/api/producers/${producer.id}`, {
@@ -48,6 +53,7 @@ export default function AddProducerForm({
     setIngredients("");
     setSlug("");
     setProfileImage(null);
+    setAttributes([]);
     // ideally revalidate or refresh the page:
     if (onSaved) onSaved();
     else window.location.reload();
@@ -80,6 +86,25 @@ export default function AddProducerForm({
         onChange={(e) => setSlug(e.target.value)}
         className="border p-2 rounded w-full"
       />
+      <div className="flex flex-wrap gap-2">
+        {ATTRIBUTE_OPTIONS.map((attr) => (
+          <label key={attr.key} className="flex items-center space-x-1 text-sm">
+            <input
+              type="checkbox"
+              checked={attributes.includes(attr.key)}
+              onChange={() =>
+                setAttributes((prev) =>
+                  prev.includes(attr.key)
+                    ? prev.filter((a) => a !== attr.key)
+                    : [...prev, attr.key]
+                )
+              }
+            />
+            <span>{attr.icon}</span>
+            <span>{attr.label}</span>
+          </label>
+        ))}
+      </div>
       <select
         value={category}
         onChange={(e) => setCategory(e.target.value as any)}
