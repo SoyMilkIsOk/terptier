@@ -21,21 +21,74 @@ export default function SignUpPage() {
   const [error, setError] = useState<string | null>(null);
   const [usernameTaken, setUsernameTaken] = useState(false);
   const [loading, setLoading] = useState(false);
+  // Email validation function
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  // More comprehensive email validation
+  const isValidEmail = (email: string): boolean => {
+    // Basic format check
+    if (!validateEmail(email)) return false;
+    
+    // Additional checks
+    const parts = email.split('@');
+    if (parts.length !== 2) return false;
+    
+    const [localPart, domain] = parts;
+    
+    // Local part validation
+    if (localPart.length === 0 || localPart.length > 64) return false;
+    if (localPart.startsWith('.') || localPart.endsWith('.')) return false;
+    if (localPart.includes('..')) return false;
+    
+    // Domain validation
+    if (domain.length === 0 || domain.length > 253) return false;
+    if (domain.startsWith('.') || domain.endsWith('.')) return false;
+    if (domain.includes('..')) return false;
+    if (!domain.includes('.')) return false;
+    
+    // Check for valid characters
+    const validLocalChars = /^[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+(\.[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+)*$/;
+    const validDomainChars = /^[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*$/;
+    
+    return validLocalChars.test(localPart) && validDomainChars.test(domain);
+  };
 
   const checkEmail = async () => {
-    setLoading(true);
-    const res = await fetch(`/api/users?email=${encodeURIComponent(email)}`);
-    const data = await res.json();
-    if (data.exists) {
-      router.push(
-        `/login?email=${encodeURIComponent(
-          email
-        )}&message=account already exists`
-      );
-    } else {
-      setStep(2);
+    // Validate email before proceeding
+    if (!email.trim()) {
+      setError("Email is required");
+      return;
     }
-    setLoading(false);
+
+    if (!isValidEmail(email)) {
+      setError("Please enter a valid email address");
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const res = await fetch(`/api/users?email=${encodeURIComponent(email)}`);
+      const data = await res.json();
+      
+      if (data.exists) {
+        router.push(
+          `/login?email=${encodeURIComponent(
+            email
+          )}&message=account already exists`
+        );
+      } else {
+        setStep(2);
+      }
+    } catch (err) {
+      setError("Failed to check email. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const checkUsername = async (name: string) => {
@@ -105,6 +158,12 @@ export default function SignUpPage() {
   };
 
   const handleSubmit = async () => {
+    // Validate email again before submission
+    if (!isValidEmail(email)) {
+      setError("Please enter a valid email address");
+      return;
+    }
+
     if (password !== confirm) {
       setError("Passwords do not match");
       return;
@@ -187,16 +246,19 @@ export default function SignUpPage() {
               required
               placeholder="Email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setError(null);
+              }}
               className="w-full mt-1 p-2.5 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
             />
           </label>
           <button
             onClick={checkEmail}
             disabled={loading}
-            className="w-full py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-md"
+            className="w-full py-2.5 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-md"
           >
-            Continue
+            {loading ? "Checking..." : "Continue"}
           </button>
           <p className="mt-1 text-center text-base">
             Already have an account?{" "}
