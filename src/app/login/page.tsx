@@ -67,7 +67,7 @@ function LoginForm() {
 
 
   return (
-    <div className="max-w-md mx-auto bg-white p-6 rounded shadow">
+    <div className="max-w-md mx-auto bg-white p-6 rounded shadow mt-8 mx-2">
       {reason === "vote_redirect" && (
         <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-6" role="alert">
           <p className="font-bold">Access Required</p>

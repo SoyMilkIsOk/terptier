@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import UploadButton from "@/components/UploadButton";
 import { deleteBlob } from "@/utils/blob";
+import Link from "next/link";
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -26,7 +27,11 @@ export default function SignUpPage() {
     const res = await fetch(`/api/users?email=${encodeURIComponent(email)}`);
     const data = await res.json();
     if (data.exists) {
-      router.push(`/login?email=${encodeURIComponent(email)}&message=account already exists`);
+      router.push(
+        `/login?email=${encodeURIComponent(
+          email
+        )}&message=account already exists`
+      );
     } else {
       setStep(2);
     }
@@ -152,7 +157,9 @@ export default function SignUpPage() {
         data.user.email ?? email
       );
       router.push(
-        `/login?email=${encodeURIComponent(email)}&message=Account%20created%20successfully`
+        `/login?email=${encodeURIComponent(
+          email
+        )}&message=Account%20created%20successfully`
       );
     } catch (err: any) {
       setError(err.message);
@@ -161,9 +168,8 @@ export default function SignUpPage() {
     setLoading(false);
   };
 
-
   return (
-    <div className="max-w-md mx-auto bg-white p-6 rounded shadow">
+    <div className="max-w-md mx-auto bg-white p-6 rounded shadow my-8 mx-2">
       {error && (
         <div className="text-red-500 mb-4 p-3 bg-red-100 border border-red-400 rounded">
           {error}
@@ -192,6 +198,15 @@ export default function SignUpPage() {
           >
             Continue
           </button>
+          <p className="mt-1 text-center text-base">
+            Already have an account?{" "}
+            <Link
+              href="/login"
+              className="text-green-700 underline font-medium"
+            >
+              Log in
+            </Link>
+          </p>
         </div>
       )}
       {step === 2 && (
@@ -321,7 +336,9 @@ export default function SignUpPage() {
               />
             </label>
           </div>
-          <p className="text-sm text-gray-600">Password must be at least 8 characters.</p>
+          <p className="text-sm text-gray-600">
+            Password must be at least 8 characters.
+          </p>
           <button
             type="submit"
             disabled={loading}
@@ -329,6 +346,22 @@ export default function SignUpPage() {
           >
             Submit
           </button>
+          <p className="mt-4 text-center text-base">
+            By continuing, you agree to our{" "}
+            <Link
+              href="/terms"
+              className="text-green-700 underline font-medium"
+            >
+              Terms of Service
+            </Link>{" "}
+            and{" "}
+            <Link
+              href="/privacy"
+              className="text-green-700 underline font-medium"
+            >
+              Privacy Policy
+            </Link>
+          </p>
         </form>
       )}
     </div>

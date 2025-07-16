@@ -89,7 +89,7 @@ export default function ProducerList({
 
   return (
     <>
-      <div className="flex justify-center my-4">
+      <div className="flex justify-center mb-4">
         <CategoryToggle view={view} setView={updateView} />
       </div>
 
