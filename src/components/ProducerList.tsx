@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import SearchBar from "./SearchBar";
 import ProducerCard from "./ProducerCard";
+import CategoryToggle from "./CategoryToggle";
 import type { Producer, Vote } from "@prisma/client";
 
 // merge the generated Prisma Producer with its votes
@@ -100,10 +101,11 @@ export default function ProducerList({
 
   return (
     <>
+      <div className="flex justify-center mb-4">
+        <CategoryToggle view={view} setView={updateView} />
+      </div>
       <SearchBar
         onSearch={setSearchTerm}
-        view={view}
-        onViewChange={updateView}
         selectedAttributes={selectedAttributes}
         onAttributesChange={setSelectedAttributes}
       />

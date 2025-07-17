@@ -1,20 +1,15 @@
 "use client";
 import { useState, useEffect } from "react";
-import CategoryToggle from "./CategoryToggle";
 import AttributesFilter from "./AttributesFilter";
 
 export default function SearchBar({
   onSearch,
   initialQuery = "",
-  view,
-  onViewChange,
   selectedAttributes = [],
   onAttributesChange,
 }: {
   onSearch: (q: string) => void;
   initialQuery?: string;
-  view: "flower" | "hash";
-  onViewChange: (v: "flower" | "hash") => void;
   selectedAttributes?: string[];
   onAttributesChange: (attrs: string[]) => void;
 }) {
@@ -135,11 +130,11 @@ export default function SearchBar({
       </div>
 
       {showFilters && (
-        <div className="mt-3 w-5/6 md:w-2/3 max-w-md bg-white p-3 rounded shadow space-y-3">
-          <div className="flex justify-center">
-            <CategoryToggle view={view} setView={onViewChange} />
-          </div>
-          <AttributesFilter selected={selectedAttributes} onChange={onAttributesChange} />
+        <div className="mt-3 w-5/6 md:w-2/3 max-w-md bg-white p-3 rounded shadow">
+          <AttributesFilter
+            selected={selectedAttributes}
+            onChange={onAttributesChange}
+          />
         </div>
       )}
     </div>
