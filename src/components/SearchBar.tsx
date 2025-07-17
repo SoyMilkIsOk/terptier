@@ -1,15 +1,26 @@
 "use client";
 import { useState, useEffect } from "react";
+import CategoryToggle from "./CategoryToggle";
+import AttributesFilter from "./AttributesFilter";
 
 export default function SearchBar({
   onSearch,
   initialQuery = "",
+  view,
+  onViewChange,
+  selectedAttributes = [],
+  onAttributesChange,
 }: {
   onSearch: (q: string) => void;
   initialQuery?: string;
+  view: "flower" | "hash";
+  onViewChange: (v: "flower" | "hash") => void;
+  selectedAttributes?: string[];
+  onAttributesChange: (attrs: string[]) => void;
 }) {
   const [query, setQuery] = useState(initialQuery);
   const [isFocused, setIsFocused] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
 
   // Trigger search automatically with a short debounce
   useEffect(() => {
@@ -31,11 +42,11 @@ export default function SearchBar({
   };
 
   return (
-    <div className="mb-6 flex justify-center">
+    <div className="mb-6 flex flex-col items-center">
       <div className="relative w-5/6 md:w-2/3 max-w-md">
         {/* Search icon */}
         <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
-          <svg 
+          <svg
             width="20" 
             height="20" 
             viewBox="0 0 24 24" 
@@ -67,11 +78,34 @@ export default function SearchBar({
           }`}
         />
 
+        {/* Filter toggle button */}
+        <button
+          onClick={() => setShowFilters((s) => !s)}
+          className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 p-1"
+          aria-label="Toggle filters"
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M3 4h18M6 12h12M10 20h4"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
+
         {/* Clear button */}
         {query && (
           <button
             onClick={clearSearch}
-            className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors duration-200"
+            className="absolute right-8 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors duration-200"
             aria-label="Clear search"
           >
             <svg 
@@ -93,10 +127,21 @@ export default function SearchBar({
         )}
 
         {/* Focus ring */}
-        <div className={`absolute inset-0 rounded-full ring-1 ring-green-300 ring-opacity-0 transition-all duration-200 pointer-events-none ${
-          isFocused ? "ring-opacity-40" : ""
-        }`} />
+        <div
+          className={`absolute inset-0 rounded-full ring-1 ring-green-300 ring-opacity-0 transition-all duration-200 pointer-events-none ${
+            isFocused ? "ring-opacity-40" : ""
+          }`}
+        />
       </div>
+
+      {showFilters && (
+        <div className="mt-3 w-5/6 md:w-2/3 max-w-md bg-white p-3 rounded shadow space-y-3">
+          <div className="flex justify-center">
+            <CategoryToggle view={view} setView={onViewChange} />
+          </div>
+          <AttributesFilter selected={selectedAttributes} onChange={onAttributesChange} />
+        </div>
+      )}
     </div>
   );
 }
