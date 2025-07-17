@@ -90,10 +90,9 @@ export default function ProducerCard({
               return (
                 <span
                   key={a}
-                  className="text-xs bg-gray-200 rounded-full px-2 py-0.5 flex items-center gap-1"
+                  className="text-xs bg-gray-200 rounded-full px-2 py-0.5 flex items-center"
                 >
                   <span>{opt?.icon}</span>
-                  <span>{opt?.label || a}</span>
                 </span>
               );
             })}

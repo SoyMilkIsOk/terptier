@@ -16,17 +16,20 @@ export default function AttributesFilter({
   };
 
   return (
-    <div className="flex flex-wrap justify-center gap-3 mb-4">
+    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
       {ATTRIBUTE_OPTIONS.map((attr) => (
-        <label key={attr.key} className="flex items-center space-x-1 text-sm">
+        <label
+          key={attr.key}
+          className="flex items-center gap-2 bg-gray-100 rounded px-2 py-1 text-sm"
+        >
           <input
             type="checkbox"
-            className="mr-1"
+            className="text-green-600"
             checked={selected.includes(attr.key)}
             onChange={() => toggle(attr.key)}
           />
-          <span>{attr.icon}</span>
-          <span>{attr.label}</span>
+          <span className="text-lg">{attr.icon}</span>
+          <span className="whitespace-nowrap">{attr.label}</span>
         </label>
       ))}
     </div>
