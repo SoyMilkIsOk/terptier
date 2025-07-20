@@ -108,6 +108,7 @@ export default function ProducerList({
         onSearch={setSearchTerm}
         selectedAttributes={selectedAttributes}
         onAttributesChange={setSelectedAttributes}
+        category={view === "flower" ? "FLOWER" : "HASH"}
       />
       <div className="grid md:grid-cols-2 gap-4 mx-4 mb-4">
         {filteredList.map((producer, i) => {
