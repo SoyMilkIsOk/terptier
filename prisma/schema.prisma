@@ -50,6 +50,7 @@ model Producer {
   createdById String?
   votes       Vote[]
   comments    Comment[]
+  ratingSnapshots ProducerRatingSnapshot[]
 
   @@unique([name, category])
 }
@@ -79,4 +80,16 @@ model Comment {
   updatedAt  DateTime @updatedAt
 
   @@unique([userId, producerId])
+}
+
+model ProducerRatingSnapshot {
+  id         String   @id @default(cuid())
+  producer   Producer @relation(fields: [producerId], references: [id], onDelete: Cascade)
+  producerId String
+  average    Float
+  rank       Int
+  voteCount  Int
+  createdAt  DateTime @default(now())
+
+  @@index([producerId, createdAt])
 }
