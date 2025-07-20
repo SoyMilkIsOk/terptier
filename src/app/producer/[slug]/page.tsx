@@ -10,6 +10,7 @@ import BackButton from "@/components/BackButton";
 import { ExternalLink } from "lucide-react";
 import { createSupabaseServerClient } from "@/lib/supabaseServer";
 import { ATTRIBUTE_OPTIONS } from "@/constants/attributes";
+import Tooltip from "@/components/Tooltip";
 
 // Helper function to capitalize category
 const capitalize = (s: string) =>
@@ -195,14 +196,12 @@ export default async function ProducerProfilePage({
                 (o) => o.key === a
               );
               return (
-                <span
-                  key={a}
-                  className="text-sm bg-gray-200 rounded-full px-3 py-1 flex items-center gap-1"
-                  title={opt?.tooltip}
-                >
-                  <span>{opt?.icon}</span>
-                  <span>{opt?.label || a}</span>
-                </span>
+                <Tooltip key={a} content={opt?.tooltip}>
+                  <span className="text-sm bg-gray-200 rounded-full px-3 py-1 flex items-center gap-1">
+                    <span>{opt?.icon}</span>
+                    <span>{opt?.label || a}</span>
+                  </span>
+                </Tooltip>
               );
             })}
           </div>

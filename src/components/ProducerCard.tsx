@@ -6,6 +6,7 @@ import VoteButton from "./VoteButton";
 import { MessageCircle } from "lucide-react";
 import type { ProducerWithVotes } from "./ProducerList";
 import { ATTRIBUTE_OPTIONS } from "@/constants/attributes";
+import Tooltip from "./Tooltip";
 
 export default function ProducerCard({
   rank,
@@ -90,12 +91,11 @@ export default function ProducerCard({
                 (o) => o.key === a
               );
               return (
-                <span
-                  key={a}
-                  className="text-xs bg-gray-200 rounded-full px-2 py-0.5 flex items-center"
-                >
-                  <span>{opt?.icon}</span>
-                </span>
+                <Tooltip key={a} content={opt?.tooltip}>
+                  <span className="text-xs bg-gray-200 rounded-full px-2 py-0.5 flex items-center">
+                    <span>{opt?.icon}</span>
+                  </span>
+                </Tooltip>
               );
             })}
           </div>
