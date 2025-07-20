@@ -4,9 +4,11 @@ import { ATTRIBUTE_OPTIONS } from "@/constants/attributes";
 export default function AttributesFilter({
   selected,
   onChange,
+  category,
 }: {
   selected: string[];
   onChange: (attrs: string[]) => void;
+  category: "FLOWER" | "HASH";
 }) {
   const toggle = (key: string) => {
     const newValues = selected.includes(key)
@@ -17,7 +19,7 @@ export default function AttributesFilter({
 
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-      {ATTRIBUTE_OPTIONS.map((attr) => (
+      {ATTRIBUTE_OPTIONS[category].map((attr) => (
         <label
           key={attr.key}
           className="flex items-center gap-2 bg-gray-100 rounded px-2 py-1 text-sm"

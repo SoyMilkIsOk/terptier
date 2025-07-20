@@ -191,11 +191,14 @@ export default async function ProducerProfilePage({
         {producer.attributes && producer.attributes.length > 0 && (
           <div className="flex flex-wrap gap-2 mt-4">
             {producer.attributes.map((a) => {
-              const opt = ATTRIBUTE_OPTIONS.find((o) => o.key === a);
+              const opt = ATTRIBUTE_OPTIONS[producer.category].find(
+                (o) => o.key === a
+              );
               return (
                 <span
                   key={a}
                   className="text-sm bg-gray-200 rounded-full px-3 py-1 flex items-center gap-1"
+                  title={opt?.tooltip}
                 >
                   <span>{opt?.icon}</span>
                   <span>{opt?.label || a}</span>

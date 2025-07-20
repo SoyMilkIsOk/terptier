@@ -87,7 +87,7 @@ export default function AddProducerForm({
         className="border p-2 rounded w-full"
       />
       <div className="flex flex-wrap gap-2">
-        {ATTRIBUTE_OPTIONS.map((attr) => (
+        {ATTRIBUTE_OPTIONS[category].map((attr) => (
           <label key={attr.key} className="flex items-center space-x-1 text-sm">
             <input
               type="checkbox"

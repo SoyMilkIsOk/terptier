@@ -86,7 +86,9 @@ export default function ProducerCard({
         {producer.attributes && producer.attributes.length > 0 && (
           <div className="flex flex-wrap gap-1 mt-2">
             {producer.attributes.map((a) => {
-              const opt = ATTRIBUTE_OPTIONS.find((o) => o.key === a);
+              const opt = ATTRIBUTE_OPTIONS[producer.category].find(
+                (o) => o.key === a
+              );
               return (
                 <span
                   key={a}

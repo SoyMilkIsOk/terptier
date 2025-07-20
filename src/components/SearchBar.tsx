@@ -7,11 +7,13 @@ export default function SearchBar({
   initialQuery = "",
   selectedAttributes = [],
   onAttributesChange,
+  category,
 }: {
   onSearch: (q: string) => void;
   initialQuery?: string;
   selectedAttributes?: string[];
   onAttributesChange: (attrs: string[]) => void;
+  category: "FLOWER" | "HASH";
 }) {
   const [query, setQuery] = useState(initialQuery);
   const [isFocused, setIsFocused] = useState(false);
@@ -134,6 +136,7 @@ export default function SearchBar({
           <AttributesFilter
             selected={selectedAttributes}
             onChange={onAttributesChange}
+            category={category}
           />
         </div>
       )}
