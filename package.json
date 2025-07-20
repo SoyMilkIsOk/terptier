@@ -11,7 +11,8 @@
     "start": "next start",
     "lint": "next lint",
     "db:seed": "prisma db seed",
-    "migrate:reset": "prisma migrate reset --force"
+    "migrate:reset": "prisma migrate reset --force",
+    "record:snapshot": "ts-node scripts/recordDailyRanking.ts"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
