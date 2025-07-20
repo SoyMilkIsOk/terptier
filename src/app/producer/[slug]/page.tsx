@@ -7,6 +7,7 @@ import AddCommentForm from "@/components/AddCommentForm";
 import VoteButton from "@/components/VoteButton";
 import IngredientsButton from "@/components/IngredientsButton";
 import BackButton from "@/components/BackButton";
+import RatingHistoryChart from "@/components/RatingHistoryChart";
 import { ExternalLink } from "lucide-react";
 import { createSupabaseServerClient } from "@/lib/supabaseServer";
 import { ATTRIBUTE_OPTIONS } from "@/constants/attributes";
@@ -216,6 +217,9 @@ export default async function ProducerProfilePage({
           </div>
         )}
         */}
+        <div className="mt-6">
+          <RatingHistoryChart producerId={producer.id} />
+        </div>
 
         <div className="mt-8">
           <h3 className="text-xl font-semibold mb-4">

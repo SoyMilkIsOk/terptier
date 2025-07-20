@@ -3,8 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
 
@@ -19,37 +19,38 @@ enum Category {
 }
 
 model User {
-  id           String     @id @default(cuid()) // Reverted to CUID
-  name         String?
-  username     String?    @unique
-  birthday     DateTime?
+  id            String     @id @default(cuid()) // Reverted to CUID
+  name          String?
+  username      String?    @unique
+  birthday      DateTime?
   profilePicUrl String?
-  socialLink   String?
-  email        String     @unique
-  passwordHash String? // for credentials
-  role         Role       @default(USER)
-  votes        Vote[]
-  comments     Comment[]
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
-  Producer     Producer[]
+  socialLink    String?
+  email         String     @unique
+  passwordHash  String? // for credentials
+  role          Role       @default(USER)
+  votes         Vote[]
+  comments      Comment[]
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  Producer      Producer[]
 }
 
 model Producer {
-  id          String   @id @default(cuid())
-  name        String
-  category    Category
-  logoUrl     String?
-  profileImage String?
-  website     String?
-  ingredients String?
-  attributes  String[] @default([])
-  slug        String?  @unique
-  createdAt   DateTime @default(now())
-  createdBy   User?    @relation(fields: [createdById], references: [id])
-  createdById String?
-  votes       Vote[]
-  comments    Comment[]
+  id                     String                   @id @default(cuid())
+  name                   String
+  category               Category
+  logoUrl                String?
+  profileImage           String?
+  website                String?
+  ingredients            String?
+  attributes             String[]                 @default([])
+  slug                   String?                  @unique
+  createdAt              DateTime                 @default(now())
+  createdBy              User?                    @relation(fields: [createdById], references: [id])
+  createdById            String?
+  votes                  Vote[]
+  comments               Comment[]
+  ProducerRatingSnapshot ProducerRatingSnapshot[]
 
   @@unique([name, category])
 }
@@ -79,4 +80,15 @@ model Comment {
   updatedAt  DateTime @updatedAt
 
   @@unique([userId, producerId])
+}
+
+model ProducerRatingSnapshot {
+  id            String   @id @default(cuid())
+  producer      Producer @relation(fields: [producerId], references: [id], onDelete: Cascade)
+  producerId    String
+  averageRating Float
+  categoryRank  Int
+  createdAt     DateTime @default(now())
+
+  @@index([producerId, createdAt])
 }
