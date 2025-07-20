@@ -3,12 +3,13 @@ import { prisma } from "@/lib/prismadb";
 
 export async function GET(
   _req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const snapshots = await prisma.producerRatingSnapshot.findMany({
-      where: { producerId: params.id },
-      orderBy: { createdAt: "asc" }
+      where: { producerId: id },
+      orderBy: { createdAt: "asc" },
     });
     return NextResponse.json({ success: true, snapshots });
   } catch (err: any) {
