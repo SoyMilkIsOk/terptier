@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import AgeGate from "@/components/AgeGate";
 import ProducerList, { ProducerWithVotes } from "@/components/ProducerList";
+import Link from "next/link";
 import { prisma } from "@/lib/prismadb";
 import { Category, Vote } from "@prisma/client";
 
@@ -61,11 +62,19 @@ export default async function RankingsPage({
 
   return (
     <div className="bg-white min-h-[100vh] py-4">
-    <ProducerList
-      initialData={{ flower, hash }}
-      userVotes={userVotes}
-      initialView={initialViewParam}
-    />
+      <ProducerList
+        initialData={{ flower, hash }}
+        userVotes={userVotes}
+        initialView={initialViewParam}
+      />
+      <div className="text-center mt-8">
+        <Link
+          href="/feedback"
+          className="inline-block bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md"
+        >
+          Missing Your Favorite?
+        </Link>
+      </div>
     </div>
   );
 }
