@@ -50,15 +50,21 @@ function LoginForm() {
   const handleSignIn = async () => {
     setLoading(true);
     setError(null);
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
+    const res = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
     });
+    const result = await res.json();
 
-    if (signInError) {
-      setError(signInError.message);
+    if (!res.ok || !result.success) {
+      setError(result.error || "Login failed");
       setLoading(false);
       return;
+    }
+
+    if (result.data?.session) {
+      await supabase.auth.setSession(result.data.session);
     }
 
     await finalizeAuth();

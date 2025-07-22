@@ -151,6 +151,7 @@ export default function Navbar() {
             <button
               type="button"
               onClick={async () => {
+                await fetch("/api/auth/logout", { method: "POST" });
                 await supabase.auth.signOut();
                 setCurrentUser(null);
                 location.reload();
@@ -203,6 +204,7 @@ export default function Navbar() {
             <button
               type="button"
               onClick={async () => {
+                await fetch("/api/auth/logout", { method: "POST" });
                 await supabase.auth.signOut();
                 setCurrentUser(null);
                 setMenuOpen(false);
