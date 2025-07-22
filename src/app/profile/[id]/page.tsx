@@ -6,8 +6,20 @@ import BackButton from "@/components/BackButton";
 import { prisma } from "@/lib/prismadb";
 import { cookies } from "next/headers";
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
+import { Instagram, ExternalLink, Link } from "lucide-react";
 
 export const dynamic = "force-dynamic";
+
+// Helper function to detect social platform
+const getSocialPlatform = (url: string) => {
+  if (url.includes('instagram.com') || url.includes('instagr.am')) {
+    return 'instagram';
+  }
+  if (url.includes('twitter.com') || url.includes('x.com')) {
+    return 'x';
+  }
+  return 'other';
+};
 
 export default async function ProfilePage({
   params,
@@ -54,8 +66,11 @@ export default async function ProfilePage({
   }
 
   if (!user) {
-    // Consider a more user-friendly "not found" page or redirect
-    return <p>User not found. ({id})</p>;
+    return (
+      <div className="container mx-auto p-4 mt-8 text-center">
+        <p className="text-xl text-red-500">User not found.</p>
+      </div>
+    );
   }
 
   const isOwner = session?.user?.email === user.email;
@@ -71,46 +86,125 @@ export default async function ProfilePage({
     .map((vote) => ({ ...vote.producer, userActualVote: vote.value })); // Pass producer and the user's vote value
 
   return (
-    <div className="p-4">
+    <div className="container mx-auto p-4">
       <div className="mb-4">
         <BackButton />
       </div>
-      <div className="flex flex-col items-center mb-6 space-y-2">
-        {isOwner ? (
-          <ProfileImageUpload initialUrl={user.profilePicUrl} />
-        ) : user.profilePicUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={user.profilePicUrl} alt="profile" className="w-24 h-24 rounded-full object-cover" />
-        ) : (
-          <div className="w-24 h-24 rounded-full bg-gray-300" />
-        )}
-        <h1 className="text-2xl font-semibold">
-          {user.username || user.name || user.email}
-        </h1>
-        {user.socialLink && (
-          <a href={user.socialLink} className="text-blue-600 underline break-words" target="_blank" rel="noopener noreferrer">
-            {user.socialLink}
-          </a>
-        )}
+      
+      {/* Profile Header Card */}
+      <div className="bg-white shadow-xl rounded-lg p-6 md:p-8 max-w-3xl mx-auto mb-8">
+        <div className="flex flex-col md:flex-row items-center md:items-start mb-6 pb-6 border-b border-gray-300">
+          <div className="mb-4 md:mb-0 md:mr-6 flex-shrink-0">
+            {isOwner ? (
+              <ProfileImageUpload initialUrl={user.profilePicUrl} />
+            ) : user.profilePicUrl ? (
+              <div className="w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden bg-gray-100">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img 
+                  src={user.profilePicUrl} 
+                  alt="profile" 
+                  className="w-full h-full object-cover" 
+                />
+              </div>
+            ) : (
+              <div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-gray-300 flex items-center justify-center">
+                <span className="text-gray-500 text-2xl md:text-3xl font-bold">
+                  {(user.username || user.name || user.email || '?').charAt(0).toUpperCase()}
+                </span>
+              </div>
+            )}
+          </div>
+          
+          <div className="flex-grow text-center md:text-left">
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">
+              {user.username || user.name || user.email}
+            </h1>
+            
+            {user.socialLink && (
+              <div className="flex items-center justify-center md:justify-start">
+                {(() => {
+                  const platform = getSocialPlatform(user.socialLink);
+                  
+                  return (
+                    <a 
+                      href={user.socialLink} 
+                      className={`transition-colors duration-200 ${
+                        platform === 'instagram' 
+                          ? "text-green-700 hover:text-green-900" 
+                          : platform === 'x'
+                          ? "text-green hover:text-green-700"
+                          : "text-green-600 hover:text-green-800"
+                      }`}
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      aria-label={
+                        platform === 'instagram' 
+                          ? "Instagram Profile" 
+                          : platform === 'x'
+                          ? "X (Twitter) Profile"
+                          : "Social Link"
+                      }
+                    >
+                      {platform === 'instagram' ? (
+                        <Instagram className="w-6 h-6" />
+                      ) : platform === 'x' ? (
+                        <div className="w-6 h-6 flex items-center justify-center">
+                          <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current">
+                            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                          </svg>
+                        </div>
+                      ) : (
+                        <Link className="w-6 h-6" />
+                      )}
+                    </a>
+                  );
+                })()}
+              </div>
+            )}
+          </div>
+        </div>
+        
+        {/* Stats */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-8 text-lg justify-center md:justify-start">
+          <div className="flex items-center justify-center md:justify-start mb-2 sm:mb-0">
+            <span className="mr-2 font-semibold text-gray-700">Total Ratings:</span>
+            <span className="text-blue-600 font-bold">{user.votes.length}</span>
+          </div>
+          <div className="flex items-center justify-center md:justify-start mb-2 sm:mb-0">
+            <span className="mr-2 font-semibold text-gray-700">Comments:</span>
+            <span className="text-green-600 font-bold">{user.comments.length}</span>
+          </div>
+        </div>
       </div>
 
-      <section className="mb-10">
-        <h2 className="text-xl font-semibold mb-4 border-b pb-2">Comments</h2>
+      {/* Comments Section */}
+      <div className="bg-white shadow-xl rounded-lg p-6 md:p-8 max-w-3xl mx-auto mb-8">
+        <h2 className="text-2xl font-bold text-gray-800 mb-6 pb-3 border-b border-gray-300">
+          Comments ({user.comments.length})
+        </h2>
         {user.comments.length > 0 ? (
-          <div>
+          <div className="space-y-4">
             {user.comments.map((c) => (
-              <CommentCard key={c.id} comment={c} currentUserId={currentViewerId} showRating={false} />
+              <CommentCard 
+                key={c.id} 
+                comment={c} 
+                currentUserId={currentViewerId} 
+                showRating={false} 
+              />
             ))}
           </div>
         ) : (
-          <p className="text-gray-600">No comments yet.</p>
+          <p className="text-gray-600 text-center py-8">No comments yet.</p>
         )}
-      </section>
+      </div>
 
-      <section className="mb-10">
-        <h2 className="text-xl font-semibold mb-4 border-b pb-2">Rated Producers</h2>
+      {/* Rated Producers Section */}
+      <div className="bg-white shadow-xl rounded-lg p-6 md:p-8 max-w-6xl mx-auto">
+        <h2 className="text-2xl font-bold text-gray-800 mb-6 pb-3 border-b border-gray-300">
+          Rated Producers ({likedProducers.length})
+        </h2>
         {likedProducers.length > 0 ? (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {likedProducers.map((producer, index) => {
               const rank = index + 1;
               const j = rank % 10;
@@ -132,10 +226,9 @@ export default async function ProfilePage({
             })}
           </div>
         ) : (
-          <p className="text-gray-600">No rated producers yet.</p>
+          <p className="text-gray-600 text-center py-8">No rated producers yet.</p>
         )}
-      </section>
-
+      </div>
     </div>
   );
 }

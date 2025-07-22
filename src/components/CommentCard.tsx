@@ -125,11 +125,14 @@ export default function CommentCard({
         <div className="flex items-center">
           {comment.user.profilePicUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={comment.user.profilePicUrl}
-              alt="profile"
-              className="w-10 h-10 rounded-full object-cover"
-            />
+            <Link href={`/profile/${comment.user.username ?? comment.user.id}`}>
+                <img
+                  src={comment.user.profilePicUrl}
+                  alt="profile"
+                  className="w-10 h-10 rounded-full object-cover"
+                />
+            </Link>
+
           ) : (
             <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center">
               <Leaf className="w-5 h-5 text-white" />

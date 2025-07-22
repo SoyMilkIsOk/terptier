@@ -305,24 +305,6 @@ export default function AgeGate() {
                     <div className="w-3 h-3 sm:w-4 sm:h-4 bg-white rounded-full"></div>
                   </button>
                 </div>
-
-                {/* Functional Cookies */}
-                <div className="flex items-center justify-between p-3 sm:p-4 bg-gray-50 rounded-xl border">
-                  <div className="flex-1 pr-3">
-                    <h3 className="font-semibold text-gray-800 text-sm sm:text-base">Functional</h3>
-                    <p className="text-xs sm:text-sm text-gray-600">Enhanced features and preferences</p>
-                  </div>
-                  <button
-                    onClick={() => toggleCookiePreference('functional')}
-                    className={`w-10 h-5 cursor-pointer sm:w-12 sm:h-6 rounded-full flex items-center px-1 transition-all duration-200 ${
-                      cookiePreferences.functional 
-                        ? 'bg-green-500 justify-end' 
-                        : 'bg-gray-300 justify-start'
-                    }`}
-                  >
-                    <div className="w-3 h-3 sm:w-4 sm:h-4 bg-white rounded-full"></div>
-                  </button>
-                </div>
               </div>
 
               <div className="space-y-3">
