@@ -28,7 +28,7 @@ export default async function ProducerProfilePage({
 }: ProducerProfilePageProps) {
   const { slug } = await params;
 
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const {
     data: { user: authUser },
   } = await supabase.auth.getUser();

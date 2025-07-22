@@ -10,6 +10,13 @@ const nextConfig = {
   images: {
     remotePatterns: [new URL('https://elnwy0xndspvgnal.public.blob.vercel-storage.com/**')],
   },
+  webpack: (config) => {
+    // Use the ESM build of realtime-js to avoid dynamic require warnings
+    config.resolve = config.resolve || {};
+    // Silence "Critical dependency" warnings from realtime-js
+    config.module.exprContextCritical = false;
+    return config;
+  },
 };
 
 module.exports = nextConfig;

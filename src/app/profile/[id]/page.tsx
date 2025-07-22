@@ -29,9 +29,9 @@ export default async function ProfilePage({
   const { id } = await params;
 
   // Calling cookies() ensures this page is rendered dynamically per request
-  await cookies();
+  const cookieStore = await cookies();
 
-  const supabase = createServerComponentClient({ cookies });
+  const supabase = createServerComponentClient({ cookies: () => cookieStore } as any);
   const {
     data: { user: authUser },
   } = await supabase.auth.getUser();

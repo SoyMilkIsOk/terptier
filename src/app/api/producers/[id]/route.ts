@@ -14,7 +14,8 @@ export async function DELETE(
 ) {
   try {
     // 1. Authentication & Authorization
-    const supabase = createServerActionClient({ cookies }, {
+    const cookieStore = await cookies();
+    const supabase = createServerActionClient({ cookies: () => cookieStore } as any, {
       supabaseUrl,
       supabaseKey,
     });
@@ -84,7 +85,8 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const supabase = createServerActionClient({ cookies }, {
+    const cookieStore = await cookies();
+    const supabase = createServerActionClient({ cookies: () => cookieStore } as any, {
       supabaseUrl,
       supabaseKey,
     });

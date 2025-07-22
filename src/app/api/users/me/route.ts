@@ -7,7 +7,8 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
 
 export async function GET() {
-  const supabase = createServerActionClient({ cookies }, {
+  const cookieStore = await cookies();
+  const supabase = createServerActionClient({ cookies: () => cookieStore } as any, {
     supabaseUrl,
     supabaseKey,
   });
@@ -43,7 +44,8 @@ export async function GET() {
 }
 
 export async function PATCH(request: Request) {
-  const supabase = createServerActionClient({ cookies }, {
+  const cookieStore = await cookies();
+  const supabase = createServerActionClient({ cookies: () => cookieStore } as any, {
     supabaseUrl,
     supabaseKey,
   });

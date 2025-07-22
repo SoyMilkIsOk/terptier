@@ -16,7 +16,7 @@ export default async function RankingsPage({
   const is21 = cookieStore.get("ageVerify")?.value === "true";
   if (!is21) return <AgeGate />;
 
-  const supabase = createServerComponentClient({ cookies });
+  const supabase = createServerComponentClient({ cookies: () => cookieStore } as any);
   const {
     data: { user: authUser },
   } = await supabase.auth.getUser();
