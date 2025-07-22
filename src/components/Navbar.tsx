@@ -80,6 +80,7 @@ export default function Navbar() {
       await supabase.auth.signOut();
       setCurrentUser(null);
       if (closeMenu) setMenuOpen(false);
+      router.push("/");
     } catch (err) {
       console.error("Failed to sign out", err);
     } finally {
