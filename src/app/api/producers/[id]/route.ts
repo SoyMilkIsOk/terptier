@@ -1,11 +1,8 @@
 // src/app/api/producers/[id]/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prismadb";
-import { createServerActionClient } from "@supabase/auth-helpers-nextjs"; // Correct import for Route Handlers
+import { createServerSupabase } from "@/lib/supabase";
 import { cookies } from "next/headers";
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
 import { Role } from "@prisma/client";
 
 export async function DELETE(
@@ -14,11 +11,8 @@ export async function DELETE(
 ) {
   try {
     // 1. Authentication & Authorization
-    const cookieStore = await cookies();
-    const supabase = createServerActionClient({ cookies: () => cookieStore } as any, {
-      supabaseUrl,
-      supabaseKey,
-    });
+    await cookies();
+    const supabase = createServerSupabase();
     const {
       data: { user: authUser },
     } = await supabase.auth.getUser();
@@ -85,11 +79,8 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const cookieStore = await cookies();
-    const supabase = createServerActionClient({ cookies: () => cookieStore } as any, {
-      supabaseUrl,
-      supabaseKey,
-    });
+    await cookies();
+    const supabase = createServerSupabase();
     const {
       data: { user: authUser },
     } = await supabase.auth.getUser();

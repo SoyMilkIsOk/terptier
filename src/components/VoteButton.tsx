@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Star } from "lucide-react";
-import { supabase } from "@/lib/supabaseClient";
+import { createBrowserSupabase } from "@/lib/supabase";
 import type { User } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
 
@@ -26,6 +26,7 @@ export default function VoteButton({
   compact?: boolean;
 }) {
   const router = useRouter();
+  const [supabase] = useState(() => createBrowserSupabase());
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [rating, setRating] = useState(userRating ?? 0);
   const [showTooltip, setShowTooltip] = useState(false);

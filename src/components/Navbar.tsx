@@ -4,13 +4,14 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { supabase } from "@/lib/supabaseClient";
+import { createBrowserSupabase } from "@/lib/supabase";
 import Image from "next/image";
 import { LogIn, LogOut } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 
 export default function Navbar() {
   const pathname = usePathname();
+  const [supabase] = useState(() => createBrowserSupabase());
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [profileUsername, setProfileUsername] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);

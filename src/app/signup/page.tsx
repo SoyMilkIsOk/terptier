@@ -1,13 +1,14 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabaseClient";
+import { createBrowserSupabase } from "@/lib/supabase";
 import UploadButton from "@/components/UploadButton";
 import { deleteBlob } from "@/utils/blob";
 import Link from "next/link";
 
 export default function SignUpPage() {
   const router = useRouter();
+  const [supabase] = useState(() => createBrowserSupabase());
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");

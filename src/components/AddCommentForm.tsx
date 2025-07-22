@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import { createBrowserSupabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import UploadButton from "./UploadButton";
 import type { User } from "@supabase/supabase-js";
@@ -10,6 +10,7 @@ export default function AddCommentForm({ producerId }: { producerId: string }) {
   const [file, setFile] = useState<File | null>(null);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const router = useRouter();
+  const [supabase] = useState(() => createBrowserSupabase());
 
   const MAX_SIZE = 5 * 1024 * 1024;
 

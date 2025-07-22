@@ -1,7 +1,7 @@
 // src/app/api/vote/route.ts
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prismadb";
-import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
+import { createServerSupabase } from "@/lib/supabase";
 import { cookies } from "next/headers";
 
 export async function POST(request: Request) {
@@ -10,8 +10,8 @@ export async function POST(request: Request) {
     console.log("[/api/vote] Received raw request body:", originalRequestBody);
 
     // 1) Authenticate via Supabase
-    const cookieStore = await cookies();
-    const supabase = createServerComponentClient({ cookies: () => cookieStore } as any);
+    await cookies();
+    const supabase = createServerSupabase();
     const {
       data: { user: authUser },
     } = await supabase.auth.getUser();

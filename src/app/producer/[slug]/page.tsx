@@ -9,7 +9,7 @@ import IngredientsButton from "@/components/IngredientsButton";
 import BackButton from "@/components/BackButton";
 import ChartToggleWrapper from "@/components/ChartToggleWrapper";
 import { ExternalLink } from "lucide-react";
-import { createSupabaseServerClient } from "@/lib/supabaseServer";
+import { createServerSupabase } from "@/lib/supabase";
 import { ATTRIBUTE_OPTIONS } from "@/constants/attributes";
 import Tooltip from "@/components/Tooltip";
 
@@ -28,7 +28,7 @@ export default async function ProducerProfilePage({
 }: ProducerProfilePageProps) {
   const { slug } = await params;
 
-  const supabase = await createSupabaseServerClient();
+  const supabase = createServerSupabase();
   const {
     data: { user: authUser },
   } = await supabase.auth.getUser();

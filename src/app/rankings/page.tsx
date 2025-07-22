@@ -1,6 +1,6 @@
 // src/app/rankings/page.tsx
 import { cookies } from "next/headers";
-import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
+import { createServerSupabase } from "@/lib/supabase";
 import AgeGate from "@/components/AgeGate";
 import ProducerList, { ProducerWithVotes } from "@/components/ProducerList";
 import Link from "next/link";
@@ -16,7 +16,7 @@ export default async function RankingsPage({
   const is21 = cookieStore.get("ageVerify")?.value === "true";
   if (!is21) return <AgeGate />;
 
-  const supabase = createServerComponentClient({ cookies: () => cookieStore } as any);
+  const supabase = createServerSupabase();
   const {
     data: { user: authUser },
   } = await supabase.auth.getUser();

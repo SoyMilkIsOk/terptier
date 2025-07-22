@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prismadb";
 import { del } from "@vercel/blob";
-import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
+import { createServerSupabase } from "@/lib/supabase";
 import { cookies } from "next/headers";
 
 export async function GET(request: NextRequest) {
@@ -30,8 +30,8 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const cookieStore = await cookies();
-  const supabase = createServerComponentClient({ cookies: () => cookieStore } as any);
+  await cookies();
+  const supabase = createServerSupabase();
   const {
     data: { user: authUser },
   } = await supabase.auth.getUser();
@@ -90,8 +90,8 @@ export async function POST(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
-  const cookieStore = await cookies();
-  const supabase = createServerComponentClient({ cookies: () => cookieStore } as any);
+  await cookies();
+  const supabase = createServerSupabase();
   const {
     data: { user: authUser },
   } = await supabase.auth.getUser();

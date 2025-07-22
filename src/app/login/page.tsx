@@ -2,11 +2,12 @@
 
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { supabase } from "@/lib/supabaseClient";
+import { createBrowserSupabase } from "@/lib/supabase";
 
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [supabase] = useState(() => createBrowserSupabase());
   const reason = searchParams.get("reason");
   const prefill = searchParams.get("email") || "";
   const message = searchParams.get("message");
