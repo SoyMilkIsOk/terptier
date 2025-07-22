@@ -13,15 +13,15 @@ export async function POST(request: Request) {
     supabaseKey,
   });
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user: authUser },
+  } = await supabase.auth.getUser();
 
-  if (!session?.user?.email) {
+  if (!authUser?.email) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
 
   const user = await prisma.user.findUnique({
-    where: { email: session.user.email },
+    where: { email: authUser.email },
   });
 
   if (!user || user.role !== Role.ADMIN) {

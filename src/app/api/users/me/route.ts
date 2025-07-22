@@ -12,10 +12,10 @@ export async function GET() {
     supabaseKey,
   });
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user: authUser },
+  } = await supabase.auth.getUser();
 
-  if (!session?.user?.email) {
+  if (!authUser?.email) {
     return NextResponse.json(
       { success: false, error: "Not authenticated" },
       { status: 401 }
@@ -23,7 +23,7 @@ export async function GET() {
   }
 
   const user = await prisma.user.findUnique({
-    where: { email: session.user.email },
+    where: { email: authUser.email },
   });
 
   if (!user) {
@@ -48,10 +48,10 @@ export async function PATCH(request: Request) {
     supabaseKey,
   });
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user: authUser },
+  } = await supabase.auth.getUser();
 
-  if (!session?.user?.email) {
+  if (!authUser?.email) {
       return NextResponse.json(
         { success: false, error: "Not authenticated" },
         { status: 401 },
@@ -61,7 +61,7 @@ export async function PATCH(request: Request) {
   const { profilePicUrl } = await request.json();
 
   await prisma.user.update({
-    where: { email: session.user.email },
+    where: { email: authUser.email },
     data: { profilePicUrl },
   });
 

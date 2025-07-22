@@ -29,14 +29,14 @@ export default async function ProfilePage({
   const { id } = await params;
 
   // Calling cookies() ensures this page is rendered dynamically per request
-  cookies();
+  await cookies();
 
   const supabase = createServerComponentClient({ cookies });
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user: authUser },
+  } = await supabase.auth.getUser();
 
-  let user = await prisma.user.findUnique({
+  let profileUser = await prisma.user.findUnique({
     where: { username: id },
     include: {
       votes: {
@@ -50,8 +50,8 @@ export default async function ProfilePage({
     },
   });
 
-  if (!user) {
-    user = await prisma.user.findUnique({
+  if (!profileUser) {
+    profileUser = await prisma.user.findUnique({
       where: { id },
       include: {
         votes: {
@@ -65,7 +65,7 @@ export default async function ProfilePage({
     });
   }
 
-  if (!user) {
+  if (!profileUser) {
     return (
       <div className="container mx-auto p-4 mt-8 text-center">
         <p className="text-xl text-red-500">User not found.</p>
@@ -73,15 +73,15 @@ export default async function ProfilePage({
     );
   }
 
-  const isOwner = session?.user?.email === user.email;
-  const currentViewerId = session?.user?.id;
+  const isOwner = authUser?.email === profileUser.email;
+  const currentViewerId = authUser?.id;
 
   // Process votes into liked and disliked producers
-  const likedProducers = user.votes
+  const likedProducers = profileUser.votes
     .filter((vote) => vote.value > 0)
     .map((vote) => ({ ...vote.producer, userActualVote: vote.value })); // Pass producer and the user's vote value
 
-  const dislikedProducers = user.votes
+  const dislikedProducers = profileUser.votes
     .filter((vote) => vote.value < 0)
     .map((vote) => ({ ...vote.producer, userActualVote: vote.value })); // Pass producer and the user's vote value
 
@@ -96,12 +96,12 @@ export default async function ProfilePage({
         <div className="flex flex-col md:flex-row items-center md:items-start mb-6 pb-6 border-b border-gray-300">
           <div className="mb-4 md:mb-0 md:mr-6 flex-shrink-0">
             {isOwner ? (
-              <ProfileImageUpload initialUrl={user.profilePicUrl} />
-            ) : user.profilePicUrl ? (
+              <ProfileImageUpload initialUrl={profileUser.profilePicUrl} />
+            ) : profileUser.profilePicUrl ? (
               <div className="w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden bg-gray-100">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img 
-                  src={user.profilePicUrl} 
+                  src={profileUser.profilePicUrl}
                   alt="profile" 
                   className="w-full h-full object-cover" 
                 />
@@ -109,7 +109,7 @@ export default async function ProfilePage({
             ) : (
               <div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-gray-300 flex items-center justify-center">
                 <span className="text-gray-500 text-2xl md:text-3xl font-bold">
-                  {(user.username || user.name || user.email || '?').charAt(0).toUpperCase()}
+                  {(profileUser.username || profileUser.name || profileUser.email || '?').charAt(0).toUpperCase()}
                 </span>
               </div>
             )}
@@ -117,17 +117,17 @@ export default async function ProfilePage({
           
           <div className="flex-grow text-center md:text-left">
             <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">
-              {user.username || user.name || user.email}
+              {profileUser.username || profileUser.name || profileUser.email}
             </h1>
             
-            {user.socialLink && (
+            {profileUser.socialLink && (
               <div className="flex items-center justify-center md:justify-start">
                 {(() => {
-                  const platform = getSocialPlatform(user.socialLink);
+                  const platform = getSocialPlatform(profileUser.socialLink);
                   
                   return (
                     <a 
-                      href={user.socialLink} 
+                      href={profileUser.socialLink}
                       className={`transition-colors duration-200 ${
                         platform === 'instagram' 
                           ? "text-green-700 hover:text-green-900" 
@@ -168,11 +168,11 @@ export default async function ProfilePage({
         <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-8 text-lg justify-center md:justify-start">
           <div className="flex items-center justify-center md:justify-start mb-2 sm:mb-0">
             <span className="mr-2 font-semibold text-gray-700">Total Ratings:</span>
-            <span className="text-blue-600 font-bold">{user.votes.length}</span>
+            <span className="text-blue-600 font-bold">{profileUser.votes.length}</span>
           </div>
           <div className="flex items-center justify-center md:justify-start mb-2 sm:mb-0">
             <span className="mr-2 font-semibold text-gray-700">Comments:</span>
-            <span className="text-green-600 font-bold">{user.comments.length}</span>
+            <span className="text-green-600 font-bold">{profileUser.comments.length}</span>
           </div>
         </div>
       </div>
@@ -180,11 +180,11 @@ export default async function ProfilePage({
       {/* Comments Section */}
       <div className="bg-white shadow-xl rounded-lg p-6 md:p-8 max-w-3xl mx-auto mb-8">
         <h2 className="text-2xl font-bold text-gray-800 mb-6 pb-3 border-b border-gray-300">
-          Comments ({user.comments.length})
+          Comments ({profileUser.comments.length})
         </h2>
-        {user.comments.length > 0 ? (
+        {profileUser.comments.length > 0 ? (
           <div className="space-y-4">
-            {user.comments.map((c) => (
+            {profileUser.comments.map((c) => (
               <CommentCard 
                 key={c.id} 
                 comment={c} 
