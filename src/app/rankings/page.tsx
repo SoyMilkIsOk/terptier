@@ -1,6 +1,6 @@
 // src/app/rankings/page.tsx
 import { cookies } from "next/headers";
-import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
+import { createServerComponentClient } from "@supabase/ssr";
 import AgeGate from "@/components/AgeGate";
 import ProducerList, { ProducerWithVotes } from "@/components/ProducerList";
 import Link from "next/link";

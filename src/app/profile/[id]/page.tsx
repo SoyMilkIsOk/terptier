@@ -5,7 +5,7 @@ import ProfileImageUpload from "@/components/ProfileImageUpload";
 import BackButton from "@/components/BackButton";
 import { prisma } from "@/lib/prismadb";
 import { cookies } from "next/headers";
-import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
+import { createServerComponentClient } from "@supabase/ssr";
 import { Instagram, ExternalLink, Link } from "lucide-react";
 
 export const dynamic = "force-dynamic";

@@ -1,7 +1,7 @@
 // src/app/api/vote/route.ts
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prismadb";
-import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
+import { createServerComponentClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
 export async function POST(request: Request) {

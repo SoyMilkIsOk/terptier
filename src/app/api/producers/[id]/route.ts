@@ -1,7 +1,7 @@
 // src/app/api/producers/[id]/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prismadb";
-import { createServerActionClient } from "@supabase/auth-helpers-nextjs"; // Correct import for Route Handlers
+import { createServerActionClient } from "@supabase/ssr"; // Correct import for Route Handlers
 import { cookies } from "next/headers";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
