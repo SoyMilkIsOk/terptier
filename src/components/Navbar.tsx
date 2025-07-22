@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import Image from "next/image";
 import { LogIn, LogOut } from "lucide-react";
+import { useRouter } from "next/navigation";
 import type { User } from "@supabase/supabase-js";
 
 export default function Navbar() {
@@ -15,6 +16,7 @@ export default function Navbar() {
   const [profileUsername, setProfileUsername] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     // fetch initial session
@@ -71,6 +73,19 @@ export default function Navbar() {
       listener.subscription.unsubscribe();
     };
   }, []);
+
+  const handleLogout = async (closeMenu?: boolean) => {
+    try {
+      await fetch("/api/logout", { method: "POST" });
+      await supabase.auth.signOut();
+      setCurrentUser(null);
+      if (closeMenu) setMenuOpen(false);
+    } catch (err) {
+      console.error("Failed to sign out", err);
+    } finally {
+      router.refresh();
+    }
+  };
 
   return (
     <nav className="bg-green-700 text-white shadow-md relative">
@@ -150,12 +165,7 @@ export default function Navbar() {
           ) : (
             <button
               type="button"
-              onClick={async () => {
-                await fetch("/api/logout", { method: "POST" });
-                await supabase.auth.signOut();
-                setCurrentUser(null);
-                location.reload();
-              }}
+              onClick={() => handleLogout()}
               className="flex items-center space-x-1 bg-red-600 hover:bg-red-700 px-3 py-1 rounded-full cursor-pointer"
             >
               <LogOut className="w-4 h-4 text-white" />
@@ -203,13 +213,7 @@ export default function Navbar() {
           ) : (
             <button
               type="button"
-              onClick={async () => {
-                await fetch("/api/logout", { method: "POST" });
-                await supabase.auth.signOut();
-                setCurrentUser(null);
-                setMenuOpen(false);
-                location.reload();
-              }}
+              onClick={() => handleLogout(true)}
               className="text-center px-3 py-1 bg-red-600 hover:bg-red-700 rounded-full cursor-pointer text-white flex items-center justify-center space-x-1"
             >
               <LogOut className="w-4 h-4" />
