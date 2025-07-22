@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Star } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
-import type { Session } from "@supabase/supabase-js";
+import type { User } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
 
 export default function VoteButton({
@@ -26,16 +26,17 @@ export default function VoteButton({
   compact?: boolean;
 }) {
   const router = useRouter();
-  const [session, setSession] = useState<Session | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [rating, setRating] = useState(userRating ?? 0);
   const [showTooltip, setShowTooltip] = useState(false);
 
   useEffect(() => {
     if (readOnly) return;
-    supabase.auth.getSession().then(({ data }) => setSession(data.session));
-    const { data: listener } = supabase.auth.onAuthStateChange((_e, sess) =>
-      setSession(sess)
-    );
+    supabase.auth.getUser().then(({ data }) => setCurrentUser(data.user));
+    const { data: listener } = supabase.auth.onAuthStateChange(async () => {
+      const { data } = await supabase.auth.getUser();
+      setCurrentUser(data.user);
+    });
     return () => {
       listener?.subscription.unsubscribe();
     };
@@ -49,7 +50,7 @@ export default function VoteButton({
       return;
     }
 
-    if (!session?.user.id) {
+    if (!currentUser?.id) {
       router.push("/login?reason=vote_redirect");
       return;
     }
