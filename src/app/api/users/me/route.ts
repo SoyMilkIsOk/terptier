@@ -7,16 +7,15 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
 
 export async function GET() {
-  const cookieStore = await cookies();
-  const supabase = createServerActionClient({ cookies: () => cookieStore } as any, {
+  const supabase = createServerActionClient({ cookies }, {
     supabaseUrl,
     supabaseKey,
   });
   const {
-    data: { user: authUser },
-  } = await supabase.auth.getUser();
+    data: { session },
+  } = await supabase.auth.getSession();
 
-  if (!authUser?.email) {
+  if (!session?.user?.email) {
     return NextResponse.json(
       { success: false, error: "Not authenticated" },
       { status: 401 }
@@ -24,7 +23,7 @@ export async function GET() {
   }
 
   const user = await prisma.user.findUnique({
-    where: { email: authUser.email },
+    where: { email: session.user.email },
   });
 
   if (!user) {
@@ -44,16 +43,15 @@ export async function GET() {
 }
 
 export async function PATCH(request: Request) {
-  const cookieStore = await cookies();
-  const supabase = createServerActionClient({ cookies: () => cookieStore } as any, {
+  const supabase = createServerActionClient({ cookies }, {
     supabaseUrl,
     supabaseKey,
   });
   const {
-    data: { user: authUser },
-  } = await supabase.auth.getUser();
+    data: { session },
+  } = await supabase.auth.getSession();
 
-  if (!authUser?.email) {
+  if (!session?.user?.email) {
       return NextResponse.json(
         { success: false, error: "Not authenticated" },
         { status: 401 },
@@ -63,7 +61,7 @@ export async function PATCH(request: Request) {
   const { profilePicUrl } = await request.json();
 
   await prisma.user.update({
-    where: { email: authUser.email },
+    where: { email: session.user.email },
     data: { profilePicUrl },
   });
 

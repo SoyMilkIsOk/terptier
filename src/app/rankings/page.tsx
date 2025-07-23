@@ -16,16 +16,16 @@ export default async function RankingsPage({
   const is21 = cookieStore.get("ageVerify")?.value === "true";
   if (!is21) return <AgeGate />;
 
-  const supabase = createServerComponentClient({ cookies: () => cookieStore } as any);
+  const supabase = createServerComponentClient({ cookies });
   const {
-    data: { user: authUser },
-  } = await supabase.auth.getUser();
+    data: { session },
+  } = await supabase.auth.getSession();
 
   let userVotes: Record<string, number> = {};
 
-  if (authUser?.email) {
+  if (session?.user?.email) {
     const prismaUser = await prisma.user.findUnique({
-      where: { email: authUser.email },
+      where: { email: session.user.email },
     });
 
     if (prismaUser) {

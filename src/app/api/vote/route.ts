@@ -10,18 +10,17 @@ export async function POST(request: Request) {
     console.log("[/api/vote] Received raw request body:", originalRequestBody);
 
     // 1) Authenticate via Supabase
-    const cookieStore = await cookies();
-    const supabase = createServerComponentClient({ cookies: () => cookieStore } as any);
+    const supabase = createServerComponentClient({ cookies });
     const {
-      data: { user: authUser },
-    } = await supabase.auth.getUser();
-    if (!authUser) {
+      data: { session },
+    } = await supabase.auth.getSession();
+    if (!session) {
       return NextResponse.json(
         { success: false, error: "Not authenticated" },
         { status: 401 }
       );
     }
-    const { email, user_metadata } = authUser;
+    const { email, user_metadata } = session.user;
 
     // 2) Upsert Prisma user BY EMAIL (not by id), so it matches any seed
     const prismaUser = await prisma.user.upsert({

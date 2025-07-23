@@ -30,13 +30,12 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const cookieStore = await cookies();
-  const supabase = createServerComponentClient({ cookies: () => cookieStore } as any);
+  const supabase = createServerComponentClient({ cookies });
   const {
-    data: { user: authUser },
-  } = await supabase.auth.getUser();
+    data: { session },
+  } = await supabase.auth.getSession();
 
-  if (!authUser?.email) {
+  if (!session?.user?.email) {
     return NextResponse.json(
       { success: false, error: "Not authenticated" },
       { status: 401 }
@@ -44,7 +43,7 @@ export async function POST(request: NextRequest) {
   }
 
   const prismaUser = await prisma.user.findUnique({
-    where: { email: authUser.email },
+    where: { email: session.user.email },
   });
 
   if (!prismaUser) {
@@ -90,13 +89,12 @@ export async function POST(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
-  const cookieStore = await cookies();
-  const supabase = createServerComponentClient({ cookies: () => cookieStore } as any);
+  const supabase = createServerComponentClient({ cookies });
   const {
-    data: { user: authUser },
-  } = await supabase.auth.getUser();
+    data: { session },
+  } = await supabase.auth.getSession();
 
-  if (!authUser?.email) {
+  if (!session?.user?.email) {
     return NextResponse.json(
       { success: false, error: "Not authenticated" },
       { status: 401 }
@@ -113,7 +111,7 @@ export async function DELETE(request: NextRequest) {
   }
 
   const prismaUser = await prisma.user.findUnique({
-    where: { email: authUser.email },
+    where: { email: session.user.email },
   });
 
   if (!prismaUser) {

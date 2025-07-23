@@ -17,18 +17,18 @@ function LoginForm() {
 
   const finalizeAuth = async () => {
     const {
-      data: { user },
+      data: { session },
       error: finalError,
-    } = await supabase.auth.getUser();
+    } = await supabase.auth.getSession();
 
-    if (user) {
+    if (session) {
       await fetch("/api/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          id: user.id,
-          email: user.email,
-          name: user.user_metadata?.name || user.email,
+          id: session.user.id,
+          email: session.user.email,
+          name: session.user.user_metadata?.name || session.user.email,
         }),
       });
       const meRes = await fetch("/api/users/me");

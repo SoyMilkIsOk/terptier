@@ -8,24 +8,20 @@ const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUP
 import { Role } from "@prisma/client";
 
 export async function POST(request: Request) {
-  const cookieStore = await cookies();
-  const supabase = createServerActionClient(
-    { cookies: () => cookieStore } as any,
-    {
-      supabaseUrl,
-      supabaseKey,
-    }
-  );
+  const supabase = createServerActionClient({ cookies }, {
+    supabaseUrl,
+    supabaseKey,
+  });
   const {
-    data: { user: authUser },
-  } = await supabase.auth.getUser();
+    data: { session },
+  } = await supabase.auth.getSession();
 
-  if (!authUser?.email) {
+  if (!session?.user?.email) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
 
   const user = await prisma.user.findUnique({
-    where: { email: authUser.email },
+    where: { email: session.user.email },
   });
 
   if (!user || user.role !== Role.ADMIN) {
