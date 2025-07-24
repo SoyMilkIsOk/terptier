@@ -78,7 +78,10 @@ export default async function ProducerProfilePage({
   });
 
   const commentVotes = await prisma.vote.findMany({
-    where: { producerId: producer.id, userId: { in: comments.map((c) => c.userId) } },
+    where: {
+      producerId: producer.id,
+      userId: { in: comments.map((c) => c.userId) },
+    },
   });
 
   const voteMap: Record<string, number> = {};
@@ -95,7 +98,9 @@ export default async function ProducerProfilePage({
     ? commentsWithVotes.find((c) => c.userId === currentUserId) ?? null
     : null;
 
-  const otherComments = commentsWithVotes.filter((c) => c.userId !== currentUserId);
+  const otherComments = commentsWithVotes.filter(
+    (c) => c.userId !== currentUserId
+  );
 
   // Calculate rank
   let rank = 0;
@@ -135,7 +140,7 @@ export default async function ProducerProfilePage({
               />
             </div>
           )}
-          <div className="flex-grow text-center md:text-left">
+          <div className="flex-grow text-left md:text-left">
             <div className="flex items-center mb-2">
               <h1 className="text-3xl md:text-4xl font-bold text-gray-800">
                 {producer.name}
@@ -146,7 +151,7 @@ export default async function ProducerProfilePage({
                     href={producer.website}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-600"
+                    className="text-green-700"
                     aria-label="Website"
                   >
                     <ExternalLink className="w-6 h-6" />
@@ -158,7 +163,7 @@ export default async function ProducerProfilePage({
               </div>
             </div>
             {rank > 0 && (
-              <p className="text-gray-600 mt-4">
+              <p className="text-gray-600 mt-4 ml-0">
                 Rank: <span className="font-bold">#{rank}</span>{" "}
                 <span className="text-sm">
                   in{" "}
@@ -168,8 +173,27 @@ export default async function ProducerProfilePage({
                 </span>
               </p>
             )}
+            {/* Attributes positioned below rank, aligned to right edge of profile picture */}
+            {producer.attributes && producer.attributes.length > 0 && (
+              <div className="flex flex-wrap gap-2 my-4">
+                {producer.attributes.map((a) => {
+                  const opt = ATTRIBUTE_OPTIONS[producer.category].find(
+                    (o) => o.key === a
+                  );
+                  return (
+                    <Tooltip key={a} content={opt?.tooltip}>
+                      <span className="text-sm bg-gray-200 rounded-full px-3 py-1 flex items-center gap-1">
+                        <span>{opt?.icon}</span>
+                        <span>{opt?.label || a}</span>
+                      </span>
+                    </Tooltip>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
+
         <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 text-lg justify-center md:justify-start">
           <div className="flex items-center mb-2 sm:mb-0">
             <span className="mr-2 font-semibold">Avg. Rating:</span>
@@ -180,7 +204,7 @@ export default async function ProducerProfilePage({
               readOnly
             />
           </div>
-            <div className="flex items-center mb-2 sm:mb-0">
+          <div className="flex items-center mb-2 sm:mb-0">
             <span className="mr-1.5 font-semibold">Your Rating:</span>
             <VoteButton
               producerId={producer.id}
@@ -188,25 +212,8 @@ export default async function ProducerProfilePage({
               userRating={userVoteValue}
               showNumber={true}
             />
-            </div>
-        </div>
-        {producer.attributes && producer.attributes.length > 0 && (
-          <div className="flex flex-wrap gap-2 mt-4">
-            {producer.attributes.map((a) => {
-              const opt = ATTRIBUTE_OPTIONS[producer.category].find(
-                (o) => o.key === a
-              );
-              return (
-                <Tooltip key={a} content={opt?.tooltip}>
-                  <span className="text-sm bg-gray-200 rounded-full px-3 py-1 flex items-center gap-1">
-                    <span>{opt?.icon}</span>
-                    <span>{opt?.label || a}</span>
-                  </span>
-                </Tooltip>
-              );
-            })}
           </div>
-        )}
+        </div>
 
         {/* Placeholder for description or other details */}
         {/* Example:
@@ -217,7 +224,7 @@ export default async function ProducerProfilePage({
           </div>
         )}
         */}
-        
+
         {/* Chart Toggle Wrapper - replaces the direct RatingHistoryChart */}
         <ChartToggleWrapper producerId={producer.id} />
 

@@ -61,7 +61,7 @@ export const HASH_ATTRIBUTES: AttributeOption[] = [
     key: 'single source',
     label: 'Single Source',
     icon: '🎯',
-    tooltip: "Made from the producer's own plants",
+    tooltip: "Made from flower from one grower/strain",
   },
   {
     key: 'stainless bags',
@@ -79,25 +79,25 @@ export const HASH_ATTRIBUTES: AttributeOption[] = [
     key: 'cold cure',
     label: 'Cold Cure',
     icon: '❄️',
-    tooltip: 'Hash cured at cold temperatures',
+    tooltip: 'Hash cured at cold temperatures (badder tech)',
   },
   {
     key: 'fresh press',
     label: 'Fresh Press',
-    icon: '🆕',
+    icon: '🗜️',
     tooltip: 'Hash jarred immediately after pressing',
   },
   {
-    key: '90u',
-    label: '90u',
-    icon: '9️⃣0️⃣',
-    tooltip: 'Filtered through a 90 micron screen',
+    key: '90-120u',
+    label: '90-120u',
+    icon: '🎖️',
+    tooltip: 'Hash made with resin collected from 90-120u screens',
   },
   {
     key: 'full spec',
     label: 'Full Spec',
     icon: '📊',
-    tooltip: 'Contains a full spectrum of resin sizes',
+    tooltip: 'Hash contains a full spectrum screen sizes',
   },
 ];
 
