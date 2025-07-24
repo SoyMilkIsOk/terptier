@@ -48,6 +48,12 @@ export const FLOWER_ATTRIBUTES: AttributeOption[] = [
     icon: '🪱',
     tooltip: 'Cultivated in living soil with active microbes',
   },
+  {
+    key: 'hand trimmed',
+    label: 'Hand Trimmed',
+    icon: '✌️',
+    tooltip: 'Produced with hand-trimmed leaves',
+  },
 ];
 
 export const HASH_ATTRIBUTES: AttributeOption[] = [
