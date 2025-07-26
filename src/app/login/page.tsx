@@ -56,7 +56,13 @@ function LoginForm() {
     });
 
     if (signInError) {
-      setError(signInError.message);
+      if (signInError.message.toLowerCase().includes("confirm")) {
+        setError(
+          "Please verify your email address before logging in. Check your inbox for the verification link.",
+        );
+      } else {
+        setError(signInError.message);
+      }
       setLoading(false);
       return;
     }
@@ -65,17 +71,22 @@ function LoginForm() {
     setLoading(false);
   };
 
-
   return (
     <div className="max-w-md mx-auto bg-white p-6 rounded shadow mt-8 mx-2">
       {reason === "vote_redirect" && (
-        <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-6" role="alert">
+        <div
+          className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-6"
+          role="alert"
+        >
           <p className="font-bold">Access Required</p>
           <p>You must be logged in to vote.</p>
         </div>
       )}
       {message && (
-        <div className="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-6" role="alert">
+        <div
+          className="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-6"
+          role="alert"
+        >
           <p>{message}</p>
         </div>
       )}
@@ -106,12 +117,12 @@ function LoginForm() {
       <button
         onClick={handleSignIn}
         disabled={loading}
-        className={`w-full py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-md transition duration-150 ${loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+        className={`w-full py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-md transition duration-150 ${loading ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
       >
         Log In
       </button>
       <p className="mt-4 text-center text-base">
-        Need an account?{' '}
+        Need an account?{" "}
         <a href="/signup" className="text-green-700 underline font-medium">
           Sign up
         </a>
