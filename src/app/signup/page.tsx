@@ -31,28 +31,29 @@ export default function SignUpPage() {
   const isValidEmail = (email: string): boolean => {
     // Basic format check
     if (!validateEmail(email)) return false;
-    
+
     // Additional checks
-    const parts = email.split('@');
+    const parts = email.split("@");
     if (parts.length !== 2) return false;
-    
+
     const [localPart, domain] = parts;
-    
+
     // Local part validation
     if (localPart.length === 0 || localPart.length > 64) return false;
-    if (localPart.startsWith('.') || localPart.endsWith('.')) return false;
-    if (localPart.includes('..')) return false;
-    
+    if (localPart.startsWith(".") || localPart.endsWith(".")) return false;
+    if (localPart.includes("..")) return false;
+
     // Domain validation
     if (domain.length === 0 || domain.length > 253) return false;
-    if (domain.startsWith('.') || domain.endsWith('.')) return false;
-    if (domain.includes('..')) return false;
-    if (!domain.includes('.')) return false;
-    
+    if (domain.startsWith(".") || domain.endsWith(".")) return false;
+    if (domain.includes("..")) return false;
+    if (!domain.includes(".")) return false;
+
     // Check for valid characters
-    const validLocalChars = /^[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+(\.[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+)*$/;
+    const validLocalChars =
+      /^[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+(\.[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+)*$/;
     const validDomainChars = /^[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*$/;
-    
+
     return validLocalChars.test(localPart) && validDomainChars.test(domain);
   };
 
@@ -74,12 +75,12 @@ export default function SignUpPage() {
     try {
       const res = await fetch(`/api/users?email=${encodeURIComponent(email)}`);
       const data = await res.json();
-      
+
       if (data.exists) {
         router.push(
           `/login?email=${encodeURIComponent(
-            email
-          )}&message=account already exists`
+            email,
+          )}&message=account already exists`,
         );
       } else {
         setStep(2);
@@ -136,7 +137,7 @@ export default function SignUpPage() {
   const finalizeAuth = async (
     profileUrl: string | null,
     id: string,
-    userEmail: string
+    userEmail: string,
   ) => {
     const res = await fetch("/api/users", {
       method: "POST",
@@ -183,7 +184,7 @@ export default function SignUpPage() {
 
     // ensure the username is available before creating the Supabase user
     const usernameRes = await fetch(
-      `/api/users?username=${encodeURIComponent(username)}`
+      `/api/users?username=${encodeURIComponent(username)}`,
     );
     const usernameData = await usernameRes.json();
     if (usernameData.exists) {
@@ -213,12 +214,12 @@ export default function SignUpPage() {
       await finalizeAuth(
         profileUrl ?? null,
         data.user.id,
-        data.user.email ?? email
+        data.user.email ?? email,
       );
       router.push(
-        `/login?email=${encodeURIComponent(
-          email
-        )}&message=Account%20created%20successfully`
+        `/login?email=${encodeURIComponent(email)}&message=${encodeURIComponent(
+          "Account created successfully. Check your inbox to verify your email.",
+        )}`,
       );
     } catch (err: any) {
       setError(err.message);
@@ -281,6 +282,10 @@ export default function SignUpPage() {
           autoComplete="on"
         >
           <h1 className="text-2xl font-semibold text-center">Create Account</h1>
+          <p className="text-sm text-center text-gray-600">
+            You'll receive a verification email. Please check your inbox after
+            signing up.
+          </p>
           <div>
             <label className="block">
               Email

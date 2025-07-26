@@ -10,7 +10,7 @@ function LoginForm() {
   const reason = searchParams.get("reason");
   const prefill = searchParams.get("email") || "";
   const message = searchParams.get("message");
-  const [email, setEmail] = useState(prefill);
+  const [identifier, setIdentifier] = useState(prefill);
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -50,13 +50,40 @@ function LoginForm() {
   const handleSignIn = async () => {
     setLoading(true);
     setError(null);
+    let loginEmail = identifier;
+    if (!identifier.includes("@")) {
+      try {
+        const res = await fetch(
+          `/api/users?username=${encodeURIComponent(identifier)}&getEmail=true`,
+        );
+        const data = await res.json();
+        if (data.email) {
+          loginEmail = data.email;
+        } else {
+          setError("Account not found");
+          setLoading(false);
+          return;
+        }
+      } catch {
+        setError("Failed to lookup account");
+        setLoading(false);
+        return;
+      }
+    }
+
     const { error: signInError } = await supabase.auth.signInWithPassword({
-      email,
+      email: loginEmail,
       password,
     });
 
     if (signInError) {
-      setError(signInError.message);
+      if (signInError.message.toLowerCase().includes("confirm")) {
+        setError(
+          "Please verify your email address before logging in. Check your inbox for the verification link.",
+        );
+      } else {
+        setError(signInError.message);
+      }
       setLoading(false);
       return;
     }
@@ -65,17 +92,22 @@ function LoginForm() {
     setLoading(false);
   };
 
-
   return (
     <div className="max-w-md mx-auto bg-white p-6 rounded shadow mt-8 mx-2">
       {reason === "vote_redirect" && (
-        <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-6" role="alert">
+        <div
+          className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-6"
+          role="alert"
+        >
           <p className="font-bold">Access Required</p>
           <p>You must be logged in to vote.</p>
         </div>
       )}
       {message && (
-        <div className="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-6" role="alert">
+        <div
+          className="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-6"
+          role="alert"
+        >
           <p>{message}</p>
         </div>
       )}
@@ -86,12 +118,12 @@ function LoginForm() {
         </div>
       )}
       <input
-        type="email"
-        name="email"
-        autoComplete="email"
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
+        type="text"
+        name="identifier"
+        autoComplete="username"
+        placeholder="Email or Username"
+        value={identifier}
+        onChange={(e) => setIdentifier(e.target.value)}
         className="w-full mb-3 p-2.5 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
       />
       <input
@@ -106,12 +138,12 @@ function LoginForm() {
       <button
         onClick={handleSignIn}
         disabled={loading}
-        className={`w-full py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-md transition duration-150 ${loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+        className={`w-full py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-md transition duration-150 ${loading ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
       >
         Log In
       </button>
       <p className="mt-4 text-center text-base">
-        Need an account?{' '}
+        Need an account?{" "}
         <a href="/signup" className="text-green-700 underline font-medium">
           Sign up
         </a>
