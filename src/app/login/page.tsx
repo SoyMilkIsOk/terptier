@@ -10,7 +10,7 @@ function LoginForm() {
   const reason = searchParams.get("reason");
   const prefill = searchParams.get("email") || "";
   const message = searchParams.get("message");
-  const [email, setEmail] = useState(prefill);
+  const [identifier, setIdentifier] = useState(prefill);
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -50,8 +50,29 @@ function LoginForm() {
   const handleSignIn = async () => {
     setLoading(true);
     setError(null);
+    let loginEmail = identifier;
+    if (!identifier.includes("@")) {
+      try {
+        const res = await fetch(
+          `/api/users?username=${encodeURIComponent(identifier)}&getEmail=true`,
+        );
+        const data = await res.json();
+        if (data.email) {
+          loginEmail = data.email;
+        } else {
+          setError("Account not found");
+          setLoading(false);
+          return;
+        }
+      } catch {
+        setError("Failed to lookup account");
+        setLoading(false);
+        return;
+      }
+    }
+
     const { error: signInError } = await supabase.auth.signInWithPassword({
-      email,
+      email: loginEmail,
       password,
     });
 
@@ -97,12 +118,12 @@ function LoginForm() {
         </div>
       )}
       <input
-        type="email"
-        name="email"
-        autoComplete="email"
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
+        type="text"
+        name="identifier"
+        autoComplete="username"
+        placeholder="Email or Username"
+        value={identifier}
+        onChange={(e) => setIdentifier(e.target.value)}
         className="w-full mb-3 p-2.5 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
       />
       <input

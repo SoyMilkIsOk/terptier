@@ -7,6 +7,7 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const email = searchParams.get("email");
   const username = searchParams.get("username");
+  const getEmail = searchParams.get("getEmail");
 
   if (email) {
     const user = await prisma.user.findUnique({ where: { email } });
@@ -15,6 +16,9 @@ export async function GET(request: Request) {
 
   if (username) {
     const user = await prisma.user.findUnique({ where: { username } });
+    if (getEmail) {
+      return NextResponse.json({ email: user?.email || null });
+    }
     return NextResponse.json({ exists: Boolean(user) });
   }
 
