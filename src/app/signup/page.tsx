@@ -92,8 +92,16 @@ export default function SignUpPage() {
     }
   };
 
+  const isValidUsername = (name: string): boolean => {
+    return /^[a-zA-Z0-9]+$/.test(name);
+  };
+
   const checkUsername = async (name: string) => {
     if (!name) return;
+    if (!isValidUsername(name)) {
+      setUsernameTaken(false);
+      return;
+    }
     const res = await fetch(`/api/users?username=${encodeURIComponent(name)}`);
     const data = await res.json();
     setUsernameTaken(data.exists);
@@ -162,6 +170,11 @@ export default function SignUpPage() {
     // Validate email again before submission
     if (!isValidEmail(email)) {
       setError("Please enter a valid email address");
+      return;
+    }
+
+    if (!isValidUsername(username)) {
+      setError("Username can only contain letters and numbers");
       return;
     }
 
@@ -306,6 +319,7 @@ export default function SignUpPage() {
                 name="username"
                 autoComplete="username"
                 required
+                pattern="[A-Za-z0-9]+"
                 placeholder="Username"
                 value={username}
                 onChange={(e) => {

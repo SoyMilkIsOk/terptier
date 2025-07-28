@@ -29,6 +29,13 @@ export async function POST(request: Request) {
   const { id, email, name, username, birthday, profilePicUrl, socialLink } =
     await request.json();
 
+  if (username && !/^[a-zA-Z0-9]+$/.test(username)) {
+    return NextResponse.json(
+      { ok: false, error: "Invalid username" },
+      { status: 400 },
+    );
+  }
+
   const role = email === process.env.ADMIN_EMAIL ? Role.ADMIN : Role.USER;
 
   try {
