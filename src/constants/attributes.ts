@@ -54,6 +54,18 @@ export const FLOWER_ATTRIBUTES: AttributeOption[] = [
     icon: '✌️',
     tooltip: 'Produced with hand-trimmed leaves',
   },
+  {
+    key: 'deli style',
+    label: 'Deli Style',
+    icon: '🍖',
+    tooltip: 'Sold deli style',
+  },
+  {
+    key: 'pre-pack',
+    label: 'Pre-Pack',
+    icon: '📦',
+    tooltip: 'Sold pre-packed',
+  },
 ];
 
 export const HASH_ATTRIBUTES: AttributeOption[] = [
