@@ -6,7 +6,7 @@ import { Role } from "@prisma/client";
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const email = searchParams.get("email");
-  const username = searchParams.get("username");
+  const username = searchParams.get("username")?.toLowerCase();
   const getEmail = searchParams.get("getEmail");
 
   if (email) {
@@ -26,10 +26,19 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const { id, email, name, username, birthday, profilePicUrl, socialLink } =
-    await request.json();
+  const {
+    id,
+    email,
+    name,
+    username: rawUsername,
+    birthday,
+    profilePicUrl,
+    socialLink,
+  } = await request.json();
 
-  if (username && !/^[a-zA-Z0-9]+$/.test(username)) {
+  const username = rawUsername?.toLowerCase();
+
+  if (username && !/^[a-z0-9]+$/.test(username)) {
     return NextResponse.json(
       { ok: false, error: "Invalid username" },
       { status: 400 },

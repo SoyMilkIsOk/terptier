@@ -96,13 +96,18 @@ export default function SignUpPage() {
     return /^[a-zA-Z0-9]+$/.test(name);
   };
 
+  const normalizeUsername = (name: string): string => name.toLowerCase();
+
   const checkUsername = async (name: string) => {
     if (!name) return;
-    if (!isValidUsername(name)) {
+    const normalized = normalizeUsername(name);
+    if (!isValidUsername(normalized)) {
       setUsernameTaken(false);
       return;
     }
-    const res = await fetch(`/api/users?username=${encodeURIComponent(name)}`);
+    const res = await fetch(
+      `/api/users?username=${encodeURIComponent(normalized)}`,
+    );
     const data = await res.json();
     setUsernameTaken(data.exists);
   };
@@ -146,6 +151,7 @@ export default function SignUpPage() {
     profileUrl: string | null,
     id: string,
     userEmail: string,
+    slugUsername: string,
   ) => {
     const res = await fetch("/api/users", {
       method: "POST",
@@ -154,7 +160,7 @@ export default function SignUpPage() {
         id,
         email: userEmail,
         name: username,
-        username,
+        username: slugUsername,
         birthday,
         profilePicUrl: profileUrl,
         socialLink,
@@ -173,7 +179,9 @@ export default function SignUpPage() {
       return;
     }
 
-    if (!isValidUsername(username)) {
+    const normalized = normalizeUsername(username);
+
+    if (!isValidUsername(normalized)) {
       setError("Username can only contain letters and numbers");
       return;
     }
@@ -197,7 +205,7 @@ export default function SignUpPage() {
 
     // ensure the username is available before creating the Supabase user
     const usernameRes = await fetch(
-      `/api/users?username=${encodeURIComponent(username)}`,
+      `/api/users?username=${encodeURIComponent(normalized)}`,
     );
     const usernameData = await usernameRes.json();
     if (usernameData.exists) {
@@ -228,6 +236,7 @@ export default function SignUpPage() {
         profileUrl ?? null,
         data.user.id,
         data.user.email ?? email,
+        normalized,
       );
       router.push(
         `/login?email=${encodeURIComponent(email)}&message=${encodeURIComponent(
