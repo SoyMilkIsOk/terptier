@@ -75,8 +75,10 @@ const CustomDot = (props: any) => {
 
 export default function RatingHistoryChart({
   producerId,
+  voteCount,
 }: {
   producerId: string;
+  voteCount: number;
 }) {
   const [data, setData] = useState<DataPoint[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -162,7 +164,7 @@ export default function RatingHistoryChart({
               <h3 className="text-lg font-semibold text-gray-800">
                 Rating History
               </h3>
-              <p className="text-sm text-gray-600">{data.length} data points</p>
+              <p className="text-sm text-gray-600">{voteCount} votes</p>
             </div>
           </div>
 

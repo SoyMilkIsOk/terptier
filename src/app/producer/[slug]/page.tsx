@@ -226,7 +226,10 @@ export default async function ProducerProfilePage({
         */}
 
         {/* Chart Toggle Wrapper - replaces the direct RatingHistoryChart */}
-        <ChartToggleWrapper producerId={producer.id} />
+        <ChartToggleWrapper
+          producerId={producer.id}
+          voteCount={producer.votes.length}
+        />
 
         <div className="mt-8">
           <h3 className="text-xl font-semibold mb-4">

@@ -6,9 +6,13 @@ import RatingHistoryChart from "./RatingHistoryChart";
 
 interface ChartToggleWrapperProps {
   producerId: string;
+  voteCount: number;
 }
 
-export default function ChartToggleWrapper({ producerId }: ChartToggleWrapperProps) {
+export default function ChartToggleWrapper({
+  producerId,
+  voteCount,
+}: ChartToggleWrapperProps) {
   const [showChart, setShowChart] = useState(false);
 
   return (
@@ -40,7 +44,7 @@ export default function ChartToggleWrapper({ producerId }: ChartToggleWrapperPro
       }`}>
         {showChart && (
           <div className="animate-fade-in">
-            <RatingHistoryChart producerId={producerId} />
+            <RatingHistoryChart producerId={producerId} voteCount={voteCount} />
           </div>
         )}
       </div>
