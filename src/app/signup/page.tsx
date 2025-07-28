@@ -20,6 +20,9 @@ export default function SignUpPage() {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [usernameTaken, setUsernameTaken] = useState(false);
+  const [invalidUsernameChars, setInvalidUsernameChars] = useState<string | null>(
+    null,
+  );
   const [loading, setLoading] = useState(false);
   // Email validation function
   const validateEmail = (email: string): boolean => {
@@ -92,9 +95,22 @@ export default function SignUpPage() {
     }
   };
 
+  const isValidUsername = (name: string): boolean => {
+    return /^[a-zA-Z0-9]+$/.test(name);
+  };
+
+  const normalizeUsername = (name: string): string => name.toLowerCase();
+
   const checkUsername = async (name: string) => {
     if (!name) return;
-    const res = await fetch(`/api/users?username=${encodeURIComponent(name)}`);
+    const normalized = normalizeUsername(name);
+    if (!isValidUsername(normalized)) {
+      setUsernameTaken(false);
+      return;
+    }
+    const res = await fetch(
+      `/api/users?username=${encodeURIComponent(normalized)}`,
+    );
     const data = await res.json();
     setUsernameTaken(data.exists);
   };
@@ -138,6 +154,7 @@ export default function SignUpPage() {
     profileUrl: string | null,
     id: string,
     userEmail: string,
+    slugUsername: string,
   ) => {
     const res = await fetch("/api/users", {
       method: "POST",
@@ -146,7 +163,7 @@ export default function SignUpPage() {
         id,
         email: userEmail,
         name: username,
-        username,
+        username: slugUsername,
         birthday,
         profilePicUrl: profileUrl,
         socialLink,
@@ -162,6 +179,13 @@ export default function SignUpPage() {
     // Validate email again before submission
     if (!isValidEmail(email)) {
       setError("Please enter a valid email address");
+      return;
+    }
+
+    const normalized = normalizeUsername(username);
+
+    if (!isValidUsername(normalized)) {
+      setError("Username can only contain letters and numbers");
       return;
     }
 
@@ -184,7 +208,7 @@ export default function SignUpPage() {
 
     // ensure the username is available before creating the Supabase user
     const usernameRes = await fetch(
-      `/api/users?username=${encodeURIComponent(username)}`,
+      `/api/users?username=${encodeURIComponent(normalized)}`,
     );
     const usernameData = await usernameRes.json();
     if (usernameData.exists) {
@@ -215,6 +239,7 @@ export default function SignUpPage() {
         profileUrl ?? null,
         data.user.id,
         data.user.email ?? email,
+        normalized,
       );
       router.push(
         `/login?email=${encodeURIComponent(email)}&message=${encodeURIComponent(
@@ -298,7 +323,7 @@ export default function SignUpPage() {
               />
             </label>
           </div>
-          <div>
+          <div className="relative group">
             <label className="block">
               Username <span className="text-red-500">*</span>
               <input
@@ -306,17 +331,37 @@ export default function SignUpPage() {
                 name="username"
                 autoComplete="username"
                 required
+                pattern="[a-z0-9]+"
                 placeholder="Username"
                 value={username}
                 onChange={(e) => {
-                  setUsername(e.target.value);
+                  const value = e.target.value;
+                  setUsername(value);
                   setUsernameTaken(false);
+                  const invalid = value.match(/[^a-z0-9]/gi);
+                  if (invalid) {
+                    const unique = Array.from(new Set(invalid)).join(" ");
+                    setInvalidUsernameChars(unique);
+                  } else {
+                    setInvalidUsernameChars(null);
+                  }
                 }}
                 onBlur={(e) => checkUsername(e.target.value)}
-                title={usernameTaken ? "Username already taken" : ""}
+                title={
+                  usernameTaken
+                    ? "Username already taken"
+                    : invalidUsernameChars
+                    ? `Invalid characters: ${invalidUsernameChars}`
+                    : ""
+                }
                 className="w-full mt-1 p-2.5 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
               />
             </label>
+            {invalidUsernameChars && (
+              <div className="absolute right-0 top-full mt-1 bg-white border text-xs p-2 rounded shadow group-focus-within:block group-hover:block">
+                Invalid characters: {invalidUsernameChars}. Usernames can only contain lowercase letters and numbers.
+              </div>
+            )}
             {usernameTaken && (
               <p className="text-red-500 text-sm">Username already taken</p>
             )}
