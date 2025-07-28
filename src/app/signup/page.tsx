@@ -20,6 +20,9 @@ export default function SignUpPage() {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [usernameTaken, setUsernameTaken] = useState(false);
+  const [invalidUsernameChars, setInvalidUsernameChars] = useState<string | null>(
+    null,
+  );
   const [loading, setLoading] = useState(false);
   // Email validation function
   const validateEmail = (email: string): boolean => {
@@ -320,7 +323,7 @@ export default function SignUpPage() {
               />
             </label>
           </div>
-          <div>
+          <div className="relative group">
             <label className="block">
               Username <span className="text-red-500">*</span>
               <input
@@ -328,18 +331,37 @@ export default function SignUpPage() {
                 name="username"
                 autoComplete="username"
                 required
-                pattern="[A-Za-z0-9]+"
+                pattern="[a-z0-9]+"
                 placeholder="Username"
                 value={username}
                 onChange={(e) => {
-                  setUsername(e.target.value);
+                  const value = e.target.value;
+                  setUsername(value);
                   setUsernameTaken(false);
+                  const invalid = value.match(/[^a-z0-9]/gi);
+                  if (invalid) {
+                    const unique = Array.from(new Set(invalid)).join(" ");
+                    setInvalidUsernameChars(unique);
+                  } else {
+                    setInvalidUsernameChars(null);
+                  }
                 }}
                 onBlur={(e) => checkUsername(e.target.value)}
-                title={usernameTaken ? "Username already taken" : ""}
+                title={
+                  usernameTaken
+                    ? "Username already taken"
+                    : invalidUsernameChars
+                    ? `Invalid characters: ${invalidUsernameChars}`
+                    : ""
+                }
                 className="w-full mt-1 p-2.5 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
               />
             </label>
+            {invalidUsernameChars && (
+              <div className="absolute right-0 top-full mt-1 bg-white border text-xs p-2 rounded shadow group-focus-within:block group-hover:block">
+                Invalid characters: {invalidUsernameChars}. Usernames can only contain lowercase letters and numbers.
+              </div>
+            )}
             {usernameTaken && (
               <p className="text-red-500 text-sm">Username already taken</p>
             )}
