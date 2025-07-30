@@ -15,6 +15,9 @@ export default function AddStrainForm({
   const [name, setName] = useState(strain?.name ?? "");
   const [description, setDescription] = useState(strain?.description ?? "");
   const [imageUrl, setImageUrl] = useState<string | null>(strain?.imageUrl ?? null);
+  const [releaseDate, setReleaseDate] = useState(
+    strain?.releaseDate ? strain.releaseDate.toISOString().slice(0, 10) : "",
+  );
 
   const save = async () => {
     const body = {
@@ -22,6 +25,7 @@ export default function AddStrainForm({
       name,
       description,
       imageUrl,
+      releaseDate: releaseDate ? new Date(releaseDate).toISOString() : null,
     };
     if (strain) {
       await fetch(`/api/strains/${strain.id}`, {
@@ -57,6 +61,13 @@ export default function AddStrainForm({
         placeholder="Description"
         value={description}
         onChange={(e) => setDescription(e.target.value)}
+        className="border p-2 rounded w-full"
+      />
+      <input
+        type="date"
+        placeholder="Release date"
+        value={releaseDate}
+        onChange={(e) => setReleaseDate(e.target.value)}
         className="border p-2 rounded w-full"
       />
       <button

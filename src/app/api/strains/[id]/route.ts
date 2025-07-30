@@ -7,6 +7,7 @@ interface UpdateStrainBody {
   name?: string;
   description?: string | null;
   imageUrl?: string | null;
+  releaseDate?: string | null;
 }
 
 async function canManageProducer(
@@ -81,7 +82,12 @@ export async function PUT(
   try {
     const strain = await prisma.strain.update({
       where: { id },
-      data: body,
+      data: {
+        name: body.name,
+        description: body.description,
+        imageUrl: body.imageUrl,
+        releaseDate: body.releaseDate ? new Date(body.releaseDate) : body.releaseDate,
+      },
     });
     return NextResponse.json({ success: true, strain });
   } catch (err: any) {
