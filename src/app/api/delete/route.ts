@@ -7,7 +7,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: false, error: 'Missing url' }, { status: 400 });
   }
   try {
-    await del(url);
+    await del(url, { token: process.env.BLOB_READ_WRITE_TOKEN });
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error('Failed to delete blob', err);

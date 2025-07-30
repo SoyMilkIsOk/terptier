@@ -1,18 +1,38 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prismadb";
 import { authorize } from "@/lib/authorize";
+import { Role } from "@prisma/client";
 
 interface CreateStrainBody {
   producerId: string;
   name: string;
   description?: string;
   imageUrl?: string;
+  releaseDate?: string | null;
 }
 
-function canManageProducer(producerId: string, claims: any | null) {
-  if (!claims) return false;
-  if (claims.role === "ADMIN") return true;
-  return Array.isArray(claims.producer_ids) && claims.producer_ids.includes(producerId);
+async function canManageProducer(
+  producerId: string,
+  claims: any | null,
+  session: any,
+) {
+  if (claims?.role === "ADMIN") return true;
+  if (Array.isArray(claims?.producer_ids) && claims!.producer_ids.includes(producerId)) {
+    return true;
+  }
+  if (session?.user?.email) {
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      include: { producerAdmins: true },
+    });
+    if (user) {
+      return (
+        user.role === Role.ADMIN ||
+        user.producerAdmins.some((pa) => pa.producerId === producerId)
+      );
+    }
+  }
+  return false;
 }
 
 export async function GET(request: NextRequest) {
@@ -26,7 +46,7 @@ export async function GET(request: NextRequest) {
   if (!producerId) {
     return NextResponse.json({ success: false, error: "Missing producerId" }, { status: 400 });
   }
-  if (!canManageProducer(producerId, claims)) {
+  if (!(await canManageProducer(producerId, claims, session))) {
     return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
   }
 
@@ -52,7 +72,7 @@ export async function POST(request: NextRequest) {
   if (!body.producerId || !body.name) {
     return NextResponse.json({ success: false, error: "Missing fields" }, { status: 400 });
   }
-  if (!canManageProducer(body.producerId, claims)) {
+  if (!(await canManageProducer(body.producerId, claims, session))) {
     return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
   }
 
@@ -63,6 +83,7 @@ export async function POST(request: NextRequest) {
         name: body.name,
         description: body.description,
         imageUrl: body.imageUrl,
+        releaseDate: body.releaseDate ? new Date(body.releaseDate) : undefined,
       },
     });
     return NextResponse.json({ success: true, strain });

@@ -112,6 +112,7 @@ model Strain {
   id          String   @id @default(cuid())
   name        String
   description String?
+  releaseDate DateTime?
   imageUrl    String?
   producer    Producer @relation(fields: [producerId], references: [id], onDelete: Cascade)
   producerId  String

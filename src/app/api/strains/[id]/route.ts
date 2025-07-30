@@ -1,17 +1,37 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prismadb";
 import { authorize } from "@/lib/authorize";
+import { Role } from "@prisma/client";
 
 interface UpdateStrainBody {
   name?: string;
   description?: string | null;
   imageUrl?: string | null;
+  releaseDate?: string | null;
 }
 
-function canManageProducer(producerId: string, claims: any | null) {
-  if (!claims) return false;
-  if (claims.role === "ADMIN") return true;
-  return Array.isArray(claims.producer_ids) && claims.producer_ids.includes(producerId);
+async function canManageProducer(
+  producerId: string,
+  claims: any | null,
+  session: any,
+) {
+  if (claims?.role === "ADMIN") return true;
+  if (Array.isArray(claims?.producer_ids) && claims.producer_ids.includes(producerId)) {
+    return true;
+  }
+  if (session?.user?.email) {
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      include: { producerAdmins: true },
+    });
+    if (user) {
+      return (
+        user.role === Role.ADMIN ||
+        user.producerAdmins.some((pa) => pa.producerId === producerId)
+      );
+    }
+  }
+  return false;
 }
 
 export async function GET(
@@ -26,7 +46,7 @@ export async function GET(
     }
 
     const { session, claims } = await authorize();
-    if (!session || !canManageProducer(strain.producerId, claims)) {
+    if (!session || !(await canManageProducer(strain.producerId, claims, session))) {
       return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
     }
 
@@ -54,7 +74,7 @@ export async function PUT(
   if (!existing) {
     return NextResponse.json({ success: false, error: "Not found" }, { status: 404 });
   }
-  if (!canManageProducer(existing.producerId, claims)) {
+  if (!(await canManageProducer(existing.producerId, claims, session))) {
     return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
   }
 
@@ -62,7 +82,12 @@ export async function PUT(
   try {
     const strain = await prisma.strain.update({
       where: { id },
-      data: body,
+      data: {
+        name: body.name,
+        description: body.description,
+        imageUrl: body.imageUrl,
+        releaseDate: body.releaseDate ? new Date(body.releaseDate) : body.releaseDate,
+      },
     });
     return NextResponse.json({ success: true, strain });
   } catch (err: any) {
@@ -88,7 +113,7 @@ export async function DELETE(
   if (!existing) {
     return NextResponse.json({ success: false, error: "Not found" }, { status: 404 });
   }
-  if (!canManageProducer(existing.producerId, claims)) {
+  if (!(await canManageProducer(existing.producerId, claims, session))) {
     return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
   }
 
