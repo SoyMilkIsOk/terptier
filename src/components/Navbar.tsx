@@ -21,7 +21,9 @@ export default function Navbar() {
 
   useEffect(() => {
     // fetch initial session
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
+    supabase.auth
+      .getSession()
+      .then(async ({ data: { session } }) => {
       setSession(session);
       if (session?.user?.email) {
         try {
