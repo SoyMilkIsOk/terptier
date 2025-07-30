@@ -16,13 +16,15 @@ export default function StrainManager({
   const [editing, setEditing] = useState<Strain | null>(null);
 
   const refresh = async () => {
-    const res = await fetch(`/api/strains?producerId=${producerId}`);
+    const res = await fetch(`/api/strains?producerId=${producerId}`, {
+      credentials: "include",
+    });
     const data = await res.json();
     if (data.success) setStrains(data.strains);
   };
 
   const deleteStrain = async (id: string) => {
-    await fetch(`/api/strains/${id}`, { method: "DELETE" });
+    await fetch(`/api/strains/${id}`, { method: "DELETE", credentials: "include" });
     setStrains(strains.filter((s) => s.id !== id));
   };
 

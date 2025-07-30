@@ -28,12 +28,14 @@ export default function AddStrainForm({
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
+        credentials: "include",
       });
     } else {
       await fetch("/api/strains", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
+        credentials: "include",
       });
     }
     setName("");
