@@ -1,7 +1,8 @@
 // src/components/Navbar.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { motion } from "framer-motion";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
@@ -15,6 +16,8 @@ export default function Navbar() {
   const [profileUsername, setProfileUsername] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [showBar, setShowBar] = useState(true);
+  const lastScrollY = useRef(0);
 
   useEffect(() => {
     // fetch initial session
@@ -71,8 +74,27 @@ export default function Navbar() {
     };
   }, []);
 
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentY = window.scrollY;
+      if (currentY < lastScrollY.current || currentY <= 50) {
+        setShowBar(true);
+      } else if (currentY > lastScrollY.current) {
+        setShowBar(false);
+      }
+      lastScrollY.current = currentY;
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
-    <nav className="bg-green-700 text-white shadow-md relative">
+    <motion.nav
+      initial={{ y: 0 }}
+      animate={{ y: showBar ? 0 : -80 }}
+      transition={{ type: "tween", duration: 0.3 }}
+      className="bg-green-700 text-white shadow-md fixed top-0 left-0 right-0 z-50"
+    >
       <div className="container mx-auto px-4 flex items-center justify-between h-20">
         <Link href="/" className="flex items-center hover:opacity-90">
           <Image
@@ -215,6 +237,6 @@ export default function Navbar() {
           )}
         </div>
       )}
-    </nav>
+    </motion.nav>
   );
 }
