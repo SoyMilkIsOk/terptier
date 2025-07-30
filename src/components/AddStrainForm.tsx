@@ -15,8 +15,14 @@ export default function AddStrainForm({
   const [name, setName] = useState(strain?.name ?? "");
   const [description, setDescription] = useState(strain?.description ?? "");
   const [imageUrl, setImageUrl] = useState<string | null>(strain?.imageUrl ?? null);
+  function formatInputDate(date?: string | Date | null) {
+    if (!date) return "";
+    const d = typeof date === "string" ? new Date(date) : date;
+    return d.toISOString().slice(0, 10);
+  }
+
   const [releaseDate, setReleaseDate] = useState(
-    strain?.releaseDate ? strain.releaseDate.toISOString().slice(0, 10) : "",
+    formatInputDate(strain?.releaseDate ?? null),
   );
 
   const save = async () => {
@@ -25,7 +31,7 @@ export default function AddStrainForm({
       name,
       description,
       imageUrl,
-      releaseDate: releaseDate ? new Date(releaseDate).toISOString() : null,
+      releaseDate: releaseDate || null,
     };
     if (strain) {
       await fetch(`/api/strains/${strain.id}`, {
