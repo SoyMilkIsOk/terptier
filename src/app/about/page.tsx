@@ -8,6 +8,7 @@ import {
   Calendar,
   Eye,
   Instagram,
+  ChevronRight,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -186,41 +187,61 @@ export default function AboutPage() {
         </div>
       </div>
 
-      {/* Get Involved Section */}
+      {/* Get Started Section */}
       <div className="py-16 bg-gradient-to-r from-green-600 to-emerald-600">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="bg-white rounded-2xl p-8 shadow-2xl">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-6">
-              <Mail className="w-8 h-8 text-green-600" />
+              <Users className="w-8 h-8 text-green-600" />
             </div>
             <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Join the Movement
+              Ready to Discover Colorado's Best?
             </h2>
             <p className="text-lg text-gray-600 mb-8 leading-relaxed">
-              Have ideas, feedback, or want to get more involved? We'd love to
-              hear from you. Our community thrives on collaboration and shared
-              passion for quality cannabis.
+              Join our community of cannabis connoisseurs and start exploring Colorado's top-tier producers. 
+              Vote for your favorites, discover new strains, and connect with fellow enthusiasts.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <a
-                href="mailto:hello@terptier.com"
-                className="inline-flex items-center px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors duration-200 shadow-lg"
-              >
-                <Mail className="w-5 h-5 mr-2" />
-                hello@terptier.com
-              </a>
-              <span className="text-gray-600">or</span>
-              <a
-                href="https://instagram.com/terptier"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold rounded-lg hover:from-pink-600 hover:to-purple-700 transition-all duration-200 shadow-lg"
-              >
-                <Instagram className="w-5 h-5 mr-2" />
-                Follow us on Instagram
-              </a>
+            
+            {/* Navigation Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
+              <Link href="/rankings">
+                <button className="group inline-flex items-center px-8 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105">
+                  <span>Explore Brands</span>
+                  <ChevronRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                </button>
+              </Link>
+              <Link href="/signup">
+                <button className="inline-flex items-center px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105">
+                  <Users className="w-5 h-5 mr-2" />
+                  <span>Sign Up</span>
+                </button>
+              </Link>
             </div>
-            <div className="mt-8 pt-8 border-t border-gray-200">
+
+            {/* Contact Information */}
+            <div className="pt-8 border-t border-gray-200">
+              <p className="text-lg text-gray-600 mb-6 leading-relaxed">
+                Have ideas, feedback, or want to get more involved? We'd love to hear from you.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-6">
+                <a
+                  href="mailto:hello@terptier.com"
+                  className="inline-flex items-center px-6 py-3 bg-gray-100 text-gray-700 font-semibold rounded-lg hover:bg-gray-200 transition-colors duration-200 shadow"
+                >
+                  <Mail className="w-5 h-5 mr-2" />
+                  hello@terptier.com
+                </a>
+                <span className="text-gray-600">or</span>
+                <a
+                  href="https://instagram.com/terptier"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white font-semibold rounded-lg hover:from-pink-600 hover:to-purple-700 transition-all duration-200 shadow"
+                >
+                  <Instagram className="w-5 h-5 mr-2" />
+                  Follow us on Instagram
+                </a>
+              </div>
               <p className="text-gray-600">
                 Proudly built by{" "}
                 <Link
