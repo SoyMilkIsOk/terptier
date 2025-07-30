@@ -14,7 +14,7 @@ export async function POST(request: Request) {
   });
   const {
     data: { session },
-  } = await supabase.auth.getSession({ scopes: "role producer_ids" });
+  } = await supabase.auth.getSession();
 
   if (!session?.user?.email) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });

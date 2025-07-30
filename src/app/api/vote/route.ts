@@ -13,7 +13,7 @@ export async function POST(request: Request) {
     const supabase = createServerComponentClient({ cookies });
     const {
       data: { session },
-    } = await supabase.auth.getSession({ scopes: "role producer_ids" });
+    } = await supabase.auth.getSession();
     if (!session) {
       return NextResponse.json(
         { success: false, error: "Not authenticated" },

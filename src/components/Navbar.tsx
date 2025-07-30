@@ -22,7 +22,7 @@ export default function Navbar() {
   useEffect(() => {
     // fetch initial session
     supabase.auth
-      .getSession({ scopes: "role producer_ids" })
+      .getSession()
       .then(async ({ data: { session } }) => {
       setSession(session);
       if (session?.user?.email) {

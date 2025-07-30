@@ -34,7 +34,7 @@ export default async function ProfilePage({
   const supabase = createServerComponentClient({ cookies });
   const {
     data: { session },
-  } = await supabase.auth.getSession({ scopes: "role producer_ids" });
+  } = await supabase.auth.getSession();
 
   let user = await prisma.user.findUnique({
     where: { username: id },

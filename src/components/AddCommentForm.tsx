@@ -29,7 +29,7 @@ export default function AddCommentForm({ producerId }: { producerId: string }) {
 
   useEffect(() => {
     supabase.auth
-      .getSession({ scopes: "role producer_ids" })
+      .getSession()
       .then(({ data }) => setSession(data.session));
     const { data: listener } = supabase.auth.onAuthStateChange((_e, sess) =>
       setSession(sess)
