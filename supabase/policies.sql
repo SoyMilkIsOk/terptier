@@ -11,15 +11,15 @@ create policy "producer-admin-manage-strains" on "public"."Strain"
   using (
     exists (
       select 1 from "public"."ProducerAdmin" pa
-      where pa.userId = auth.uid()
-        and pa.producerId = "Strain".producerId
+      where pa."userId"::uuid = (select auth.uid())
+        and pa."producerId" = "Strain"."producerId"
     )
   )
   with check (
     exists (
       select 1 from "public"."ProducerAdmin" pa
-      where pa.userId = auth.uid()
-        and pa.producerId = "Strain".producerId
+      where pa."userId"::uuid = (select auth.uid())
+        and pa."producerId" = "Strain"."producerId"
     )
   );
 
@@ -36,5 +36,5 @@ create policy "support-admin-read-notification-jobs" on "public"."NotificationJo
 -- NotificationPreference policies
 create policy "user-update-own-preference" on "public"."NotificationPreference"
   for update
-  using (auth.uid() = "NotificationPreference".userId)
-  with check (auth.uid() = "NotificationPreference".userId);
+  using ((select auth.uid()) = "NotificationPreference"."userId"::uuid)
+  with check ((select auth.uid()) = "NotificationPreference"."userId"::uuid);
