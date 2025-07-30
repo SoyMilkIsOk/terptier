@@ -19,7 +19,7 @@ export default async function RankingsPage({
   const supabase = createServerComponentClient({ cookies });
   const {
     data: { session },
-  } = await supabase.auth.getSession();
+  } = await supabase.auth.getSession({ scopes: "role producer_ids" });
 
   let userVotes: Record<string, number> = {};
 

@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
   const supabase = createServerComponentClient({ cookies });
   const {
     data: { session },
-  } = await supabase.auth.getSession();
+  } = await supabase.auth.getSession({ scopes: "role producer_ids" });
 
   if (!session?.user?.email) {
     return NextResponse.json(
@@ -92,7 +92,7 @@ export async function DELETE(request: NextRequest) {
   const supabase = createServerComponentClient({ cookies });
   const {
     data: { session },
-  } = await supabase.auth.getSession();
+  } = await supabase.auth.getSession({ scopes: "role producer_ids" });
 
   if (!session?.user?.email) {
     return NextResponse.json(

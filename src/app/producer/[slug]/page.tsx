@@ -31,7 +31,7 @@ export default async function ProducerProfilePage({
   const supabase = createSupabaseServerClient();
   const {
     data: { session },
-  } = await supabase.auth.getSession();
+  } = await supabase.auth.getSession({ scopes: "role producer_ids" });
 
   let currentUserId: string | null = null;
   if (session?.user?.email) {

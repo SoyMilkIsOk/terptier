@@ -32,7 +32,9 @@ export default function VoteButton({
 
   useEffect(() => {
     if (readOnly) return;
-    supabase.auth.getSession().then(({ data }) => setSession(data.session));
+    supabase.auth
+      .getSession({ scopes: "role producer_ids" })
+      .then(({ data }) => setSession(data.session));
     const { data: listener } = supabase.auth.onAuthStateChange((_e, sess) =>
       setSession(sess)
     );

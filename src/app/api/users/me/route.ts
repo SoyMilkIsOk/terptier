@@ -13,7 +13,7 @@ export async function GET() {
   });
   const {
     data: { session },
-  } = await supabase.auth.getSession();
+  } = await supabase.auth.getSession({ scopes: "role producer_ids" });
 
   if (!session?.user?.email) {
     return NextResponse.json(
@@ -49,7 +49,7 @@ export async function PATCH(request: Request) {
   });
   const {
     data: { session },
-  } = await supabase.auth.getSession();
+  } = await supabase.auth.getSession({ scopes: "role producer_ids" });
 
   if (!session?.user?.email) {
       return NextResponse.json(

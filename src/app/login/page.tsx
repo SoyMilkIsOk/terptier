@@ -19,7 +19,7 @@ function LoginForm() {
     const {
       data: { session },
       error: finalError,
-    } = await supabase.auth.getSession();
+    } = await supabase.auth.getSession({ scopes: "role producer_ids" });
 
     if (session) {
       await fetch("/api/users", {

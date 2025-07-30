@@ -20,7 +20,7 @@ export async function DELETE(
     });
     const {
       data: { session },
-    } = await supabase.auth.getSession();
+    } = await supabase.auth.getSession({ scopes: "role producer_ids" });
 
     if (!session) {
       return NextResponse.json(
@@ -90,7 +90,7 @@ export async function PUT(
     });
     const {
       data: { session },
-    } = await supabase.auth.getSession();
+    } = await supabase.auth.getSession({ scopes: "role producer_ids" });
 
     if (!session) {
       return NextResponse.json(
