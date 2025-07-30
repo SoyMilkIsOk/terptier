@@ -37,16 +37,27 @@ export async function PUT(request: NextRequest) {
   const body = (await request.json()) as PreferenceBody;
 
   try {
-    const pref = await prisma.notificationPreference.upsert({
+    const existing = await prisma.notificationPreference.findFirst({
       where: { userId: session.user.id },
-      create: {
-        userId: session.user.id,
-        email: body.email ?? true,
-        sms: body.sms ?? false,
-        push: body.push ?? false,
-      },
-      update: body,
     });
+
+    let pref;
+    if (existing) {
+      pref = await prisma.notificationPreference.update({
+        where: { id: existing.id },
+        data: body,
+      });
+    } else {
+      pref = await prisma.notificationPreference.create({
+        data: {
+          userId: session.user.id,
+          email: body.email ?? true,
+          sms: body.sms ?? false,
+          push: body.push ?? false,
+        },
+      });
+    }
+
     return NextResponse.json({ success: true, preference: pref });
   } catch (err: any) {
     console.error("[PUT /api/notification-preferences]", err);

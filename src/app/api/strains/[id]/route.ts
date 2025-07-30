@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prismadb";
 import { authorize } from "@/lib/authorize";
 
@@ -15,11 +15,12 @@ function canManageProducer(producerId: string, claims: any | null) {
 }
 
 export async function GET(
-  _req: NextRequest,
-  { params }: { params: { id: string } }
+  _req: Request,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const strain = await prisma.strain.findUnique({ where: { id: params.id } });
+    const { id } = await params;
+    const strain = await prisma.strain.findUnique({ where: { id } });
     if (!strain) {
       return NextResponse.json({ success: false, error: "Not found" }, { status: 404 });
     }
@@ -40,15 +41,16 @@ export async function GET(
 }
 
 export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const { session, claims } = await authorize();
   if (!session) {
     return NextResponse.json({ success: false, error: "Not authenticated" }, { status: 401 });
   }
 
-  const existing = await prisma.strain.findUnique({ where: { id: params.id } });
+  const { id } = await params;
+  const existing = await prisma.strain.findUnique({ where: { id } });
   if (!existing) {
     return NextResponse.json({ success: false, error: "Not found" }, { status: 404 });
   }
@@ -59,7 +61,7 @@ export async function PUT(
   const body = (await request.json()) as UpdateStrainBody;
   try {
     const strain = await prisma.strain.update({
-      where: { id: params.id },
+      where: { id },
       data: body,
     });
     return NextResponse.json({ success: true, strain });
@@ -73,15 +75,16 @@ export async function PUT(
 }
 
 export async function DELETE(
-  _req: NextRequest,
-  { params }: { params: { id: string } }
+  _req: Request,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const { session, claims } = await authorize();
   if (!session) {
     return NextResponse.json({ success: false, error: "Not authenticated" }, { status: 401 });
   }
 
-  const existing = await prisma.strain.findUnique({ where: { id: params.id } });
+  const { id } = await params;
+  const existing = await prisma.strain.findUnique({ where: { id } });
   if (!existing) {
     return NextResponse.json({ success: false, error: "Not found" }, { status: 404 });
   }
@@ -90,7 +93,7 @@ export async function DELETE(
   }
 
   try {
-    await prisma.strain.delete({ where: { id: params.id } });
+    await prisma.strain.delete({ where: { id } });
     return NextResponse.json({ success: true });
   } catch (err: any) {
     console.error("[DELETE /api/strains/:id]", err);
