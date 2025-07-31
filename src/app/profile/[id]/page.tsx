@@ -6,8 +6,8 @@ import BackButton from "@/components/BackButton";
 import { prisma } from "@/lib/prismadb";
 import { cookies } from "next/headers";
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
-import { Instagram, ExternalLink, Link as LinkIcon, Bell } from "lucide-react";
-import Link from "next/link";
+import { Instagram, ExternalLink, Link as LinkIcon } from "lucide-react";
+import NotificationSettingsButton from "@/components/NotificationSettingsButton";
 
 export const dynamic = "force-dynamic";
 
@@ -90,15 +90,7 @@ export default async function ProfilePage({
     <div className="container mx-auto p-4">
       <div className="mb-4 flex items-center justify-between">
         <BackButton />
-        {isOwner && (
-          <Link
-            href="/profile/notifications"
-            aria-label="Notification settings"
-            className="text-green-600 hover:text-green-800"
-          >
-            <Bell className="w-5 h-5" />
-          </Link>
-        )}
+        {isOwner && <NotificationSettingsButton />}
       </div>
       
       {/* Profile Header Card */}
