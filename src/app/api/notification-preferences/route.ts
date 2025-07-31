@@ -10,13 +10,19 @@ interface PreferenceBody {
 
 export async function GET() {
   const { session } = await authorize();
-  if (!session) {
+  if (!session?.user?.email) {
     return NextResponse.json({ success: false, error: "Not authenticated" }, { status: 401 });
   }
 
   try {
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+    });
+    if (!user) {
+      return NextResponse.json({ success: false, error: "User not found" }, { status: 404 });
+    }
     const pref = await prisma.notificationPreference.findFirst({
-      where: { userId: session.user.id },
+      where: { userId: user.id },
     });
     return NextResponse.json({ success: true, preference: pref });
   } catch (err: any) {
@@ -30,15 +36,22 @@ export async function GET() {
 
 export async function PUT(request: NextRequest) {
   const { session } = await authorize();
-  if (!session) {
+  if (!session?.user?.email) {
     return NextResponse.json({ success: false, error: "Not authenticated" }, { status: 401 });
   }
 
   const body = (await request.json()) as PreferenceBody;
 
   try {
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+    });
+    if (!user) {
+      return NextResponse.json({ success: false, error: "User not found" }, { status: 404 });
+    }
+
     const existing = await prisma.notificationPreference.findFirst({
-      where: { userId: session.user.id },
+      where: { userId: user.id },
     });
 
     let pref;
@@ -50,7 +63,7 @@ export async function PUT(request: NextRequest) {
     } else {
       pref = await prisma.notificationPreference.create({
         data: {
-          userId: session.user.id,
+          userId: user.id,
           email: body.email ?? true,
           sms: body.sms ?? false,
           push: body.push ?? false,
