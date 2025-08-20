@@ -127,13 +127,16 @@ export default function Navbar() {
         </div>
         <div className="absolute right-8 top-1/2 -translate-y-1/2 md:hidden"></div>
         <div className="hidden md:flex items-center space-x-6">
+          <Link href="/about" className={`${pathname === "/about" ? "underline" : "hover:underline"}`}>
+            About
+          </Link>
           <Link
             href="/rankings"
             className={`${
               pathname === "/rankings" ? "underline" : "hover:underline"
             }`}
           >
-            Brands
+            Explore
           </Link>
 
           {profileUsername && (
@@ -187,11 +190,18 @@ export default function Navbar() {
       {menuOpen && (
         <div className="md:hidden bg-green-800 border-t border-b border-green-900 pt-4 pb-6 space-y-4 flex flex-col items-center text-white">
           <Link
+            href="/about"
+            onClick={() => setMenuOpen(false)}
+            className="w-full text-center py-1"
+          >
+            About
+          </Link>
+          <Link
             href="/rankings"
             onClick={() => setMenuOpen(false)}
             className="w-full text-center py-1"
           >
-            Brands
+            Explore
           </Link>
           {profileUsername && (
             <Link
