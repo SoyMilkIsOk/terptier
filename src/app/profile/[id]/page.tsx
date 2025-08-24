@@ -7,7 +7,6 @@ import { prisma } from "@/lib/prismadb";
 import { cookies } from "next/headers";
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { Instagram, ExternalLink, Link as LinkIcon } from "lucide-react";
-import NotificationSettingsButton from "@/components/NotificationSettingsButton";
 
 export const dynamic = "force-dynamic";
 
@@ -90,7 +89,7 @@ export default async function ProfilePage({
     <div className="container mx-auto p-4">
       <div className="mb-4 flex items-center justify-between">
         <BackButton />
-        {isOwner && <NotificationSettingsButton />}
+
       </div>
       
       {/* Profile Header Card */}
