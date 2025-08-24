@@ -61,7 +61,7 @@ export async function POST(request: Request) {
         socialLink,
         notificationOptIn,
         role,
-      },
+      } as any,
       create: {
         id,
         email,
@@ -72,7 +72,7 @@ export async function POST(request: Request) {
         socialLink,
         notificationOptIn,
         role,
-      },
+      } as any,
     });
 
     return NextResponse.json({ ok: true });
