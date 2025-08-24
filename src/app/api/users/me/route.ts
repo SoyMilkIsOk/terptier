@@ -39,7 +39,7 @@ export async function GET() {
     role: user.role,
     username: user.username,
     profilePicUrl: user.profilePicUrl,
-    notificationOptIn: (user as any).notificationOptIn,
+    notificationOptIn: user.notificationOptIn,
   });
 }
 
@@ -61,9 +61,13 @@ export async function PATCH(request: Request) {
 
   const { profilePicUrl, notificationOptIn } = await request.json();
 
+  const data: { profilePicUrl?: string; notificationOptIn?: boolean } = {};
+  if (profilePicUrl !== undefined) data.profilePicUrl = profilePicUrl;
+  if (notificationOptIn !== undefined) data.notificationOptIn = notificationOptIn;
+
   await prisma.user.update({
     where: { email: session.user.email },
-    data: { profilePicUrl, notificationOptIn } as any,
+    data,
   });
 
   return NextResponse.json({ success: true });
