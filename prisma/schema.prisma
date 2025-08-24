@@ -29,11 +29,10 @@ model User {
   email                   String                   @unique
   passwordHash            String? // for credentials
   role                    Role                     @default(USER)
+  notificationOptIn       Boolean                  @default(false)
   votes                   Vote[]
   comments                Comment[]
   producerAdmins          ProducerAdmin[]
-  notifications           Notification[]
-  notificationPreferences NotificationPreference[]
   createdAt               DateTime                 @default(now())
   updatedAt               DateTime                 @updatedAt
   Producer                Producer[]
@@ -120,32 +119,4 @@ model Strain {
   updatedAt   DateTime @updatedAt
 
   @@unique([producerId, name])
-}
-
-model Notification {
-  id        String            @id @default(cuid())
-  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String
-  message   String
-  readAt    DateTime?
-  createdAt DateTime          @default(now())
-  jobs      NotificationJob[]
-}
-
-model NotificationJob {
-  id             String       @id @default(cuid())
-  notification   Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
-  notificationId String
-  scheduledAt    DateTime
-  sentAt         DateTime?
-  createdAt      DateTime     @default(now())
-}
-
-model NotificationPreference {
-  id     String  @id @default(cuid())
-  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId String
-  email  Boolean @default(true)
-  sms    Boolean @default(false)
-  push   Boolean @default(false)
 }
