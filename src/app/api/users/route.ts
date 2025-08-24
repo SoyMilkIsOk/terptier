@@ -34,6 +34,7 @@ export async function POST(request: Request) {
     birthday,
     profilePicUrl,
     socialLink,
+    notificationOptIn,
   } = await request.json();
 
   const username = rawUsername?.toLowerCase();
@@ -58,8 +59,9 @@ export async function POST(request: Request) {
         birthday: birthday ? new Date(birthday) : undefined,
         profilePicUrl,
         socialLink,
+        notificationOptIn,
         role,
-      },
+      } as any,
       create: {
         id,
         email,
@@ -68,8 +70,9 @@ export async function POST(request: Request) {
         birthday: birthday ? new Date(birthday) : undefined,
         profilePicUrl,
         socialLink,
+        notificationOptIn,
         role,
-      },
+      } as any,
     });
 
     return NextResponse.json({ ok: true });

@@ -10,7 +10,7 @@ const nextConfig = {
   images: {
     remotePatterns: [
       new URL('https://elnwy0xndspvgnal.public.blob.vercel-storage.com/**'),
-      new URL('https://via.placeholder.com/**'),
+      new URL('https://placehold.co/**'),
     ],
   },
 };

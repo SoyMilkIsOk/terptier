@@ -2,6 +2,7 @@
 import ProducerCard from "@/components/ProducerCard";
 import CommentCard from "@/components/CommentCard";
 import ProfileImageUpload from "@/components/ProfileImageUpload";
+import NotificationOptInToggle from "@/components/NotificationOptInToggle";
 import BackButton from "@/components/BackButton";
 import { prisma } from "@/lib/prismadb";
 import { cookies } from "next/headers";
@@ -176,6 +177,11 @@ export default async function ProfilePage({
             <span className="text-green-600 font-bold">{user.comments.length}</span>
           </div>
         </div>
+        {isOwner && (
+          <div className="mt-4">
+            <NotificationOptInToggle initial={(user as any).notificationOptIn} />
+          </div>
+        )}
       </div>
 
       {/* Comments Section */}

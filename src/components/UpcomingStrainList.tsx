@@ -26,7 +26,7 @@ export default function UpcomingStrainList({ strains }: UpcomingStrainListProps)
           >
             <div className="relative w-16 h-16 flex-shrink-0">
               <Image
-                src={strain.imageUrl || "https://via.placeholder.com/64"}
+                src={strain.imageUrl || "https://placehold.co/64"}
                 alt={strain.name}
                 fill
                 className="object-cover rounded"

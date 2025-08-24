@@ -13,6 +13,7 @@ export default function SignUpPage() {
   const [username, setUsername] = useState("");
   const [birthday, setBirthday] = useState("");
   const [socialLink, setSocialLink] = useState("");
+  const [notificationOptIn, setNotificationOptIn] = useState(false);
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [file, setFile] = useState<File | null>(null);
@@ -167,6 +168,7 @@ export default function SignUpPage() {
         birthday,
         profilePicUrl: profileUrl,
         socialLink,
+        notificationOptIn,
       }),
     });
     const data = await res.json();
@@ -389,6 +391,15 @@ export default function SignUpPage() {
               className="w-full mt-1 p-2.5 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              checked={notificationOptIn}
+              onChange={(e) => setNotificationOptIn(e.target.checked)}
+              className="mr-2"
+            />
+            Receive weekly drop emails
+          </label>
           <div>
             <label className="block">Profile Picture</label>
             <UploadButton onChange={handleFileChange} className="mt-1" />
