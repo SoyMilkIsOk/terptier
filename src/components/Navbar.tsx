@@ -7,7 +7,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import Image from "next/image";
-import { LogIn, LogOut, User } from "lucide-react";
+import { LogIn, LogOut, UserCircle } from "lucide-react";
 import type { Session } from "@supabase/supabase-js";
 import DropOptInModal from "./DropOptInModal";
 
@@ -23,6 +23,16 @@ export default function Navbar() {
   const lastScrollY = useRef(0);
   const [exploreMobileOpen, setExploreMobileOpen] = useState(false);
   const [profileMobileOpen, setProfileMobileOpen] = useState(false);
+  const [exploreOpen, setExploreOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+
+  const closeAllMenus = () => {
+    setMenuOpen(false);
+    setExploreMobileOpen(false);
+    setProfileMobileOpen(false);
+    setExploreOpen(false);
+    setProfileOpen(false);
+  };
 
   useEffect(() => {
     // fetch initial session
@@ -131,37 +141,100 @@ export default function Navbar() {
             height={50}
           />
         </Link>
-        <div className="flex md:hidden mr-4">
-        <button
-          onClick={() => setMenuOpen(!menuOpen)}
-          className="relative w-8 h-8 focus:outline-none"
-          aria-label="Toggle menu"
-        >
-          <span
-            className={`absolute left-1/2 w-6 h-0.5 bg-white transition-transform duration-300 ease-in-out ${
-              menuOpen ? "rotate-45 top-2.5" : "top-2"
-            }`}
-            style={{ transformOrigin: "center" }}
-          />
-          <span
-            className={`absolute left-1/2 w-6 h-0.5 bg-white transition-transform duration-300 ease-in-out ${
-              menuOpen ? "-rotate-45 top-2.5" : "top-5"
-            }`}
-            style={{ transformOrigin: "center" }}
-          />
-        </button>
+        <div className="flex md:hidden items-center space-x-4 mr-4">
+          <button
+            onClick={() => {
+              const newState = !menuOpen;
+              setMenuOpen(newState);
+              if (newState) {
+                setExploreMobileOpen(false);
+                setProfileMobileOpen(false);
+              }
+            }}
+            className="relative w-8 h-8 focus:outline-none"
+            aria-label="Toggle menu"
+          >
+            <span
+              className={`absolute left-1/2 w-6 h-0.5 bg-white transition-transform duration-300 ease-in-out ${
+                menuOpen ? "rotate-45 top-2.5" : "top-2"
+              }`}
+              style={{ transformOrigin: "center" }}
+            />
+            <span
+              className={`absolute left-1/2 w-6 h-0.5 bg-white transition-transform duration-300 ease-in-out ${
+                menuOpen ? "-rotate-45 top-2.5" : "top-5"
+              }`}
+              style={{ transformOrigin: "center" }}
+            />
+          </button>
+          {profileUsername ? (
+            <div className="relative">
+              <button
+                onClick={() => {
+                  const newState = !profileMobileOpen;
+                  setProfileMobileOpen(newState);
+                  if (newState) {
+                    setMenuOpen(false);
+                    setExploreMobileOpen(false);
+                  }
+                }}
+                aria-label="Profile menu"
+              >
+                <UserCircle className="w-8 h-8" />
+              </button>
+              {profileMobileOpen && (
+                <div className="absolute right-0 mt-2 bg-green-600 text-white rounded shadow-lg">
+                  <Link
+                    href={`/profile/${profileUsername}`}
+                    onClick={closeAllMenus}
+                    className="block px-5 py-3 text-center whitespace-nowrap"
+                  >
+                    Profile
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      await supabase.auth.signOut();
+                      setSession(null);
+                      closeAllMenus();
+                      location.reload();
+                    }}
+                    className="w-full flex items-center justify-center space-x-1 px-5 py-3"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    <span>Log Out</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <Link href="/login" aria-label="Log in">
+              <LogIn className="w-8 h-8" />
+            </Link>
+          )}
         </div>
-        <div className="absolute right-8 top-1/2 -translate-y-1/2 md:hidden"></div>
         <div className="hidden md:flex items-center space-x-6">
           <Link
             href="/about"
+            onClick={closeAllMenus}
             className={`${pathname === "/about" ? "underline" : "hover:underline"}`}
           >
             About
           </Link>
 
-          <div className="relative group">
+          <div
+            className="relative"
+            onMouseEnter={() => {
+              setExploreOpen(true);
+              setProfileOpen(false);
+            }}
+            onMouseLeave={() => setExploreOpen(false)}
+          >
             <button
+              onClick={() => {
+                setExploreOpen((prev) => !prev);
+                setProfileOpen(false);
+              }}
               className={`${
                 pathname === "/rankings" || pathname === "/drops"
                   ? "underline"
@@ -170,47 +243,68 @@ export default function Navbar() {
             >
               Explore
             </button>
-            <div className="absolute left-0 mt-2 hidden group-hover:block bg-green-600 text-white rounded shadow-lg">
-              <Link
-                href="/rankings"
-                className="block px-4 py-2 hover:bg-green-500 whitespace-nowrap"
-              >
-                Brands
-              </Link>
-              <Link
-                href="/drops"
-                className="block px-4 py-2 hover:bg-green-500 whitespace-nowrap"
-              >
-                Drops
-              </Link>
-            </div>
+            {exploreOpen && (
+              <div className="absolute left-0 mt-2 bg-green-600 text-white rounded shadow-lg">
+                <Link
+                  href="/rankings"
+                  onClick={closeAllMenus}
+                  className="block px-5 py-3 hover:bg-green-500 whitespace-nowrap"
+                >
+                  Brands
+                </Link>
+                <Link
+                  href="/drops"
+                  onClick={closeAllMenus}
+                  className="block px-5 py-3 hover:bg-green-500 whitespace-nowrap"
+                >
+                  Drops
+                </Link>
+              </div>
+            )}
           </div>
 
           {profileUsername ? (
-            <div className="relative group">
-              <button className="flex items-center">
-                <User className="w-5 h-5" />
+            <div
+              className="relative"
+              onMouseEnter={() => {
+                setProfileOpen(true);
+                setExploreOpen(false);
+              }}
+              onMouseLeave={() => setProfileOpen(false)}
+            >
+              <button
+                onClick={() => {
+                  setProfileOpen((prev) => !prev);
+                  setExploreOpen(false);
+                }}
+                className="flex items-center"
+              >
+                <UserCircle className="w-5 h-5" />
               </button>
-              <div className="absolute right-0 mt-2 hidden group-hover:block bg-green-600 text-white rounded shadow-lg">
-                <Link
-                  href={`/profile/${profileUsername}`}
-                  className="block px-4 py-2 hover:bg-green-500 whitespace-nowrap"
-                >
-                  Profile
-                </Link>
-                <button
-                  type="button"
-                  onClick={async () => {
-                    await supabase.auth.signOut();
-                    setSession(null);
-                    location.reload();
-                  }}
-                  className="w-full text-left px-4 py-2 hover:bg-green-500 flex items-center space-x-2"
-                >
-                  <LogOut className="w-4 h-4" />
-                  <span>Log Out</span>
-                </button>
-              </div>
+              {profileOpen && (
+                <div className="absolute right-0 mt-2 bg-green-600 text-white rounded shadow-lg">
+                  <Link
+                    href={`/profile/${profileUsername}`}
+                    onClick={closeAllMenus}
+                    className="block px-5 py-3 hover:bg-green-500 whitespace-nowrap"
+                  >
+                    Profile
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      await supabase.auth.signOut();
+                      setSession(null);
+                      closeAllMenus();
+                      location.reload();
+                    }}
+                    className="w-full text-left px-5 py-3 hover:bg-green-500 flex items-center space-x-2 whitespace-nowrap"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    <span>Log Out</span>
+                  </button>
+                </div>
+              )}
             </div>
           ) : (
             <Link href="/login" className="flex items-center">
@@ -223,7 +317,7 @@ export default function Navbar() {
         <div className="md:hidden bg-green-700 border-t border-b border-green-900 pt-4 pb-6 space-y-4 flex flex-col items-center text-white">
           <Link
             href="/about"
-            onClick={() => setMenuOpen(false)}
+            onClick={closeAllMenus}
             className="w-full text-center py-1"
           >
             About
@@ -239,14 +333,14 @@ export default function Navbar() {
               <div className="bg-green-600">
                 <Link
                   href="/rankings"
-                  onClick={() => setMenuOpen(false)}
+                  onClick={closeAllMenus}
                   className="block text-center py-1"
                 >
                   Brands
                 </Link>
                 <Link
                   href="/drops"
-                  onClick={() => setMenuOpen(false)}
+                  onClick={closeAllMenus}
                   className="block text-center py-1"
                 >
                   Drops
@@ -254,48 +348,6 @@ export default function Navbar() {
               </div>
             )}
           </div>
-          {profileUsername ? (
-            <div className="w-full">
-              <button
-                onClick={() => setProfileMobileOpen(!profileMobileOpen)}
-                className="w-full flex justify-center py-1"
-              >
-                <User className="w-5 h-5" />
-              </button>
-              {profileMobileOpen && (
-                <div className="bg-green-600">
-                  <Link
-                    href={`/profile/${profileUsername}`}
-                    onClick={() => setMenuOpen(false)}
-                    className="block text-center py-1"
-                  >
-                    Profile
-                  </Link>
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      await supabase.auth.signOut();
-                      setSession(null);
-                      setMenuOpen(false);
-                      location.reload();
-                    }}
-                    className="w-full flex items-center justify-center space-x-1 py-1"
-                  >
-                    <LogOut className="w-4 h-4" />
-                    <span>Log Out</span>
-                  </button>
-                </div>
-              )}
-            </div>
-          ) : (
-            <Link
-              href="/login"
-              onClick={() => setMenuOpen(false)}
-              className="w-full flex justify-center py-1"
-            >
-              <LogIn className="w-5 h-5" />
-            </Link>
-          )}
         </div>
       )}
     </motion.nav>
