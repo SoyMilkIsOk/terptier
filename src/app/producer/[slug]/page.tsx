@@ -231,12 +231,6 @@ export default async function ProducerProfilePage({
           <div className="mt-8">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-xl font-semibold">Strains</h3>
-              <Link
-                href="/drops"
-                className="text-sm text-green-700 hover:underline"
-              >
-                View all upcoming drops
-              </Link>
             </div>
             <UpcomingStrainList strains={producer.strains} />
           </div>

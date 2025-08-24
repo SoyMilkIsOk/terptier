@@ -61,7 +61,7 @@ export default async function RankingsPage({
   const initialViewParam = view === "hash" ? "hash" : "flower";
 
   return (
-    <div className="bg-white min-h-[100vh] py-4">
+    <div className="bg-white min-h-[100vh] py-4 py-2 sm:px-8">
       <ProducerList
         initialData={{ flower, hash }}
         userVotes={userVotes}

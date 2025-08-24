@@ -5,6 +5,7 @@ export default function MainContainer({ children }: { children: React.ReactNode 
   const pathname = usePathname();
   const isHome = pathname === '/';
   const isAbout = pathname === '/about';
-  const className = isHome ? '' : isAbout ? '' : 'container mx-auto min-h-screen';
+  const isDrops = pathname === '/drops';
+  const className = isHome ? '' : isAbout ? '' : isDrops ? '' : 'bg-white';
   return <main className={className}>{children}</main>;
 }

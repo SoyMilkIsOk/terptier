@@ -8,7 +8,7 @@ interface UpcomingStrainListProps {
 
 export default function UpcomingStrainList({ strains }: UpcomingStrainListProps) {
   if (strains.length === 0) {
-    return <p className="text-gray-500">No upcoming strains.</p>;
+    return <p className="text-gray-500 italic">No strains.</p>;
   }
 
   return (
