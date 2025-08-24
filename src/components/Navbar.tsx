@@ -7,7 +7,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import Image from "next/image";
-import { LogIn, LogOut } from "lucide-react";
+import { LogIn, LogOut, User } from "lucide-react";
 import type { Session } from "@supabase/supabase-js";
 import DropOptInModal from "./DropOptInModal";
 
@@ -15,12 +15,14 @@ export default function Navbar() {
   const pathname = usePathname();
   const [session, setSession] = useState<Session | null>(null);
   const [profileUsername, setProfileUsername] = useState<string | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [_isAdmin, setIsAdmin] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [showBar, setShowBar] = useState(true);
   const [notificationOptIn, setNotificationOptIn] = useState(true);
   const [showDropModal, setShowDropModal] = useState(false);
   const lastScrollY = useRef(0);
+  const [exploreMobileOpen, setExploreMobileOpen] = useState(false);
+  const [profileMobileOpen, setProfileMobileOpen] = useState(false);
 
   useEffect(() => {
     // fetch initial session
@@ -151,76 +153,74 @@ export default function Navbar() {
         </div>
         <div className="absolute right-8 top-1/2 -translate-y-1/2 md:hidden"></div>
         <div className="hidden md:flex items-center space-x-6">
-          <Link href="/about" className={`${pathname === "/about" ? "underline" : "hover:underline"}`}>
+          <Link
+            href="/about"
+            className={`${pathname === "/about" ? "underline" : "hover:underline"}`}
+          >
             About
           </Link>
-          <Link
-            href="/drops"
-            className={`${
-              pathname === "/drops" ? "underline" : "hover:underline"
-            }`}
-          >
-            Drops
-          </Link>
-          <Link
-            href="/rankings"
-            className={`${
-              pathname === "/rankings" ? "underline" : "hover:underline"
-            }`}
-          >
-            Explore
-          </Link>
 
-          {profileUsername && (
-            <Link
-              href={`/profile/${profileUsername}`}
+          <div className="relative group">
+            <button
               className={`${
-                pathname === `/profile/${profileUsername}`
+                pathname === "/rankings" || pathname === "/drops"
                   ? "underline"
                   : "hover:underline"
               }`}
             >
-              Profile
-            </Link>
-          )}
-
-          {session && isAdmin && (
-            <Link
-              href="/admin"
-              className={`${
-                pathname === "/admin" ? "underline" : "hover:underline"
-              }`}
-            >
-              Admin Panel
-            </Link>
-          )}
-
-          {!session ? (
-            <Link
-              href="/login"
-              className="flex items-center space-x-1 bg-white text-green-700 px-3 py-1 rounded-full hover:bg-green-50"
-            >
-              <LogIn className="w-4 h-4" />
-              <span>Log In / Sign Up</span>
-            </Link>
-          ) : (
-            <button
-              type="button"
-              onClick={async () => {
-                await supabase.auth.signOut();
-                setSession(null);
-                location.reload();
-              }}
-              className="flex items-center space-x-1 bg-red-600 hover:bg-red-700 px-3 py-1 rounded-full cursor-pointer"
-            >
-              <LogOut className="w-4 h-4 text-white" />
-              <span className="text-white">Sign Out</span>
+              Explore
             </button>
+            <div className="absolute left-0 mt-2 hidden group-hover:block bg-green-600 text-white rounded shadow-lg">
+              <Link
+                href="/rankings"
+                className="block px-4 py-2 hover:bg-green-500 whitespace-nowrap"
+              >
+                Brands
+              </Link>
+              <Link
+                href="/drops"
+                className="block px-4 py-2 hover:bg-green-500 whitespace-nowrap"
+              >
+                Drops
+              </Link>
+            </div>
+          </div>
+
+          {profileUsername ? (
+            <div className="relative group">
+              <button className="flex items-center">
+                <User className="w-5 h-5" />
+              </button>
+              <div className="absolute right-0 mt-2 hidden group-hover:block bg-green-600 text-white rounded shadow-lg">
+                <Link
+                  href={`/profile/${profileUsername}`}
+                  className="block px-4 py-2 hover:bg-green-500 whitespace-nowrap"
+                >
+                  Profile
+                </Link>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    await supabase.auth.signOut();
+                    setSession(null);
+                    location.reload();
+                  }}
+                  className="w-full text-left px-4 py-2 hover:bg-green-500 flex items-center space-x-2"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>Log Out</span>
+                </button>
+              </div>
+            </div>
+          ) : (
+            <Link href="/login" className="flex items-center">
+              <LogIn className="w-5 h-5" />
+            </Link>
           )}
         </div>
       </div>
       {menuOpen && (
-        <div className="md:hidden bg-green-800 border-t border-b border-green-900 pt-4 pb-6 space-y-4 flex flex-col items-center text-white">
+        <div className="md:hidden bg-green-700 border-t border-b border-green-900 pt-4 pb-6 space-y-4 flex flex-col items-center text-white">
           <Link
             href="/about"
             onClick={() => setMenuOpen(false)}
@@ -228,61 +228,73 @@ export default function Navbar() {
           >
             About
           </Link>
-          <Link
-            href="/drops"
-            onClick={() => setMenuOpen(false)}
-            className="w-full text-center py-1"
-          >
-            Drops
-          </Link>
-          <Link
-            href="/rankings"
-            onClick={() => setMenuOpen(false)}
-            className="w-full text-center py-1"
-          >
-            Explore
-          </Link>
-          {profileUsername && (
-            <Link
-              href={`/profile/${profileUsername}`}
-              onClick={() => setMenuOpen(false)}
+          <div className="w-full">
+            <button
+              onClick={() => setExploreMobileOpen(!exploreMobileOpen)}
               className="w-full text-center py-1"
             >
-              Profile
-            </Link>
-          )}
-          {session && isAdmin && (
-            <Link
-              href="/admin"
-              onClick={() => setMenuOpen(false)}
-              className="w-full text-center py-1"
-            >
-              Admin Panel
-            </Link>
-          )}
-          {!session ? (
+              Explore
+            </button>
+            {exploreMobileOpen && (
+              <div className="bg-green-600">
+                <Link
+                  href="/rankings"
+                  onClick={() => setMenuOpen(false)}
+                  className="block text-center py-1"
+                >
+                  Brands
+                </Link>
+                <Link
+                  href="/drops"
+                  onClick={() => setMenuOpen(false)}
+                  className="block text-center py-1"
+                >
+                  Drops
+                </Link>
+              </div>
+            )}
+          </div>
+          {profileUsername ? (
+            <div className="w-full">
+              <button
+                onClick={() => setProfileMobileOpen(!profileMobileOpen)}
+                className="w-full flex justify-center py-1"
+              >
+                <User className="w-5 h-5" />
+              </button>
+              {profileMobileOpen && (
+                <div className="bg-green-600">
+                  <Link
+                    href={`/profile/${profileUsername}`}
+                    onClick={() => setMenuOpen(false)}
+                    className="block text-center py-1"
+                  >
+                    Profile
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      await supabase.auth.signOut();
+                      setSession(null);
+                      setMenuOpen(false);
+                      location.reload();
+                    }}
+                    className="w-full flex items-center justify-center space-x-1 py-1"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    <span>Log Out</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
             <Link
               href="/login"
               onClick={() => setMenuOpen(false)}
-              className="text-center py-1 px-3 bg-white text-green-700 rounded-full flex items-center justify-center space-x-1"
+              className="w-full flex justify-center py-1"
             >
-              <LogIn className="w-4 h-4" />
-              <span>Log In / Sign Up</span>
+              <LogIn className="w-5 h-5" />
             </Link>
-          ) : (
-            <button
-              type="button"
-              onClick={async () => {
-                await supabase.auth.signOut();
-                setSession(null);
-                setMenuOpen(false);
-                location.reload();
-              }}
-              className="text-center px-3 py-1 bg-red-600 hover:bg-red-700 rounded-full cursor-pointer text-white flex items-center justify-center space-x-1"
-            >
-              <LogOut className="w-4 h-4" />
-              <span>Sign Out</span>
-            </button>
           )}
         </div>
       )}
