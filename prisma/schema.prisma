@@ -11,6 +11,7 @@ datasource db {
 enum Role {
   USER
   ADMIN
+  PRODUCER_ADMIN
 }
 
 enum Category {
@@ -19,20 +20,22 @@ enum Category {
 }
 
 model User {
-  id            String     @id @default(cuid()) // Reverted to CUID
-  name          String?
-  username      String?    @unique
-  birthday      DateTime?
-  profilePicUrl String?
-  socialLink    String?
-  email         String     @unique
-  passwordHash  String? // for credentials
-  role          Role       @default(USER)
-  votes         Vote[]
-  comments      Comment[]
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
-  Producer      Producer[]
+  id                      String                   @id @default(cuid()) // Reverted to CUID
+  name                    String?
+  username                String?                  @unique
+  birthday                DateTime?
+  profilePicUrl           String?
+  socialLink              String?
+  email                   String                   @unique
+  passwordHash            String? // for credentials
+  role                    Role                     @default(USER)
+  notificationOptIn       Boolean                  @default(false)
+  votes                   Vote[]
+  comments                Comment[]
+  producerAdmins          ProducerAdmin[]
+  createdAt               DateTime                 @default(now())
+  updatedAt               DateTime                 @updatedAt
+  Producer                Producer[]
 }
 
 model Producer {
@@ -51,6 +54,8 @@ model Producer {
   votes                  Vote[]
   comments               Comment[]
   ProducerRatingSnapshot ProducerRatingSnapshot[]
+  admins                 ProducerAdmin[]
+  strains                Strain[]
 
   @@unique([name, category])
 }
@@ -91,4 +96,27 @@ model ProducerRatingSnapshot {
   createdAt     DateTime @default(now())
 
   @@index([producerId, createdAt])
+}
+
+model ProducerAdmin {
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String
+  producer   Producer @relation(fields: [producerId], references: [id], onDelete: Cascade)
+  producerId String
+
+  @@id([userId, producerId])
+}
+
+model Strain {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  releaseDate DateTime?
+  imageUrl    String?
+  producer    Producer @relation(fields: [producerId], references: [id], onDelete: Cascade)
+  producerId  String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([producerId, name])
 }

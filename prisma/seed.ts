@@ -67,6 +67,29 @@ async function main() {
       create: { name, category: Category.HASH },
     });
   }
+
+  // 4) Seed a producer admin user and link to a couple producers
+  const producerAdminPass = process.env.PRODUCER_ADMIN_PASS || "changeme";
+  const adminHash = await bcrypt.hash(producerAdminPass, 10);
+  const producerAdmin = await prisma.user.upsert({
+    where: { email: "producer_admin@example.com" },
+    update: {},
+    create: {
+      email: "producer_admin@example.com",
+      name: "Producer Admin",
+      passwordHash: adminHash,
+      role: Role.PRODUCER_ADMIN,
+    },
+  });
+
+  const someProducers = await prisma.producer.findMany({ take: 2 });
+  for (const producer of someProducers) {
+    await prisma.producerAdmin.upsert({
+      where: { userId_producerId: { userId: producerAdmin.id, producerId: producer.id } },
+      update: {},
+      create: { userId: producerAdmin.id, producerId: producer.id },
+    });
+  }
 }
 
 main()

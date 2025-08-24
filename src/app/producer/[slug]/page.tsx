@@ -1,6 +1,7 @@
 // src/app/producer/[slug]/page.tsx
 import { prisma } from "@/lib/prismadb";
 import Image from "next/image";
+import Link from "next/link";
 import { Category } from "@prisma/client"; // Import Category enum if needed for type safety
 import CommentCard from "@/components/CommentCard";
 import AddCommentForm from "@/components/AddCommentForm";
@@ -8,6 +9,7 @@ import VoteButton from "@/components/VoteButton";
 import IngredientsButton from "@/components/IngredientsButton";
 import BackButton from "@/components/BackButton";
 import ChartToggleWrapper from "@/components/ChartToggleWrapper";
+import UpcomingStrainList from "@/components/UpcomingStrainList";
 import { ExternalLink } from "lucide-react";
 import { createSupabaseServerClient } from "@/lib/supabaseServer";
 import { ATTRIBUTE_OPTIONS } from "@/constants/attributes";
@@ -47,6 +49,7 @@ export default async function ProducerProfilePage({
       votes: true, // To calculate total score
       comments: false,
       _count: { select: { comments: true } },
+      strains: true,
     },
   });
 
@@ -213,9 +216,9 @@ export default async function ProducerProfilePage({
               showNumber={true}
             />
           </div>
-        </div>
+          </div>
 
-        {/* Placeholder for description or other details */}
+          {/* Placeholder for description or other details */}
         {/* Example:
         {producer.description && (
           <div className="mt-6">
@@ -223,12 +226,19 @@ export default async function ProducerProfilePage({
             <p className="text-gray-700 leading-relaxed">{producer.description}</p>
           </div>
         )}
-        */}
+          */}
 
-        {/* Chart Toggle Wrapper - replaces the direct RatingHistoryChart */}
-        <ChartToggleWrapper
-          producerId={producer.id}
-          voteCount={producer.votes.length}
+          <div className="mt-8">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-semibold">Strains</h3>
+            </div>
+            <UpcomingStrainList strains={producer.strains} />
+          </div>
+
+          {/* Chart Toggle Wrapper - replaces the direct RatingHistoryChart */}
+          <ChartToggleWrapper
+            producerId={producer.id}
+            voteCount={producer.votes.length}
         />
 
         <div className="mt-8">
