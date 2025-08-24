@@ -9,6 +9,7 @@ import { supabase } from "@/lib/supabaseClient";
 import Image from "next/image";
 import { LogIn, LogOut } from "lucide-react";
 import type { Session } from "@supabase/supabase-js";
+import DropOptInModal from "./DropOptInModal";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -17,6 +18,8 @@ export default function Navbar() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [showBar, setShowBar] = useState(true);
+  const [notificationOptIn, setNotificationOptIn] = useState(true);
+  const [showDropModal, setShowDropModal] = useState(false);
   const lastScrollY = useRef(0);
 
   useEffect(() => {
@@ -33,6 +36,10 @@ export default function Navbar() {
             if (data.success) {
               setProfileUsername(data.username || data.id);
               setIsAdmin(data.role === "ADMIN");
+              setNotificationOptIn(data.notificationOptIn);
+              if (!data.notificationOptIn && !document.cookie.includes('dropOptInPrompt=')) {
+                setShowDropModal(true);
+              }
             }
           }
         } catch (err) {
@@ -52,22 +59,36 @@ export default function Navbar() {
               if (data.success) {
                 setProfileUsername(data.username || data.id);
                 setIsAdmin(data.role === "ADMIN");
+                setNotificationOptIn(data.notificationOptIn);
+                if (!data.notificationOptIn && !document.cookie.includes('dropOptInPrompt=')) {
+                  setShowDropModal(true);
+                } else {
+                  setShowDropModal(false);
+                }
               } else {
                 setProfileUsername(null);
                 setIsAdmin(false);
+                setNotificationOptIn(true);
+                setShowDropModal(false);
               }
             } else {
               setProfileUsername(null);
               setIsAdmin(false);
+              setNotificationOptIn(true);
+              setShowDropModal(false);
             }
           } catch (err) {
             console.error("Failed to fetch user", err);
             setProfileUsername(null);
             setIsAdmin(false);
+            setNotificationOptIn(true);
+            setShowDropModal(false);
           }
         } else {
           setProfileUsername(null);
           setIsAdmin(false);
+          setNotificationOptIn(true);
+          setShowDropModal(false);
         }
       }
     );
@@ -91,6 +112,7 @@ export default function Navbar() {
   }, []);
 
   return (
+    <>
     <motion.nav
       initial={{ y: 0 }}
       animate={{ y: showBar ? 0 : -80 }}
@@ -255,5 +277,12 @@ export default function Navbar() {
         </div>
       )}
     </motion.nav>
+    {showDropModal && (
+      <DropOptInModal
+        onOptIn={() => setNotificationOptIn(true)}
+        onClose={() => setShowDropModal(false)}
+      />
+    )}
+    </>
   );
 }
