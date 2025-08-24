@@ -1,6 +1,7 @@
 // src/app/producer/[slug]/page.tsx
 import { prisma } from "@/lib/prismadb";
 import Image from "next/image";
+import Link from "next/link";
 import { Category } from "@prisma/client"; // Import Category enum if needed for type safety
 import CommentCard from "@/components/CommentCard";
 import AddCommentForm from "@/components/AddCommentForm";
@@ -228,7 +229,9 @@ export default async function ProducerProfilePage({
           */}
 
           <div className="mt-8">
-            <h3 className="text-xl font-semibold mb-4">Strains</h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-semibold">Strains</h3>
+            </div>
             <UpcomingStrainList strains={producer.strains} />
           </div>
 
