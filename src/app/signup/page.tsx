@@ -21,9 +21,9 @@ export default function SignUpPage() {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [usernameTaken, setUsernameTaken] = useState(false);
-  const [invalidUsernameChars, setInvalidUsernameChars] = useState<string | null>(
-    null,
-  );
+  const [invalidUsernameChars, setInvalidUsernameChars] = useState<
+    string | null
+  >(null);
   const [loading, setLoading] = useState(false);
   // Email validation function
   const validateEmail = (email: string): boolean => {
@@ -83,8 +83,8 @@ export default function SignUpPage() {
       if (data.exists) {
         router.push(
           `/login?email=${encodeURIComponent(
-            email,
-          )}&message=account already exists`,
+            email
+          )}&message=account already exists`
         );
       } else {
         setStep(2);
@@ -110,7 +110,7 @@ export default function SignUpPage() {
       return;
     }
     const res = await fetch(
-      `/api/users?username=${encodeURIComponent(normalized)}`,
+      `/api/users?username=${encodeURIComponent(normalized)}`
     );
     const data = await res.json();
     setUsernameTaken(data.exists);
@@ -155,7 +155,7 @@ export default function SignUpPage() {
     profileUrl: string | null,
     id: string,
     userEmail: string,
-    slugUsername: string,
+    slugUsername: string
   ) => {
     const res = await fetch("/api/users", {
       method: "POST",
@@ -210,7 +210,7 @@ export default function SignUpPage() {
 
     // ensure the username is available before creating the Supabase user
     const usernameRes = await fetch(
-      `/api/users?username=${encodeURIComponent(normalized)}`,
+      `/api/users?username=${encodeURIComponent(normalized)}`
     );
     const usernameData = await usernameRes.json();
     if (usernameData.exists) {
@@ -241,12 +241,12 @@ export default function SignUpPage() {
         profileUrl ?? null,
         data.user.id,
         data.user.email ?? email,
-        normalized,
+        normalized
       );
       router.push(
         `/login?email=${encodeURIComponent(email)}&message=${encodeURIComponent(
-          "Account created successfully. Check your inbox to verify your email.",
-        )}`,
+          "Account created successfully. Check your inbox to verify your email."
+        )}`
       );
     } catch (err: any) {
       setError(err.message);
@@ -256,237 +256,244 @@ export default function SignUpPage() {
   };
 
   return (
-    <div className="max-w-md mx-auto bg-white p-6 rounded shadow my-8 mx-2">
-      {error && (
-        <div className="text-red-500 mb-4 p-3 bg-red-100 border border-red-400 rounded">
-          {error}
-        </div>
-      )}
-      {step === 1 && (
-        <div className="space-y-4">
-          <h1 className="text-2xl font-semibold text-center">Sign Up</h1>
-          <label className="block">
-            Email <span className="text-red-500">*</span>
-            <input
-              type="email"
-              name="email"
-              autoComplete="email"
-              required
-              placeholder="Email"
-              value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                setError(null);
-              }}
-              className="w-full mt-1 p-2.5 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-            />
-          </label>
-          <button
-            onClick={checkEmail}
-            disabled={loading}
-            className="w-full py-2.5 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-md"
-          >
-            {loading ? "Checking..." : "Continue"}
-          </button>
-          <p className="mt-1 text-center text-base">
-            Already have an account?{" "}
-            <Link
-              href="/login"
-              className="text-green-700 underline font-medium"
-            >
-              Log in
-            </Link>
-          </p>
-        </div>
-      )}
-      {step === 2 && (
-        <form
-          className="space-y-4"
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleSubmit();
-          }}
-          autoComplete="on"
-        >
-          <h1 className="text-2xl font-semibold text-center">Create Account</h1>
-          <p className="text-sm text-center text-gray-600">
-            You'll receive a verification email. Please check your inbox after
-            signing up.
-          </p>
-          <div>
+    <div className="max-w-md min-h-[calc(100vh-200px)] mx-auto p-6 mt-8 mx-2">
+      <div className="max-w-md mx-auto bg-white p-6 rounded shadow my-8 mx-2">
+        {error && (
+          <div className="text-red-500 mb-4 p-3 bg-red-100 border border-red-400 rounded">
+            {error}
+          </div>
+        )}
+        {step === 1 && (
+          <div className="space-y-4 h-full">
+            <h1 className="text-2xl font-semibold text-center">Sign Up</h1>
             <label className="block">
-              Email
+              Email <span className="text-red-500">*</span>
               <input
                 type="email"
                 name="email"
+                autoComplete="email"
+                required
+                placeholder="Email"
                 value={email}
-                readOnly
-                className="w-full mt-1 p-2.5 border border-gray-300 rounded-md bg-gray-100"
-              />
-            </label>
-          </div>
-          <div className="relative group">
-            <label className="block">
-              Username <span className="text-red-500">*</span>
-              <input
-                type="text"
-                name="username"
-                autoComplete="username"
-                required
-                pattern="[a-z0-9]+"
-                placeholder="Username"
-                value={username}
                 onChange={(e) => {
-                  const value = e.target.value;
-                  setUsername(value);
-                  setUsernameTaken(false);
-                  const invalid = value.match(/[^a-z0-9]/gi);
-                  if (invalid) {
-                    const unique = Array.from(new Set(invalid)).join(" ");
-                    setInvalidUsernameChars(unique);
-                  } else {
-                    setInvalidUsernameChars(null);
-                  }
+                  setEmail(e.target.value);
+                  setError(null);
                 }}
-                onBlur={(e) => checkUsername(e.target.value)}
-                title={
-                  usernameTaken
-                    ? "Username already taken"
-                    : invalidUsernameChars
-                    ? `Invalid characters: ${invalidUsernameChars}`
-                    : ""
-                }
                 className="w-full mt-1 p-2.5 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
               />
             </label>
-            {invalidUsernameChars && (
-              <div className="absolute right-0 top-full mt-1 bg-white border text-xs p-2 rounded shadow group-focus-within:block group-hover:block">
-                Invalid characters: {invalidUsernameChars}. Usernames can only contain lowercase letters and numbers.
-              </div>
-            )}
-            {usernameTaken && (
-              <p className="text-red-500 text-sm">Username already taken</p>
-            )}
+            <button
+              onClick={checkEmail}
+              disabled={loading}
+              className="w-full py-2.5 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-md"
+            >
+              {loading ? "Checking..." : "Continue"}
+            </button>
+            <p className="mt-1 text-center text-base">
+              Already have an account?{" "}
+              <Link
+                href="/login"
+                className="text-green-700 underline font-medium"
+              >
+                Log in
+              </Link>
+            </p>
           </div>
-          <div>
-            <label className="block">
-              Birthday <span className="text-red-500">*</span>
-              <input
-                type="date"
-                name="birthday"
-                required
-                value={birthday}
-                onChange={(e) => setBirthday(e.target.value)}
-                className="w-full mt-1 p-2.5 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-              />
-            </label>
-          </div>
-          <div>
-            <label className="block">Social link (optional)</label>
-            <input
-              type="url"
-              placeholder="https://example.com"
-              value={socialLink}
-              onChange={(e) => setSocialLink(e.target.value)}
-              className="w-full mt-1 p-2.5 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
-          <label className="flex items-center">
-            <input
-              type="checkbox"
-              checked={notificationOptIn}
-              onChange={(e) => setNotificationOptIn(e.target.checked)}
-              className="mr-2"
-            />
-            Receive weekly drop emails
-          </label>
-          <div>
-            <label className="block">Profile Picture</label>
-            <UploadButton onChange={handleFileChange} className="mt-1" />
-            {uploading && <p className="text-sm text-gray-500">Uploading...</p>}
-            {uploadUrl && (
-              <div className="relative mt-2 w-20 h-20">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={uploadUrl}
-                  alt="Profile preview"
-                  className="w-20 h-20 rounded-full object-cover"
-                />
-                <button
-                  type="button"
-                  onClick={async () => {
-                    if (uploadUrl) await deleteBlob(uploadUrl);
-                    setUploadUrl(null);
-                    setFile(null);
-                  }}
-                  className="absolute -top-1 -right-1 bg-white rounded-full text-xs px-1 border"
-                >
-                  x
-                </button>
-              </div>
-            )}
-          </div>
-          <div className="relative group">
-            <label className="block">
-              Password <span className="text-red-500">*</span>
-              <input
-                type="password"
-                name="new-password"
-                autoComplete="new-password"
-                required
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full mt-1 p-2.5 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-              />
-            </label>
-            <div className="absolute right-0 top-full mt-1 hidden group-focus-within:block group-hover:block bg-white border text-xs p-2 rounded shadow">
-              Use at least 8 characters, including numbers and symbols.
-            </div>
-          </div>
-          <div>
-            <label className="block">
-              Confirm Password <span className="text-red-500">*</span>
-              <input
-                type="password"
-                name="confirm-password"
-                autoComplete="new-password"
-                required
-                placeholder="Confirm Password"
-                value={confirm}
-                onChange={(e) => setConfirm(e.target.value)}
-                className="w-full mt-1 p-2.5 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-              />
-            </label>
-          </div>
-          <p className="text-sm text-gray-600">
-            Password must be at least 8 characters.
-          </p>
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-md"
+        )}
+        {step === 2 && (
+          <form
+            className="space-y-4"
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSubmit();
+            }}
+            autoComplete="on"
           >
-            Submit
-          </button>
-          <p className="mt-4 text-center text-base">
-            By continuing, you agree to our{" "}
-            <Link
-              href="/terms"
-              className="text-green-700 underline font-medium"
+            <h1 className="text-2xl font-semibold text-center">
+              Create Account
+            </h1>
+            <p className="text-sm text-center text-gray-600">
+              You'll receive a verification email. Please check your inbox after
+              signing up.
+            </p>
+            <div>
+              <label className="block">
+                Email
+                <input
+                  type="email"
+                  name="email"
+                  value={email}
+                  readOnly
+                  className="w-full mt-1 p-2.5 border border-gray-300 rounded-md bg-gray-100"
+                />
+              </label>
+            </div>
+            <div className="relative group">
+              <label className="block">
+                Username <span className="text-red-500">*</span>
+                <input
+                  type="text"
+                  name="username"
+                  autoComplete="username"
+                  required
+                  pattern="[a-z0-9]+"
+                  placeholder="Username"
+                  value={username}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setUsername(value);
+                    setUsernameTaken(false);
+                    const invalid = value.match(/[^a-z0-9]/gi);
+                    if (invalid) {
+                      const unique = Array.from(new Set(invalid)).join(" ");
+                      setInvalidUsernameChars(unique);
+                    } else {
+                      setInvalidUsernameChars(null);
+                    }
+                  }}
+                  onBlur={(e) => checkUsername(e.target.value)}
+                  title={
+                    usernameTaken
+                      ? "Username already taken"
+                      : invalidUsernameChars
+                      ? `Invalid characters: ${invalidUsernameChars}`
+                      : ""
+                  }
+                  className="w-full mt-1 p-2.5 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                />
+              </label>
+              {invalidUsernameChars && (
+                <div className="absolute right-0 top-full mt-1 bg-white border text-xs p-2 rounded shadow group-focus-within:block group-hover:block">
+                  Invalid characters: {invalidUsernameChars}. Usernames can only
+                  contain lowercase letters and numbers.
+                </div>
+              )}
+              {usernameTaken && (
+                <p className="text-red-500 text-sm">Username already taken</p>
+              )}
+            </div>
+            <div>
+              <label className="block">
+                Birthday <span className="text-red-500">*</span>
+                <input
+                  type="date"
+                  name="birthday"
+                  required
+                  value={birthday}
+                  onChange={(e) => setBirthday(e.target.value)}
+                  className="w-full mt-1 p-2.5 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                />
+              </label>
+            </div>
+            <div>
+              <label className="block">Social link (optional)</label>
+              <input
+                type="url"
+                placeholder="https://example.com"
+                value={socialLink}
+                onChange={(e) => setSocialLink(e.target.value)}
+                className="w-full mt-1 p-2.5 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+            <label className="flex items-center">
+              <input
+                type="checkbox"
+                checked={notificationOptIn}
+                onChange={(e) => setNotificationOptIn(e.target.checked)}
+                className="mr-2"
+              />
+              Receive weekly drop emails
+            </label>
+            <div>
+              <label className="block">Profile Picture</label>
+              <UploadButton onChange={handleFileChange} className="mt-1" />
+              {uploading && (
+                <p className="text-sm text-gray-500">Uploading...</p>
+              )}
+              {uploadUrl && (
+                <div className="relative mt-2 w-20 h-20">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={uploadUrl}
+                    alt="Profile preview"
+                    className="w-20 h-20 rounded-full object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (uploadUrl) await deleteBlob(uploadUrl);
+                      setUploadUrl(null);
+                      setFile(null);
+                    }}
+                    className="absolute -top-1 -right-1 bg-white rounded-full text-xs px-1 border"
+                  >
+                    x
+                  </button>
+                </div>
+              )}
+            </div>
+            <div className="relative group">
+              <label className="block">
+                Password <span className="text-red-500">*</span>
+                <input
+                  type="password"
+                  name="new-password"
+                  autoComplete="new-password"
+                  required
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full mt-1 p-2.5 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                />
+              </label>
+              <div className="absolute right-0 top-full mt-1 hidden group-focus-within:block group-hover:block bg-white border text-xs p-2 rounded shadow">
+                Use at least 8 characters, including numbers and symbols.
+              </div>
+            </div>
+            <div>
+              <label className="block">
+                Confirm Password <span className="text-red-500">*</span>
+                <input
+                  type="password"
+                  name="confirm-password"
+                  autoComplete="new-password"
+                  required
+                  placeholder="Confirm Password"
+                  value={confirm}
+                  onChange={(e) => setConfirm(e.target.value)}
+                  className="w-full mt-1 p-2.5 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                />
+              </label>
+            </div>
+            <p className="text-sm text-gray-600">
+              Password must be at least 8 characters.
+            </p>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-md"
             >
-              Terms of Service
-            </Link>{" "}
-            and{" "}
-            <Link
-              href="/privacy"
-              className="text-green-700 underline font-medium"
-            >
-              Privacy Policy
-            </Link>
-          </p>
-        </form>
-      )}
+              Submit
+            </button>
+            <p className="mt-4 text-center text-base">
+              By continuing, you agree to our{" "}
+              <Link
+                href="/terms"
+                className="text-green-700 underline font-medium"
+              >
+                Terms of Service
+              </Link>{" "}
+              and{" "}
+              <Link
+                href="/privacy"
+                className="text-green-700 underline font-medium"
+              >
+                Privacy Policy
+              </Link>
+            </p>
+          </form>
+        )}
+      </div>
     </div>
   );
 }

@@ -110,7 +110,7 @@ export default function ProducerList({
         onAttributesChange={setSelectedAttributes}
         category={view === "flower" ? "FLOWER" : "HASH"}
       />
-      <div className="grid md:grid-cols-2 gap-4 mx-4 mb-4">
+      <div className="grid md:grid-cols-2 gap-4 mx-2 mb-4">
         {filteredList.map((producer, i) => {
           const userVoteValue = userVotes?.[producer.id];
           const rank = i + 1;

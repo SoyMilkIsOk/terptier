@@ -54,7 +54,7 @@ function LoginForm() {
     if (!identifier.includes("@")) {
       try {
         const res = await fetch(
-          `/api/users?username=${encodeURIComponent(identifier)}&getEmail=true`,
+          `/api/users?username=${encodeURIComponent(identifier)}&getEmail=true`
         );
         const data = await res.json();
         if (data.email) {
@@ -79,7 +79,7 @@ function LoginForm() {
     if (signInError) {
       if (signInError.message.toLowerCase().includes("confirm")) {
         setError(
-          "Please verify your email address before logging in. Check your inbox for the verification link.",
+          "Please verify your email address before logging in. Check your inbox for the verification link."
         );
       } else {
         setError(signInError.message);
@@ -138,7 +138,9 @@ function LoginForm() {
       <button
         onClick={handleSignIn}
         disabled={loading}
-        className={`w-full py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-md transition duration-150 ${loading ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+        className={`w-full py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-md transition duration-150 ${
+          loading ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+        }`}
       >
         Log In
       </button>
@@ -154,8 +156,10 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <Suspense>
-      <LoginForm />
-    </Suspense>
+    <div className="max-w-md min-h-[calc(100vh-200px)] mx-auto p-6 mt-8 mx-2">
+      <Suspense>
+        <LoginForm />
+      </Suspense>
+    </div>
   );
 }
