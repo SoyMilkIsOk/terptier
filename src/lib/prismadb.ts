@@ -20,6 +20,32 @@ export const prisma =
     datasourceUrl: url,
   });
 
+prisma.$use(async (params, next) => {
+  if (
+    params.model === "StrainReview" &&
+    (params.action === "create" || params.action === "update")
+  ) {
+    const data = params.args.data;
+    let flavor = data.flavor as number | undefined;
+    let effect = data.effect as number | undefined;
+    let smoke = data.smoke as number | undefined;
+
+    if (params.action === "update") {
+      const existing = await prisma.strainReview.findUnique({
+        where: params.args.where,
+      });
+      flavor = flavor ?? existing?.flavor ?? 0;
+      effect = effect ?? existing?.effect ?? 0;
+      smoke = smoke ?? existing?.smoke ?? 0;
+    }
+
+    if (flavor !== undefined && effect !== undefined && smoke !== undefined) {
+      data.aggregateRating = (flavor + effect + smoke) / 3;
+    }
+  }
+  return next(params);
+});
+
 if (process.env.NODE_ENV !== "production") {
   global.prisma = prisma;
 }
