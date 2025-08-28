@@ -10,6 +10,7 @@ import {
   ArrowLeft,
   ExternalLink,
 } from "lucide-react";
+import BackButton from "@/components/BackButton";
 
 interface DropsByProducerPageProps {
   params: Promise<{ producerSlug: string }>;
@@ -50,20 +51,20 @@ export default async function DropsByProducerPage({
 
   if (!producer) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-red-50 to-red-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Package className="w-12 h-12 text-red-400" />
+      <div className="min-h-screen bg-gradient-to-br from-red-50 via-red-25 to-red-100 flex items-center justify-center px-4">
+        <div className="text-center max-w-md w-full">
+          <div className="w-16 h-16 sm:w-24 sm:h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Package className="w-8 h-8 sm:w-12 sm:h-12 text-red-400" />
           </div>
-          <h1 className="text-2xl font-bold text-red-600 mb-2">
+          <h1 className="text-xl sm:text-2xl font-bold text-red-600 mb-2">
             Producer Not Found
           </h1>
-          <p className="text-red-500 mb-6">
+          <p className="text-sm sm:text-base text-red-500 mb-6">
             The producer you're looking for doesn't exist.
           </p>
           <Link
             href="/drops"
-            className="inline-flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
+            className="inline-flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-all duration-200 text-sm sm:text-base"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Drops
@@ -139,116 +140,111 @@ export default async function DropsByProducerPage({
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50">
-      {/* Back Button */}
-      <div className="container mx-auto px-4 pt-6">
-        <Link
-          href="/drops"
-          className="inline-flex items-center gap-2 text-green-600 hover:text-green-700 font-medium transition-colors mb-6"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to All Drops
-        </Link>
-      </div>
+      {/* Back Button - Fixed positioning for better mobile UX */}
 
-      {/* Producer Header */}
-      <div className="relative overflow-hidden w-full sm:w-[80%] mx-auto bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-none sm:rounded-xl">
+      <BackButton />
+      {/* Producer Header - Improved mobile layout */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-green-600 to-emerald-600 text-white">
         <div className="absolute inset-0 bg-black/10"></div>
-        <div className="relative container mx-auto px-4 py-8">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
-            {/* Producer Avatar */}
-            <div className="flex-shrink-0">
-              <div className="w-20 h-20 sm:w-24 sm:h-24 bg-white rounded-2xl p-2 shadow-lg">
-                {producer.profileImage ? (
-                  <Image
-                    src={producer.profileImage}
-                    alt={producer.name}
-                    width={96}
-                    height={96}
-                    className="w-full h-full rounded-xl object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full rounded-xl bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center">
-                    <span className="text-white font-bold text-2xl sm:text-3xl">
-                      {producer.name.charAt(0)}
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
 
-            <div className="flex-1 min-w-0 relative">
-              <div className="pr-20 sm:pr-0">
-                <div className="sm:flex sm:items-start sm:justify-between sm:gap-4">
-                  <div className="flex-1 min-w-0">
-                    <h1 className="text-3xl sm:text-4xl font-bold mb-2">
-                      {producer.name}
-                    </h1>
-                    <div className="flex flex-wrap items-center gap-4 text-green-100">
-                      <div className="flex items-center gap-1">
-                        <Package className="w-4 h-4" />
-                        <span className="capitalize">
-                          {producer.category.toLowerCase()}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Calendar className="w-4 h-4" />
-                        <span>{producer.strains.length} drops this month</span>
-                      </div>
+        <div className="relative container mx-auto px-4 py-8 sm:py-12">
+          <div className="flex flex-col space-y-6">
+            {/* Producer Info */}
+            <div className="flex items-start space-x-4">
+              {/* Producer Avatar */}
+              <div className="flex-shrink-0">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 bg-white rounded-2xl p-2 shadow-lg ring-2 ring-white/20">
+                  {producer.profileImage ? (
+                    <Image
+                      src={producer.profileImage}
+                      alt={producer.name}
+                      width={96}
+                      height={96}
+                      className="w-full h-full rounded-xl object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full rounded-xl bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center">
+                      <span className="text-white font-bold text-lg sm:text-xl lg:text-2xl">
+                        {producer.name.charAt(0)}
+                      </span>
                     </div>
-                  </div>
-
-                  <Link
-                    href={`/producer/${producer.slug ?? producer.id}`}
-                    className="hidden sm:flex bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white px-4 py-2 rounded-lg font-medium transition-colors border border-white/20 items-center gap-2 flex-shrink-0"
-                  >
-                    View Profile
-                    <ExternalLink className="w-4 h-4" />
-                  </Link>
+                  )}
                 </div>
               </div>
 
-              {/* Mobile absolute positioned button */}
+              {/* Producer Details */}
+              <div className="flex-1 min-w-0">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 leading-tight">
+                  {producer.name}
+                </h1>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-green-100">
+                  <div className="flex items-center gap-2">
+                    <Package className="w-4 h-4 flex-shrink-0" />
+                    <span className="capitalize text-sm sm:text-base">
+                      {producer.category.toLowerCase()}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4 flex-shrink-0" />
+                    <span className="text-sm sm:text-base">
+                      {producer.strains.length} drop
+                      {producer.strains.length !== 1 ? "s" : ""} this month
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
-            <Link
-              href={`/producer/${producer.slug ?? producer.id}`}
-              className="sm:hidden absolute top-8 right-4 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition-colors border border-white/20 flex items-center gap-1"
-            >
-              Profile
-              <ExternalLink className="w-3 h-3" />
-            </Link>
+
+            {/* Action Button */}
+            <div className="flex justify-center sm:justify-start">
+              <Link
+                href={`/producer/${producer.slug ?? producer.id}`}
+                className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm hover:bg-white/30 border border-white/20 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 text-sm sm:text-base"
+              >
+                View Full Profile
+                <ExternalLink className="w-4 h-4" />
+              </Link>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Calendar Section */}
-      <div className="container mx-auto px-4 py-12">
-        <div className="max-w-6xl mx-auto">
-          {/* Calendar Header */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-            <div className="bg-gradient-to-r from-green-500 to-emerald-600 px-6 py-4">
+      {/* Main Content */}
+      <div className="container mx-auto px-4 py-6 sm:py-12">
+        <div className="max-w-7xl mx-auto">
+          {/* Calendar Section */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-8">
+            {/* Calendar Header */}
+            <div className="bg-gradient-to-r from-green-500 to-emerald-600 px-4 sm:px-6 py-4">
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                <h2 className="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
                   <Calendar className="w-5 h-5" />
-                  {monthNames[currentMonth]} {currentYear}
+                  <span className="hidden xs:inline">
+                    {monthNames[currentMonth]}{" "}
+                  </span>
+                  <span className="xs:hidden">
+                    {monthNames[currentMonth].slice(0, 3)}{" "}
+                  </span>
+                  {currentYear}
                 </h2>
-                <div className="text-sm text-green-100">
+                <div className="text-xs sm:text-sm text-green-100 bg-white/20 px-3 py-1 rounded-full">
                   {producer.strains.length} strain
-                  drop{producer.strains.length !== 1 ? "s" : ""}
+                  {producer.strains.length !== 1 ? "s" : ""}
                 </div>
               </div>
             </div>
 
             {/* Calendar Grid */}
-            <div className="p-4 sm:p-6">
+            <div className="p-3 sm:p-6">
               {/* Day Headers */}
-              <div className="grid grid-cols-7 gap-1 sm:gap-2 mb-4">
+              <div className="grid grid-cols-7 gap-1 sm:gap-2 mb-2 sm:mb-4">
                 {dayNames.map((day) => (
                   <div
                     key={day}
-                    className="text-center text-sm font-medium text-gray-500 py-2"
+                    className="text-center text-xs sm:text-sm font-semibold text-gray-600 py-2 uppercase tracking-wide"
                   >
                     <span className="hidden sm:inline">{day}</span>
-                    <span className="sm:hidden">{day.slice(0, 1)}</span>
+                    <span className="sm:hidden">{day.slice(0, 2)}</span>
                   </div>
                 ))}
               </div>
@@ -272,68 +268,76 @@ export default async function DropsByProducerPage({
                     <div key={day} className="aspect-square">
                       <div
                         className={`
-                        w-full h-full border border-gray-100 rounded-lg p-1 sm:p-2 transition-all duration-200
-                        ${
-                          hasDrops
-                            ? "bg-gradient-to-br from-green-100 to-emerald-100 border-green-200 hover:shadow-md cursor-pointer"
-                            : "bg-gray-50 hover:bg-gray-100"
-                        }
-                        ${
-                          todayClass
-                            ? "ring-2 ring-green-500 ring-opacity-50"
-                            : ""
-                        }
-                      `}
+                          w-full h-full rounded-lg sm:rounded-xl p-1 sm:p-2 transition-all duration-200 relative overflow-hidden
+                          ${
+                            hasDrops
+                              ? "bg-gradient-to-br from-green-100 to-emerald-100 border-2 border-green-200 hover:shadow-lg cursor-pointer hover:scale-105"
+                              : "bg-gray-50 border border-gray-200 hover:bg-gray-100"
+                          }
+                          ${
+                            todayClass
+                              ? "ring-2 ring-green-500 ring-offset-1"
+                              : ""
+                          }
+                        `}
                       >
                         <div className="flex flex-col h-full">
                           <div
                             className={`
-                            text-xs sm:text-sm font-medium mb-1
-                            ${
-                              todayClass
-                                ? "text-green-700"
-                                : hasDrops
-                                ? "text-green-600"
-                                : "text-gray-600"
-                            }
-                          `}
+                              text-xs sm:text-sm font-bold mb-1
+                              ${
+                                todayClass
+                                  ? "text-green-700"
+                                  : hasDrops
+                                  ? "text-green-600"
+                                  : "text-gray-600"
+                              }
+                            `}
                           >
                             {day}
                           </div>
 
                           {hasDrops && (
                             <div className="flex-1 min-h-0">
-                              {/* Desktop: Show strain names */}
-                              <div className="hidden sm:block space-y-0.5">
+                              {/* Desktop/Tablet: Show strain names */}
+                              <div className="hidden sm:block space-y-1">
                                 {strainsForDay.slice(0, 2).map((strain) => (
                                   <div
                                     key={strain.id}
-                                    className="bg-white rounded px-1 py-0.5 text-xs truncate shadow-sm border border-green-200"
+                                    className="bg-white rounded-md px-2 py-1 text-xs truncate shadow-sm border border-green-200 hover:shadow-md transition-shadow"
+                                    title={strain.name}
                                   >
                                     {strain.name}
                                   </div>
                                 ))}
                                 {strainsForDay.length > 2 && (
-                                  <div className="text-xs text-green-600 font-medium px-1">
+                                  <div className="text-xs text-green-600 font-semibold px-2">
                                     +{strainsForDay.length - 2} more
                                   </div>
                                 )}
                               </div>
 
-                              {/* Mobile: Show green dots */}
+                              {/* Mobile: Show indicator dots */}
                               <div className="sm:hidden flex flex-wrap gap-1 mt-1">
                                 {strainsForDay
-                                  .slice(0, 4)
+                                  .slice(0, 6)
                                   .map((strain, index) => (
                                     <div
                                       key={strain.id}
-                                      className="w-2 h-2 bg-green-500 rounded-full"
+                                      className="w-1.5 h-1.5 bg-green-500 rounded-full shadow-sm"
                                     ></div>
                                   ))}
-                                {strainsForDay.length > 4 && (
-                                  <div className="w-2 h-2 bg-green-600 rounded-full opacity-75"></div>
+                                {strainsForDay.length > 6 && (
+                                  <div className="w-1.5 h-1.5 bg-green-600 rounded-full opacity-75"></div>
                                 )}
                               </div>
+                            </div>
+                          )}
+
+                          {/* Drop count indicator for mobile */}
+                          {hasDrops && (
+                            <div className="sm:hidden absolute top-0 right-0 bg-green-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold transform translate-x-1 -translate-y-1">
+                              {strainsForDay.length}
                             </div>
                           )}
                         </div>
@@ -347,11 +351,11 @@ export default async function DropsByProducerPage({
 
           {/* Upcoming Drops List */}
           {producer.strains.length > 0 && (
-            <div className="mt-8">
-              <h3 className="text-2xl font-bold text-gray-900 mb-6">
+            <div>
+              <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">
                 Upcoming Releases
               </h3>
-              <div className="grid gap-4">
+              <div className="grid gap-3 sm:gap-4">
                 {producer.strains.map((strain) => (
                   <StrainCard
                     key={strain.id}
@@ -359,12 +363,12 @@ export default async function DropsByProducerPage({
                     producerSlug={producer.slug ?? producer.id}
                   >
                     {strain.description && (
-                      <p className="text-sm text-gray-600 line-clamp-2">
+                      <p className="text-sm text-gray-600 line-clamp-2 mb-2">
                         {strain.description}
                       </p>
                     )}
-                    <div className="flex items-center gap-3 text-sm text-gray-500 mt-1">
-                      <Clock className="w-4 h-4" />
+                    <div className="flex items-center gap-3 text-sm text-gray-500">
+                      <Clock className="w-4 h-4 flex-shrink-0" />
                       <span>
                         {strain.releaseDate
                           ? formatDate(strain.releaseDate)
@@ -377,22 +381,22 @@ export default async function DropsByProducerPage({
             </div>
           )}
 
-          {/* Empty State */}
+          {/* Empty State - Enhanced */}
           {producer.strains.length === 0 && (
-            <div className="text-center py-16">
-              <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Calendar className="w-12 h-12 text-gray-400" />
+            <div className="text-center py-12 sm:py-16">
+              <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
+                <Calendar className="w-10 h-10 sm:w-12 sm:h-12 text-gray-400" />
               </div>
-              <h3 className="text-2xl font-semibold text-gray-900 mb-2">
+              <h3 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-2">
                 No Drops Scheduled
               </h3>
-              <p className="text-gray-600 max-w-md mx-auto mb-6">
+              <p className="text-sm sm:text-base text-gray-600 max-w-md mx-auto mb-6">
                 {producer.name} doesn't have any strains scheduled for release
-                in the next month.
+                in the next month. Check back soon!
               </p>
               <Link
                 href={`/producer/${producer.slug ?? producer.id}`}
-                className="inline-flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
+                className="inline-flex items-center gap-2 bg-green-600 text-white px-6 py-3 rounded-xl hover:bg-green-700 transition-all duration-200 shadow-lg hover:shadow-xl font-medium text-sm sm:text-base"
               >
                 View Producer Profile
                 <ExternalLink className="w-4 h-4" />
