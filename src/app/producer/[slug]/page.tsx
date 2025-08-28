@@ -241,7 +241,10 @@ export default async function ProducerProfilePage({
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-xl font-semibold">Strains</h3>
             </div>
-            <UpcomingStrainList strains={producer.strains} />
+            <UpcomingStrainList
+              strains={producer.strains}
+              producerSlug={producer.slug ?? producer.id}
+            />
           </div>
 
           {/* Chart Toggle Wrapper - replaces the direct RatingHistoryChart */}

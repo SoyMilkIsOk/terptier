@@ -2,7 +2,6 @@
 import Link from "next/link";
 import Image from "next/image";
 import { prisma } from "@/lib/prismadb";
-import UpcomingStrainList from "@/components/UpcomingStrainList";
 import { Calendar, MapPin, TrendingUp, Clock } from "lucide-react";
 
 export default async function DropsPage() {
