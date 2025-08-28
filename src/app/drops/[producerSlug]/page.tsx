@@ -152,7 +152,7 @@ export default async function DropsByProducerPage({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50">
+    <div className="min-h-screen">
       {/* Back Button - Fixed positioning for better mobile UX */}
 
       <BackButton />

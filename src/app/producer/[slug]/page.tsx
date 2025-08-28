@@ -10,7 +10,7 @@ import IngredientsButton from "@/components/IngredientsButton";
 import BackButton from "@/components/BackButton";
 import ChartToggleWrapper from "@/components/ChartToggleWrapper";
 import UpcomingStrainList from "@/components/UpcomingStrainList";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, ArrowRight } from "lucide-react";
 import { createSupabaseServerClient } from "@/lib/supabaseServer";
 import { ATTRIBUTE_OPTIONS } from "@/constants/attributes";
 import Tooltip from "@/components/Tooltip";
@@ -257,6 +257,13 @@ export default async function ProducerProfilePage({
         <div className="mt-8">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl font-semibold">Strains</h3>
+            <Link
+              href={`/drops/${producer.slug ?? producer.id}`}
+              className="text-green-700 hover:text-green-800 hover:underline flex items-center"
+            >
+              <span>See all drops</span>
+              <ArrowRight className="ml-1 h-4 w-4" />
+            </Link>
           </div>
           <UpcomingStrainList
             strains={strainsWithAvg}
