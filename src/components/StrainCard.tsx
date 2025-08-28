@@ -23,7 +23,7 @@ export default function StrainCard({
 }: StrainCardProps) {
   return (
     <Link
-      href={`/${producerSlug}/${strain.strainSlug}`}
+      href={`/producer/${producerSlug}/${strain.strainSlug}`}
       className="flex items-center space-x-4 bg-white shadow rounded p-4 hover:bg-gray-50 transition"
     >
       <div className="relative w-16 h-16 flex-shrink-0">

@@ -111,7 +111,7 @@ model ProducerAdmin {
 
 model Strain {
   id           String         @id @default(cuid())
-  strainSlug   Int            @unique @default(autoincrement())
+  strainSlug   String         @unique @default(cuid())
   name         String
   description  String?
   releaseDate  DateTime?

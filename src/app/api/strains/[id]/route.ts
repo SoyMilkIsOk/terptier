@@ -8,6 +8,7 @@ interface UpdateStrainBody {
   description?: string | null;
   imageUrl?: string | null;
   releaseDate?: string | null;
+  strainSlug?: string;
 }
 
 async function canManageProducer(
@@ -100,6 +101,7 @@ export async function PUT(
         description: body.description,
         imageUrl: body.imageUrl,
         releaseDate: body.releaseDate ? new Date(body.releaseDate) : body.releaseDate,
+        strainSlug: body.strainSlug,
       },
       select: {
         id: true,

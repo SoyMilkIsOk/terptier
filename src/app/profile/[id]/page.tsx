@@ -4,6 +4,8 @@ import CommentCard from "@/components/CommentCard";
 import ProfileImageUpload from "@/components/ProfileImageUpload";
 import NotificationOptInToggle from "@/components/NotificationOptInToggle";
 import BackButton from "@/components/BackButton";
+import StrainReviewCard from "@/components/StrainReviewCard";
+import Link from "next/link";
 import { prisma } from "@/lib/prismadb";
 import { cookies } from "next/headers";
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
@@ -48,6 +50,21 @@ export default async function ProfilePage({
         include: { producer: true, user: true },
         orderBy: { updatedAt: "desc" },
       },
+      StrainReview: {
+        include: {
+          strain: { include: { producer: true } },
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              username: true,
+              profilePicUrl: true,
+            },
+          },
+        },
+        orderBy: { updatedAt: "desc" },
+      },
     },
   });
 
@@ -60,6 +77,21 @@ export default async function ProfilePage({
         },
         comments: {
           include: { producer: true, user: true },
+          orderBy: { updatedAt: "desc" },
+        },
+        StrainReview: {
+          include: {
+            strain: { include: { producer: true } },
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                username: true,
+                profilePicUrl: true,
+              },
+            },
+          },
           orderBy: { updatedAt: "desc" },
         },
       },
@@ -206,7 +238,7 @@ export default async function ProfilePage({
       </div>
 
       {/* Rated Producers Section */}
-      <div className="bg-white shadow-xl rounded-lg p-6 md:p-8 max-w-6xl mx-auto">
+      <div className="bg-white shadow-xl rounded-lg p-6 md:p-8 max-w-6xl mx-auto mb-8">
         <h2 className="text-2xl font-bold text-gray-800 mb-6 pb-3 border-b border-gray-300">
           Rated Producers ({likedProducers.length})
         </h2>
@@ -234,6 +266,32 @@ export default async function ProfilePage({
           </div>
         ) : (
           <p className="text-gray-600 text-center py-8">No rated producers yet.</p>
+        )}
+      </div>
+
+      <div className="bg-white shadow-xl rounded-lg p-6 md:p-8 max-w-6xl mx-auto">
+        <h2 className="text-2xl font-bold mb-6">
+          Reviewed Strains ({user.StrainReview.length})
+        </h2>
+        {user.StrainReview.length > 0 ? (
+          <div className="space-y-6">
+            {user.StrainReview.map((review) => (
+              <div key={review.id}>
+                <Link
+                  href={`/producer/${review.strain.producer.slug}/${review.strain.strainSlug}`}
+                  className="text-lg font-semibold hover:underline"
+                >
+                  {review.strain.name}
+                </Link>
+                <StrainReviewCard
+                  review={review}
+                  currentUserId={currentViewerId}
+                />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-gray-600 text-center py-8">No strain reviews yet.</p>
         )}
       </div>
     </div>

@@ -9,6 +9,7 @@ interface CreateStrainBody {
   description?: string;
   imageUrl?: string;
   releaseDate?: string | null;
+  strainSlug?: string;
 }
 
 async function canManageProducer(
@@ -97,6 +98,7 @@ export async function POST(request: NextRequest) {
         description: body.description,
         imageUrl: body.imageUrl,
         releaseDate: body.releaseDate ? new Date(body.releaseDate) : undefined,
+        strainSlug: body.strainSlug,
       },
       select: {
         id: true,
