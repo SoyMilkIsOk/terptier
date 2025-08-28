@@ -1,8 +1,9 @@
 // src/app/drops/page.tsx
 import Link from "next/link";
 import Image from "next/image";
+import StrainCard from "@/components/StrainCard";
 import { prisma } from "@/lib/prismadb";
-import { Calendar, MapPin, TrendingUp, Clock } from "lucide-react";
+import { Calendar, TrendingUp, Clock } from "lucide-react";
 
 export default async function DropsPage() {
   const now = new Date();
@@ -18,6 +19,7 @@ export default async function DropsPage() {
       imageUrl: true,
       releaseDate: true,
       strainSlug: true,
+      _count: { select: { reviews: true } },
       producer: {
         select: {
           id: true,
@@ -171,32 +173,42 @@ export default async function DropsPage() {
                   {/* Drop Timeline */}
                   <div className="p-6 bg-gray-50/50">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {strains.slice(0, 3).map((strain) => {
-                        if (!strain.releaseDate) return null;
-                        const daysUntil = getDaysUntilDrop(strain.releaseDate);
-                        return (
-                          <div key={strain.id} className="bg-white rounded-xl p-4 border border-gray-100">
-                            <div className="flex items-start justify-between mb-2">
-                              <h4 className="font-semibold text-gray-900 truncate flex-1 mr-2">
-                                {strain.name}
-                              </h4>
-                              <div className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                daysUntil === 0 
-                                  ? 'bg-red-100 text-red-600' 
-                                  : daysUntil === 1 
-                                  ? 'bg-orange-100 text-orange-600'
-                                  : 'bg-blue-100 text-blue-600'
-                              }`}>
-                                {daysUntil === 0 ? 'Today' : daysUntil === 1 ? 'Tomorrow' : `${daysUntil}d`}
+                      {strains
+                        .slice(0, 3)
+                        .map((strain) => {
+                          if (!strain.releaseDate) return null;
+                          const daysUntil = getDaysUntilDrop(strain.releaseDate);
+                          return (
+                            <StrainCard
+                              key={strain.id}
+                              strain={strain}
+                              producerSlug={producer.slug ?? producer.id}
+                            >
+                              <div className="flex items-center justify-between mt-1">
+                                <div className="flex items-center gap-2 text-sm text-gray-600">
+                                  <Calendar className="w-4 h-4" />
+                                  <span>{formatDate(strain.releaseDate)}</span>
+                                </div>
+                                <div
+                                  className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                    daysUntil === 0
+                                      ? "bg-red-100 text-red-600"
+                                      : daysUntil === 1
+                                      ? "bg-orange-100 text-orange-600"
+                                      : "bg-blue-100 text-blue-600"
+                                  }`}
+                                >
+                                  {daysUntil === 0
+                                    ? "Today"
+                                    : daysUntil === 1
+                                    ? "Tomorrow"
+                                    : `${daysUntil}d`}
+                                </div>
                               </div>
-                            </div>
-                            <div className="flex items-center gap-2 text-sm text-gray-600">
-                              <Calendar className="w-4 h-4" />
-                              <span>{formatDate(strain.releaseDate)}</span>
-                            </div>
-                          </div>
-                        );
-                      }).filter(Boolean)}
+                            </StrainCard>
+                          );
+                        })
+                        .filter(Boolean)}
                     </div>
                     
                     {strains.length > 3 && (

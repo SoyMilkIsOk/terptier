@@ -1,12 +1,10 @@
 // src/app/drops/[producerSlug]/page.tsx
 import Link from "next/link";
 import Image from "next/image";
+import StrainCard from "@/components/StrainCard";
 import { prisma } from "@/lib/prismadb";
 import {
   Calendar,
-  ChevronLeft,
-  ChevronRight,
-  MapPin,
   Clock,
   Package,
   ArrowLeft,
@@ -44,6 +42,7 @@ export default async function DropsByProducerPage({
           imageUrl: true,
           releaseDate: true,
           strainSlug: true,
+          _count: { select: { reviews: true } },
         },
       },
     },
@@ -354,54 +353,25 @@ export default async function DropsByProducerPage({
               </h3>
               <div className="grid gap-4">
                 {producer.strains.map((strain) => (
-                  <div
+                  <StrainCard
                     key={strain.id}
-                    className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow"
+                    strain={strain}
+                    producerSlug={producer.slug ?? producer.id}
                   >
-                    <div className="flex flex-col sm:flex-row">
-                      {/* Strain Image */}
-                      <div className="w-full sm:w-32 h-32 sm:h-24 bg-gradient-to-br from-green-100 to-emerald-200 flex items-center justify-center flex-shrink-0">
-                        {strain.imageUrl ? (
-                          <Image
-                            src={strain.imageUrl}
-                            alt={strain.name}
-                            width={128}
-                            height={96}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <Package className="w-8 h-8 text-green-500" />
-                        )}
-                      </div>
-
-                      {/* Strain Info */}
-                      <div className="flex-1 p-4">
-                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                          <div>
-                            <h4 className="text-lg font-semibold text-gray-900 mb-1">
-                              {strain.name}
-                            </h4>
-                            {strain.description && (
-                              <p className="text-sm text-gray-600 line-clamp-2">
-                                {strain.description}
-                              </p>
-                            )}
-                          </div>
-
-                          <div className="flex items-center gap-3 text-sm text-gray-500">
-                            <div className="flex items-center gap-1">
-                              <Clock className="w-4 h-4" />
-                              <span>
-                                {strain.releaseDate
-                                  ? formatDate(strain.releaseDate)
-                                  : "TBD"}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+                    {strain.description && (
+                      <p className="text-sm text-gray-600 line-clamp-2">
+                        {strain.description}
+                      </p>
+                    )}
+                    <div className="flex items-center gap-3 text-sm text-gray-500 mt-1">
+                      <Clock className="w-4 h-4" />
+                      <span>
+                        {strain.releaseDate
+                          ? formatDate(strain.releaseDate)
+                          : "TBD"}
+                      </span>
                     </div>
-                  </div>
+                  </StrainCard>
                 ))}
               </div>
             </div>
