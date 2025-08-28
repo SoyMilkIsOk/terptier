@@ -5,6 +5,9 @@ import StrainCard from "@/components/StrainCard";
 import { prisma } from "@/lib/prismadb";
 import { Calendar, TrendingUp, Clock, ChevronRight } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function DropsPage() {
   const now = new Date();
   const sevenDays = new Date();
