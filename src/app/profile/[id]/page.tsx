@@ -51,7 +51,18 @@ export default async function ProfilePage({
         orderBy: { updatedAt: "desc" },
       },
       StrainReview: {
-        include: { strain: { include: { producer: true } } },
+        include: {
+          strain: { include: { producer: true } },
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              username: true,
+              profilePicUrl: true,
+            },
+          },
+        },
         orderBy: { updatedAt: "desc" },
       },
     },
@@ -69,7 +80,18 @@ export default async function ProfilePage({
           orderBy: { updatedAt: "desc" },
         },
         StrainReview: {
-          include: { strain: { include: { producer: true } } },
+          include: {
+            strain: { include: { producer: true } },
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                username: true,
+                profilePicUrl: true,
+              },
+            },
+          },
           orderBy: { updatedAt: "desc" },
         },
       },
