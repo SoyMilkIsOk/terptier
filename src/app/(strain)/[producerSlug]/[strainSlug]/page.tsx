@@ -29,7 +29,10 @@ export default async function StrainPage({ params }: StrainPageProps) {
   const strain = await prisma.strain.findFirst({
     where: { strainSlug: Number(strainSlug), producer: { slug: producerSlug } },
     include: {
-      reviews: { include: { user: true }, orderBy: { updatedAt: "desc" } },
+      StrainReview: {
+        include: { user: true },
+        orderBy: { updatedAt: "desc" },
+      },
       producer: true,
     },
   });
@@ -42,10 +45,11 @@ export default async function StrainPage({ params }: StrainPageProps) {
     );
   }
 
+  const reviews = strain.StrainReview;
   const userReview = currentUserId
-    ? strain.reviews.find((r) => r.userId === currentUserId) ?? null
+    ? reviews.find((r) => r.userId === currentUserId) ?? null
     : null;
-  const otherReviews = strain.reviews.filter((r) => r.userId !== currentUserId);
+  const otherReviews = reviews.filter((r) => r.userId !== currentUserId);
 
   const releaseDate = strain.releaseDate ? new Date(strain.releaseDate) : null;
 
@@ -90,7 +94,7 @@ export default async function StrainPage({ params }: StrainPageProps) {
 
       <div className="mt-8">
         <h3 className="text-xl font-semibold mb-4">
-          Reviews ({strain.reviews.length})
+          Reviews ({reviews.length})
         </h3>
         {userReview ? (
           <StrainReviewCard
