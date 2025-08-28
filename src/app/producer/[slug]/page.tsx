@@ -49,7 +49,16 @@ export default async function ProducerProfilePage({
       votes: true, // To calculate total score
       comments: false,
       _count: { select: { comments: true } },
-      strains: true,
+      strains: {
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          imageUrl: true,
+          releaseDate: true,
+          strainSlug: true,
+        },
+      },
     },
   });
 

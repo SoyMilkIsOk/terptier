@@ -12,8 +12,22 @@ export default async function DropsPage() {
 
   const strains = await prisma.strain.findMany({
     where: { releaseDate: { gte: now, lte: sevenDays } },
-    include: { 
-      producer: true
+    select: {
+      id: true,
+      name: true,
+      description: true,
+      imageUrl: true,
+      releaseDate: true,
+      strainSlug: true,
+      producer: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          category: true,
+          profileImage: true,
+        },
+      },
     },
     orderBy: { releaseDate: "asc" },
   });

@@ -2,8 +2,13 @@
 import type { Strain } from "@prisma/client";
 import Image from "next/image";
 
+type StrainListItem = Pick<
+  Strain,
+  "id" | "name" | "description" | "imageUrl" | "releaseDate" | "strainSlug"
+>;
+
 interface UpcomingStrainListProps {
-  strains: Strain[];
+  strains: StrainListItem[];
 }
 
 export default function UpcomingStrainList({ strains }: UpcomingStrainListProps) {

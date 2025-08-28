@@ -51,7 +51,20 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const strains = await prisma.strain.findMany({ where: { producerId } });
+    const strains = await prisma.strain.findMany({
+      where: { producerId },
+      select: {
+        id: true,
+        strainSlug: true,
+        name: true,
+        description: true,
+        imageUrl: true,
+        releaseDate: true,
+        producerId: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
     return NextResponse.json({ success: true, strains });
   } catch (err: any) {
     console.error("[GET /api/strains]", err);
@@ -84,6 +97,17 @@ export async function POST(request: NextRequest) {
         description: body.description,
         imageUrl: body.imageUrl,
         releaseDate: body.releaseDate ? new Date(body.releaseDate) : undefined,
+      },
+      select: {
+        id: true,
+        strainSlug: true,
+        name: true,
+        description: true,
+        imageUrl: true,
+        releaseDate: true,
+        producerId: true,
+        createdAt: true,
+        updatedAt: true,
       },
     });
     return NextResponse.json({ success: true, strain });

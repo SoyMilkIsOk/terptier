@@ -3,13 +3,18 @@ import { useState } from "react";
 import ImageUpload from "./ImageUpload";
 import type { Strain } from "@prisma/client";
 
+type StrainWithSlug = Pick<
+  Strain,
+  "id" | "name" | "description" | "imageUrl" | "releaseDate" | "strainSlug"
+>;
+
 export default function AddStrainForm({
   producerId,
   strain,
   onSaved,
 }: {
   producerId: string;
-  strain?: Strain;
+  strain?: StrainWithSlug;
   onSaved?: () => void;
 }) {
   const [name, setName] = useState(strain?.name ?? "");

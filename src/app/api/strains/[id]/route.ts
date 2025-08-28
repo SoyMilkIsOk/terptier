@@ -40,7 +40,20 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const strain = await prisma.strain.findUnique({ where: { id } });
+    const strain = await prisma.strain.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        strainSlug: true,
+        name: true,
+        description: true,
+        imageUrl: true,
+        releaseDate: true,
+        producerId: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
     if (!strain) {
       return NextResponse.json({ success: false, error: "Not found" }, { status: 404 });
     }
@@ -87,6 +100,17 @@ export async function PUT(
         description: body.description,
         imageUrl: body.imageUrl,
         releaseDate: body.releaseDate ? new Date(body.releaseDate) : body.releaseDate,
+      },
+      select: {
+        id: true,
+        strainSlug: true,
+        name: true,
+        description: true,
+        imageUrl: true,
+        releaseDate: true,
+        producerId: true,
+        createdAt: true,
+        updatedAt: true,
       },
     });
     return NextResponse.json({ success: true, strain });
