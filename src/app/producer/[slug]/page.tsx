@@ -58,6 +58,7 @@ export default async function ProducerProfilePage({
           releaseDate: true,
           strainSlug: true,
           _count: { select: { StrainReview: true } },
+          StrainReview: { select: { aggregateRating: true } },
         },
       },
     },
@@ -74,6 +75,15 @@ export default async function ProducerProfilePage({
   const totalScore = producer.votes.reduce((sum, vote) => sum + vote.value, 0);
   const averageRating =
     producer.votes.length > 0 ? totalScore / producer.votes.length : 0;
+
+  const strainsWithAvg = producer.strains.map(({ StrainReview, ...rest }) => {
+    const avg =
+      StrainReview.length > 0
+        ? StrainReview.reduce((sum, r) => sum + r.aggregateRating, 0) /
+          StrainReview.length
+        : null;
+    return { ...rest, avgRating: avg };
+  });
 
   const userVoteRecord = currentUserId
     ? await prisma.vote.findUnique({
@@ -249,7 +259,7 @@ export default async function ProducerProfilePage({
             <h3 className="text-xl font-semibold">Strains</h3>
           </div>
           <UpcomingStrainList
-            strains={producer.strains}
+            strains={strainsWithAvg}
             producerSlug={producer.slug ?? producer.id}
           />
         </div>

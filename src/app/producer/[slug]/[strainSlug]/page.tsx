@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prismadb";
 import BackButton from "@/components/BackButton";
 import AddStrainReviewForm from "@/components/AddStrainReviewForm";
 import StrainReviewCard from "@/components/StrainReviewCard";
+import { Star } from "lucide-react";
 import { createSupabaseServerClient } from "@/lib/supabaseServer";
 
 interface StrainPageProps {
@@ -46,6 +47,10 @@ export default async function StrainPage({ params }: StrainPageProps) {
   }
 
   const reviews = strain.StrainReview;
+  const averageRating =
+    reviews.length > 0
+      ? reviews.reduce((sum, r) => sum + r.aggregateRating, 0) / reviews.length
+      : null;
   const userReview = currentUserId
     ? reviews.find((r) => r.userId === currentUserId) ?? null
     : null;
@@ -69,11 +74,21 @@ export default async function StrainPage({ params }: StrainPageProps) {
           <h1 className="text-3xl md:text-4xl font-bold text-gray-800">
             {strain.name}
           </h1>
-          {releaseDate && (
-            <p className="text-gray-600 mt-2">
-              Released on {releaseDate.toLocaleDateString()}
-            </p>
-          )}
+          <div className="flex flex-wrap items-center gap-4 mt-2">
+            {averageRating !== null && (
+              <div className="flex items-center text-yellow-500">
+                <Star className="w-5 h-5 mr-1" fill="currentColor" />
+                <span className="text-lg font-medium">
+                  {averageRating.toFixed(1)}
+                </span>
+              </div>
+            )}
+            {releaseDate && (
+              <p className="text-gray-600">
+                Released on {releaseDate.toLocaleDateString()}
+              </p>
+            )}
+          </div>
           <p className="text-sm text-gray-500 mt-1">
             by {" "}
             <Link

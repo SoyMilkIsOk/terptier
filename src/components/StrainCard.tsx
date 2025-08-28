@@ -3,7 +3,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { MessageCircle } from "lucide-react";
+import { MessageCircle, Star } from "lucide-react";
 import type { Strain } from "@prisma/client";
 import type { ReactNode } from "react";
 
@@ -11,7 +11,7 @@ interface StrainCardProps {
   strain: Pick<
     Strain,
     "id" | "name" | "imageUrl" | "strainSlug"
-  > & { _count?: { StrainReview: number } };
+  > & { _count?: { StrainReview: number }; avgRating?: number | null };
   producerSlug: string;
   children?: ReactNode;
 }
@@ -38,9 +38,17 @@ export default function StrainCard({
         <h3 className="text-lg font-semibold">{strain.name}</h3>
         {children}
       </div>
-      <div className="flex items-center text-sm text-gray-600">
-        <MessageCircle className="w-4 h-4 mr-1" />
-        {strain._count?.StrainReview ?? 0}
+      <div className="flex flex-col items-end text-sm text-gray-600">
+        {typeof strain.avgRating === "number" && (
+          <div className="flex items-center mb-1 text-yellow-500">
+            <Star className="w-4 h-4 mr-1" fill="currentColor" />
+            {strain.avgRating.toFixed(1)}
+          </div>
+        )}
+        <div className="flex items-center">
+          <MessageCircle className="w-4 h-4 mr-1" />
+          {strain._count?.StrainReview ?? 0}
+        </div>
       </div>
     </Link>
   );

@@ -20,6 +20,7 @@ export default async function DropsPage() {
       releaseDate: true,
       strainSlug: true,
       _count: { select: { StrainReview: true } },
+      StrainReview: { select: { aggregateRating: true } },
       producer: {
         select: {
           id: true,
@@ -33,20 +34,29 @@ export default async function DropsPage() {
     orderBy: { releaseDate: "asc" },
   });
 
-  const grouped = strains.reduce<Record<string, { 
-    producer: typeof strains[number]["producer"]; 
-    strains: (typeof strains)[number][];
+  const strainsWithAvg = strains.map(({ StrainReview, ...rest }) => {
+    const avg =
+      StrainReview.length > 0
+        ? StrainReview.reduce((sum, r) => sum + r.aggregateRating, 0) /
+          StrainReview.length
+        : null;
+    return { ...rest, avgRating: avg };
+  });
+
+  const grouped = strainsWithAvg.reduce<Record<string, {
+    producer: typeof strainsWithAvg[number]["producer"];
+    strains: (typeof strainsWithAvg)[number][];
   }>>(
     (acc, strain) => {
       const producerId = strain.producer.id;
       if (!acc[producerId]) {
-        acc[producerId] = { 
-          producer: strain.producer, 
+        acc[producerId] = {
+          producer: strain.producer,
           strains: []
         };
       }
       acc[producerId].strains.push(strain);
-      
+
       return acc;
     },
     {}

@@ -44,6 +44,7 @@ export default async function DropsByProducerPage({
           releaseDate: true,
           strainSlug: true,
           _count: { select: { StrainReview: true } },
+          StrainReview: { select: { aggregateRating: true } },
         },
       },
     },
@@ -75,6 +76,15 @@ export default async function DropsByProducerPage({
   }
 
   // Calendar logic
+  const strains = producer.strains.map(({ StrainReview, ...rest }) => {
+    const avg =
+      StrainReview.length > 0
+        ? StrainReview.reduce((sum, r) => sum + r.aggregateRating, 0) /
+          StrainReview.length
+        : null;
+    return { ...rest, avgRating: avg };
+  });
+
   const currentDate = new Date();
   const currentYear = currentDate.getFullYear();
   const currentMonth = currentDate.getMonth();
@@ -103,8 +113,8 @@ export default async function DropsByProducerPage({
   const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
   // Group strains by date
-  const strainsByDate = producer.strains.reduce<
-    Record<string, typeof producer.strains>
+  const strainsByDate = strains.reduce<
+    Record<string, typeof strains>
   >((acc, strain) => {
     if (strain.releaseDate) {
       const dateKey = strain.releaseDate.toISOString().split("T")[0];
@@ -187,8 +197,8 @@ export default async function DropsByProducerPage({
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4 flex-shrink-0" />
                     <span className="text-sm sm:text-base">
-                      {producer.strains.length} drop
-                      {producer.strains.length !== 1 ? "s" : ""} this month
+                      {strains.length} drop
+                      {strains.length !== 1 ? "s" : ""} this month
                     </span>
                   </div>
                 </div>
@@ -228,8 +238,8 @@ export default async function DropsByProducerPage({
                   {currentYear}
                 </h2>
                 <div className="text-xs sm:text-sm text-green-100 bg-white/20 px-3 py-1 rounded-full">
-                  {producer.strains.length} strain
-                  {producer.strains.length !== 1 ? "s" : ""}
+                  {strains.length} strain
+                  {strains.length !== 1 ? "s" : ""}
                 </div>
               </div>
             </div>
@@ -350,13 +360,13 @@ export default async function DropsByProducerPage({
           </div>
 
           {/* Upcoming Drops List */}
-          {producer.strains.length > 0 && (
+          {strains.length > 0 && (
             <div>
               <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">
                 Upcoming Releases
               </h3>
               <div className="grid gap-3 sm:gap-4">
-                {producer.strains.map((strain) => (
+                {strains.map((strain) => (
                   <StrainCard
                     key={strain.id}
                     strain={strain}
@@ -382,7 +392,7 @@ export default async function DropsByProducerPage({
           )}
 
           {/* Empty State - Enhanced */}
-          {producer.strains.length === 0 && (
+          {strains.length === 0 && (
             <div className="text-center py-12 sm:py-16">
               <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
                 <Calendar className="w-10 h-10 sm:w-12 sm:h-12 text-gray-400" />
