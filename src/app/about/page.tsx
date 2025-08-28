@@ -9,6 +9,7 @@ import {
   Eye,
   Instagram,
   ChevronRight,
+  Star,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -158,6 +159,24 @@ export default function AboutPage() {
               </p>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Reviews & Ratings Section */}
+      <div className="py-16 bg-white">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-yellow-100 rounded-full mb-6">
+            <Star className="w-8 h-8 text-yellow-500" />
+          </div>
+          <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            Strain Reviews & Ratings
+          </h2>
+          <p className="text-lg text-gray-600 mb-4">
+            Each strain gets scored for flavor, effects, and smoke quality.
+          </p>
+          <p className="text-lg text-gray-600">
+            These ratings combine into an average score, making it easy to pick your next strain.
+          </p>
         </div>
       </div>
 
