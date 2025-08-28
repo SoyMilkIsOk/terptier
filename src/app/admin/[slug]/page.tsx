@@ -29,7 +29,18 @@ export default async function ProducerAdminPage({
 
   const producer = await prisma.producer.findFirst({
     where: { OR: [{ slug }, { id: slug }] },
-    include: { strains: true },
+    include: {
+      strains: {
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          imageUrl: true,
+          releaseDate: true,
+          strainSlug: true,
+        },
+      },
+    },
   });
   if (!producer) return notFound();
 

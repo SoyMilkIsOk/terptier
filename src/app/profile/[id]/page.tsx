@@ -1,13 +1,16 @@
 // src/app/profile/[id]/page.tsx
+import React from "react";
 import ProducerCard from "@/components/ProducerCard";
 import CommentCard from "@/components/CommentCard";
 import ProfileImageUpload from "@/components/ProfileImageUpload";
 import NotificationOptInToggle from "@/components/NotificationOptInToggle";
 import BackButton from "@/components/BackButton";
+import StrainReviewCard from "@/components/StrainReviewCard";
+import Link from "next/link";
 import { prisma } from "@/lib/prismadb";
 import { cookies } from "next/headers";
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
-import { Instagram, ExternalLink, Link as LinkIcon } from "lucide-react";
+import { Instagram, ExternalLink, Link as LinkIcon, ChevronDown, ChevronUp } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -21,6 +24,71 @@ const getSocialPlatform = (url: string) => {
   }
   return 'other';
 };
+
+// Client component for expandable sections
+function ExpandableSection({ 
+  children, 
+  title, 
+  count, 
+  initialShowCount = 3,
+  className = ""
+}: {
+  children: React.ReactNode;
+  title: string;
+  count: number;
+  initialShowCount?: number;
+  className?: string;
+}) {
+  return (
+    <div className={`bg-white shadow-lg rounded-2xl border border-green-100 hover:shadow-xl transition-shadow duration-300 ${className}`}>
+      <div className="p-6 md:p-8">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+            {title}
+            <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-semibold">
+              {count}
+            </span>
+          </h2>
+        </div>
+        
+        {count > 0 ? (
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 gap-4">
+              {React.Children.toArray(children).slice(0, initialShowCount)}
+            </div>
+            
+            {count > initialShowCount && (
+              <details className="group">
+                <summary className="cursor-pointer list-none">
+                  <div className="flex items-center justify-center gap-2 py-3 text-green-600 hover:text-green-700 font-medium transition-colors">
+                    <span className="group-open:hidden">Show {count - initialShowCount} more</span>
+                    <span className="hidden group-open:block">Show less</span>
+                    <ChevronDown className="w-4 h-4 group-open:hidden" />
+                    <ChevronUp className="w-4 h-4 hidden group-open:block" />
+                  </div>
+                </summary>
+                <div className="mt-4 space-y-4">
+                  <div className="grid grid-cols-1 gap-4">
+                    {React.Children.toArray(children).slice(initialShowCount)}
+                  </div>
+                </div>
+              </details>
+            )}
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <div className="text-gray-400 mb-2">
+              <div className="w-16 h-16 mx-auto bg-gray-100 rounded-full flex items-center justify-center">
+                <span className="text-2xl">📝</span>
+              </div>
+            </div>
+            <p className="text-gray-500 text-lg">No {title.toLowerCase()} yet</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export default async function ProfilePage({
   params,
@@ -48,6 +116,21 @@ export default async function ProfilePage({
         include: { producer: true, user: true },
         orderBy: { updatedAt: "desc" },
       },
+      StrainReview: {
+        include: {
+          strain: { include: { producer: true } },
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              username: true,
+              profilePicUrl: true,
+            },
+          },
+        },
+        orderBy: { updatedAt: "desc" },
+      },
     },
   });
 
@@ -62,14 +145,35 @@ export default async function ProfilePage({
           include: { producer: true, user: true },
           orderBy: { updatedAt: "desc" },
         },
+        StrainReview: {
+          include: {
+            strain: { include: { producer: true } },
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                username: true,
+                profilePicUrl: true,
+              },
+            },
+          },
+          orderBy: { updatedAt: "desc" },
+        },
       },
     });
   }
 
   if (!user) {
     return (
-      <div className="container mx-auto p-4 mt-8 text-center">
-        <p className="text-xl text-red-500">User not found.</p>
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-24 h-24 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
+            <span className="text-4xl">❌</span>
+          </div>
+          <p className="text-2xl font-semibold text-red-600">User not found</p>
+          <p className="text-gray-500 mt-2">The profile you're looking for doesn't exist.</p>
+        </div>
       </div>
     );
   }
@@ -87,110 +191,123 @@ export default async function ProfilePage({
     .map((vote) => ({ ...vote.producer, userActualVote: vote.value })); // Pass producer and the user's vote value
 
   return (
-    <div className="container mx-auto p-4">
-      <div className="mb-4 flex items-center justify-between">
-        <BackButton />
-
-      </div>
-      
-      {/* Profile Header Card */}
-      <div className="bg-white shadow-xl rounded-lg p-6 md:p-8 max-w-3xl mx-auto mb-8">
-        <div className="flex flex-col md:flex-row items-center md:items-start mb-6 pb-6 border-b border-gray-300">
-          <div className="mb-4 md:mb-0 md:mr-6 flex-shrink-0">
-            {isOwner ? (
-              <ProfileImageUpload initialUrl={user.profilePicUrl} />
-            ) : user.profilePicUrl ? (
-              <div className="w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden bg-gray-100">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img 
-                  src={user.profilePicUrl} 
-                  alt="profile" 
-                  className="w-full h-full object-cover" 
-                />
-              </div>
-            ) : (
-              <div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-gray-300 flex items-center justify-center">
-                <span className="text-gray-500 text-2xl md:text-3xl font-bold">
-                  {(user.username || user.name || user.email || '?').charAt(0).toUpperCase()}
-                </span>
-              </div>
-            )}
-          </div>
-          
-          <div className="flex-grow text-center md:text-left">
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">
-              {user.username || user.name || user.email}
-            </h1>
-            
-            {user.socialLink && (
-              <div className="flex items-center justify-center md:justify-start">
-                {(() => {
-                  const platform = getSocialPlatform(user.socialLink);
-                  
-                  return (
-                    <a 
-                      href={user.socialLink} 
-                      className={`transition-colors duration-200 ${
-                        platform === 'instagram' 
-                          ? "text-green-700 hover:text-green-900" 
-                          : platform === 'x'
-                          ? "text-green hover:text-green-700"
-                          : "text-green-600 hover:text-green-800"
-                      }`}
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      aria-label={
-                        platform === 'instagram' 
-                          ? "Instagram Profile" 
-                          : platform === 'x'
-                          ? "X (Twitter) Profile"
-                          : "Social Link"
-                      }
-                    >
-                      {platform === 'instagram' ? (
-                        <Instagram className="w-6 h-6" />
-                      ) : platform === 'x' ? (
-                        <div className="w-6 h-6 flex items-center justify-center">
-                          <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current">
-                            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                          </svg>
-                        </div>
-                      ) : (
-                        <LinkIcon className="w-6 h-6" />
-                      )}
-                    </a>
-                  );
-                })()}
-              </div>
-            )}
-          </div>
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50">
+      <div className="container mx-auto p-4 max-w-6xl">
+        <div className="mb-6">
+          <BackButton />
         </div>
         
-        {/* Stats */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-8 text-lg justify-center md:justify-start">
-          <div className="flex items-center justify-center md:justify-start mb-2 sm:mb-0">
-            <span className="mr-2 font-semibold text-gray-700">Total Ratings:</span>
-            <span className="text-blue-600 font-bold">{user.votes.length}</span>
-          </div>
-          <div className="flex items-center justify-center md:justify-start mb-2 sm:mb-0">
-            <span className="mr-2 font-semibold text-gray-700">Comments:</span>
-            <span className="text-green-600 font-bold">{user.comments.length}</span>
+        {/* Profile Header Card */}
+        <div className="bg-white shadow-xl rounded-3xl border border-green-100 p-8 md:p-10 mb-8 relative overflow-hidden">          
+          <div className="relative z-10">
+            <div className="flex flex-col lg:flex-row items-center lg:items-start mb-8">
+              <div className="mb-6 lg:mb-0 lg:mr-8 flex-shrink-0">
+                {isOwner ? (
+                  <ProfileImageUpload initialUrl={user.profilePicUrl} />
+                ) : user.profilePicUrl ? (
+                  <div className="w-32 h-32 lg:w-40 lg:h-40 rounded-full overflow-hidden bg-gradient-to-br from-green-100 to-emerald-100 ring-4 ring-green-200 shadow-lg">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img 
+                      src={user.profilePicUrl} 
+                      alt="profile" 
+                      className="w-full h-full object-cover" 
+                    />
+                  </div>
+                ) : (
+                  <div className="w-32 h-32 lg:w-40 lg:h-40 rounded-full bg-gradient-to-br from-green-200 to-emerald-200 flex items-center justify-center ring-4 ring-green-200 shadow-lg">
+                    <span className="text-white text-4xl lg:text-5xl font-bold">
+                      {(user.username || user.name || user.email || '?').charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                )}
+              </div>
+              
+              <div className="flex-grow text-center lg:text-left">
+                <h1 className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-green-700 to-emerald-600 bg-clip-text text-transparent mb-4">
+                  {user.username || user.name || user.email}
+                </h1>
+                
+                {user.socialLink && (
+                  <div className="flex items-center justify-center lg:justify-start mb-6">
+                    {(() => {
+                      const platform = getSocialPlatform(user.socialLink);
+                      
+                      return (
+                        <a 
+                          href={user.socialLink} 
+                          className={`inline-flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-200 hover:scale-105 ${
+                            platform === 'instagram' 
+                              ? "bg-gradient-to-r from-pink-100 to-orange-100 text-pink-600 hover:from-pink-200 hover:to-orange-200" 
+                              : platform === 'x'
+                              ? "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                              : "bg-green-100 text-green-700 hover:bg-green-200"
+                          }`}
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          aria-label={
+                            platform === 'instagram' 
+                              ? "Instagram Profile" 
+                              : platform === 'x'
+                              ? "X (Twitter) Profile"
+                              : "Social Link"
+                          }
+                        >
+                          {platform === 'instagram' ? (
+                            <Instagram className="w-5 h-5" />
+                          ) : platform === 'x' ? (
+                            <div className="w-5 h-5 flex items-center justify-center">
+                              <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
+                                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                              </svg>
+                            </div>
+                          ) : (
+                            <LinkIcon className="w-5 h-5" />
+                          )}
+                          <span className="font-medium">
+                            {platform === 'instagram' ? 'Instagram' : platform === 'x' ? 'X' : 'Website'}
+                          </span>
+                        </a>
+                      );
+                    })()}
+                  </div>
+                )}
+                
+                {/* Enhanced Stats */}
+                <div className="grid grid-cols-3 gap-2 lg:gap-6">
+                  <div className="text-center p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl border border-green-100">
+                    <div className="text-2xl lg:text-3xl font-bold text-green-700 mb-1">
+                      {user.votes.length}
+                    </div>
+                    <div className="text-sm text-green-600 font-medium">Ratings</div>
+                  </div>
+                  <div className="text-center pt-4 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl border border-blue-100">
+                    <div className="text-2xl lg:text-3xl font-bold text-blue-700 mb-1">
+                      {user.comments.length}
+                    </div>
+                    <div className="text-sm text-blue-600 font-medium">Comments</div>
+                  </div>
+                  <div className="text-center p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl border border-purple-100">
+                    <div className="text-2xl lg:text-3xl font-bold text-purple-700 mb-1">
+                      {user.StrainReview.length}
+                    </div>
+                    <div className="text-sm text-purple-600 font-medium">Reviews</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {isOwner && (
+              <div className="border-t border-green-100 pt-6">
+                <NotificationOptInToggle initial={(user as any).notificationOptIn} />
+              </div>
+            )}
           </div>
         </div>
-        {isOwner && (
-          <div className="mt-4">
-            <NotificationOptInToggle initial={(user as any).notificationOptIn} />
-          </div>
-        )}
-      </div>
 
-      {/* Comments Section */}
-      <div className="bg-white shadow-xl rounded-lg p-6 md:p-8 max-w-3xl mx-auto mb-8">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6 pb-3 border-b border-gray-300">
-          Comments ({user.comments.length})
-        </h2>
-        {user.comments.length > 0 ? (
-          <div className="space-y-4">
+        {/* Content Sections */}
+        <div className="space-y-8">
+          {/* Comments Section */}
+          <ExpandableSection title="Comments" count={user.comments.length} initialShowCount={5}>
             {user.comments.map((c) => (
               <CommentCard 
                 key={c.id} 
@@ -199,42 +316,56 @@ export default async function ProfilePage({
                 showRating={false} 
               />
             ))}
-          </div>
-        ) : (
-          <p className="text-gray-600 text-center py-8">No comments yet.</p>
-        )}
-      </div>
+          </ExpandableSection>
 
-      {/* Rated Producers Section */}
-      <div className="bg-white shadow-xl rounded-lg p-6 md:p-8 max-w-6xl mx-auto">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6 pb-3 border-b border-gray-300">
-          Rated Producers ({likedProducers.length})
-        </h2>
-        {likedProducers.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {likedProducers.map((producer, index) => {
-              const rank = index + 1;
-              const j = rank % 10;
-              const k = rank % 100;
-              const suffix = j === 1 && k !== 11 ? "st" : j === 2 && k !== 12 ? "nd" : j === 3 && k !== 13 ? "rd" : "th";
+          {/* Rated Producers Section
+          <ExpandableSection 
+            title="Rated Producers" 
+            count={likedProducers.length} 
+            initialShowCount={6}
+            className="max-w-none"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              {likedProducers.map((producer, index) => {
+                const rank = index + 1;
+                const j = rank % 10;
+                const k = rank % 100;
+                const suffix = j === 1 && k !== 11 ? "st" : j === 2 && k !== 12 ? "nd" : j === 3 && k !== 13 ? "rd" : "th";
 
-              return (
-                <ProducerCard
-                  key={producer.id}
-                  rank={rank}
-                  rankSuffix={suffix}
-                  producer={producer}
-                  userVoteValue={producer.userActualVote}
-                  color="none"
-                  useColors={false}
-                  showRank={false}
+                return (
+                  <ProducerCard
+                    key={producer.id}
+                    rank={rank}
+                    rankSuffix={suffix}
+                    producer={producer}
+                    userVoteValue={producer.userActualVote}
+                    color="none"
+                    useColors={false}
+                    showRank={false}
+                  />
+                );
+              })}
+            </div>
+          </ExpandableSection> */}
+
+          {/* Strain Reviews Section */}
+          <ExpandableSection title="Strain Reviews" count={user.StrainReview.length} initialShowCount={4}>
+            {user.StrainReview.map((review) => (
+              <div key={review.id} className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4 border border-green-100">
+                <Link
+                  href={`/producer/${review.strain.producer.slug}/${review.strain.strainSlug}`}
+                  className="inline-block text-xl font-semibold text-green-700 hover:text-green-800 transition-colors mb-3 hover:underline"
+                >
+                  {review.strain.name}
+                </Link>
+                <StrainReviewCard
+                  review={review}
+                  currentUserId={currentViewerId}
                 />
-              );
-            })}
-          </div>
-        ) : (
-          <p className="text-gray-600 text-center py-8">No rated producers yet.</p>
-        )}
+              </div>
+            ))}
+          </ExpandableSection>
+        </div>
       </div>
     </div>
   );

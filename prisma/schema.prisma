@@ -20,22 +20,23 @@ enum Category {
 }
 
 model User {
-  id                      String                   @id @default(cuid()) // Reverted to CUID
-  name                    String?
-  username                String?                  @unique
-  birthday                DateTime?
-  profilePicUrl           String?
-  socialLink              String?
-  email                   String                   @unique
-  passwordHash            String? // for credentials
-  role                    Role                     @default(USER)
-  notificationOptIn       Boolean                  @default(false)
-  votes                   Vote[]
-  comments                Comment[]
-  producerAdmins          ProducerAdmin[]
-  createdAt               DateTime                 @default(now())
-  updatedAt               DateTime                 @updatedAt
-  Producer                Producer[]
+  id                String          @id @default(cuid()) // Reverted to CUID
+  name              String?
+  username          String?         @unique
+  birthday          DateTime?
+  profilePicUrl     String?
+  socialLink        String?
+  email             String          @unique
+  passwordHash      String? // for credentials
+  role              Role            @default(USER)
+  notificationOptIn Boolean         @default(false)
+  votes             Vote[]
+  comments          Comment[]
+  producerAdmins    ProducerAdmin[]
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  Producer          Producer[]
+  StrainReview      StrainReview[]
 }
 
 model Producer {
@@ -56,6 +57,7 @@ model Producer {
   ProducerRatingSnapshot ProducerRatingSnapshot[]
   admins                 ProducerAdmin[]
   strains                Strain[]
+  StrainReview           StrainReview[]
 
   @@unique([name, category])
 }
@@ -108,15 +110,37 @@ model ProducerAdmin {
 }
 
 model Strain {
-  id          String   @id @default(cuid())
-  name        String
-  description String?
-  releaseDate DateTime?
-  imageUrl    String?
-  producer    Producer @relation(fields: [producerId], references: [id], onDelete: Cascade)
-  producerId  String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id           String         @id @default(cuid())
+  strainSlug   String         @unique @default(cuid())
+  name         String
+  description  String?
+  releaseDate  DateTime?
+  imageUrl     String?
+  producer     Producer       @relation(fields: [producerId], references: [id], onDelete: Cascade)
+  producerId   String
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  StrainReview StrainReview[]
 
   @@unique([producerId, name])
+}
+
+model StrainReview {
+  id              String   @id @default(cuid())
+  comment         String?
+  flavor          Int
+  effect          Int
+  smoke           Int
+  aggregateRating Float    @default(0)
+  imageUrl        String?
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId          String
+  producer        Producer @relation(fields: [producerId], references: [id], onDelete: Cascade)
+  producerId      String
+  strain          Strain   @relation(fields: [strainId], references: [id], onDelete: Cascade)
+  strainId        String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([userId, strainId])
 }

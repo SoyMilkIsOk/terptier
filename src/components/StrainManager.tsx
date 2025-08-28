@@ -5,15 +5,20 @@ import Modal from "./Modal";
 import AddStrainForm from "./AddStrainForm";
 import { XCircle, FilePenLine } from "lucide-react";
 
+type StrainWithSlug = Pick<
+  Strain,
+  "id" | "name" | "description" | "imageUrl" | "releaseDate" | "strainSlug"
+>;
+
 export default function StrainManager({
   producerId,
   initialStrains,
 }: {
   producerId: string;
-  initialStrains: Strain[];
+  initialStrains: StrainWithSlug[];
 }) {
-  const [strains, setStrains] = useState<Strain[]>(initialStrains);
-  const [editing, setEditing] = useState<Strain | null>(null);
+  const [strains, setStrains] = useState<StrainWithSlug[]>(initialStrains);
+  const [editing, setEditing] = useState<StrainWithSlug | null>(null);
 
   const refresh = async () => {
     const res = await fetch(`/api/strains?producerId=${producerId}`, {

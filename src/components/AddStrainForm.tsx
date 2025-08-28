@@ -3,18 +3,26 @@ import { useState } from "react";
 import ImageUpload from "./ImageUpload";
 import type { Strain } from "@prisma/client";
 
+type StrainWithSlug = Pick<
+  Strain,
+  "id" | "name" | "description" | "imageUrl" | "releaseDate" | "strainSlug"
+>;
+
 export default function AddStrainForm({
   producerId,
   strain,
   onSaved,
 }: {
   producerId: string;
-  strain?: Strain;
+  strain?: StrainWithSlug;
   onSaved?: () => void;
 }) {
   const [name, setName] = useState(strain?.name ?? "");
   const [description, setDescription] = useState(strain?.description ?? "");
   const [imageUrl, setImageUrl] = useState<string | null>(strain?.imageUrl ?? null);
+  const [strainSlug, setStrainSlug] = useState(
+    strain?.strainSlug ? String(strain.strainSlug) : "",
+  );
   function formatInputDate(date?: string | Date | null) {
     if (!date) return "";
     const d = typeof date === "string" ? new Date(date) : date;
@@ -32,6 +40,7 @@ export default function AddStrainForm({
       description,
       imageUrl,
       releaseDate: releaseDate || null,
+      strainSlug: strainSlug || undefined,
     };
     if (strain) {
       await fetch(`/api/strains/${strain.id}`, {
@@ -51,6 +60,7 @@ export default function AddStrainForm({
     setName("");
     setDescription("");
     setImageUrl(null);
+    setStrainSlug("");
     onSaved ? onSaved() : window.location.reload();
   };
 
@@ -61,6 +71,13 @@ export default function AddStrainForm({
         placeholder="Strain name"
         value={name}
         onChange={(e) => setName(e.target.value)}
+        className="border p-2 rounded w-full"
+      />
+      <input
+        type="text"
+        placeholder="Strain slug"
+        value={strainSlug}
+        onChange={(e) => setStrainSlug(e.target.value)}
         className="border p-2 rounded w-full"
       />
       <textarea

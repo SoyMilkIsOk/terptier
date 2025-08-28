@@ -1,0 +1,137 @@
+import Image from "next/image";
+import Link from "next/link";
+import { prisma } from "@/lib/prismadb";
+import BackButton from "@/components/BackButton";
+import AddStrainReviewForm from "@/components/AddStrainReviewForm";
+import StrainReviewCard from "@/components/StrainReviewCard";
+import { Star } from "lucide-react";
+import { createSupabaseServerClient } from "@/lib/supabaseServer";
+
+interface StrainPageProps {
+  params: Promise<{ slug: string; strainSlug: string }>;
+}
+
+export default async function StrainPage({ params }: StrainPageProps) {
+  const { slug: producerSlug, strainSlug } = await params;
+
+  const supabase = createSupabaseServerClient();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  let currentUserId: string | null = null;
+  if (session?.user?.email) {
+    const prismaUser = await prisma.user.findUnique({
+      where: { email: session.user.email },
+    });
+    currentUserId = prismaUser?.id || null;
+  }
+
+  const strain = await prisma.strain.findFirst({
+    where: { strainSlug, producer: { slug: producerSlug } },
+    include: {
+      StrainReview: {
+        include: { user: true },
+        orderBy: { updatedAt: "desc" },
+      },
+      producer: true,
+    },
+  });
+
+  if (!strain) {
+    return (
+      <div className="container mx-auto p-4 mt-8 text-center">
+        <p className="text-xl text-red-500">Strain not found.</p>
+      </div>
+    );
+  }
+
+  const reviews = strain.StrainReview;
+  const averageRating =
+    reviews.length > 0
+      ? reviews.reduce((sum, r) => sum + r.aggregateRating, 0) / reviews.length
+      : null;
+  const userReview = currentUserId
+    ? reviews.find((r) => r.userId === currentUserId) ?? null
+    : null;
+  const otherReviews = reviews.filter((r) => r.userId !== currentUserId);
+
+  const releaseDate = strain.releaseDate ? new Date(strain.releaseDate) : null;
+
+  return (
+    <div className="container mx-auto p-4 mt-8">
+      <BackButton />
+      <div className="flex flex-col md:flex-row items-start md:items-center mb-6 pb-6 border-b border-gray-300">
+        <div className="relative w-32 h-32 rounded overflow-hidden mr-4">
+          <Image
+            src={strain.imageUrl || "https://placehold.co/128"}
+            alt={strain.name}
+            fill
+            className="object-cover"
+          />
+        </div>
+        <div className="flex-grow text-left md:text-left">
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-800">
+            {strain.name}
+          </h1>
+          <div className="flex flex-wrap items-center gap-4 mt-2">
+            {averageRating !== null && (
+              <div className="flex items-center text-yellow-500">
+                <Star className="w-5 h-5 mr-1" fill="currentColor" />
+                <span className="text-lg font-medium">
+                  {averageRating.toFixed(1)}
+                </span>
+              </div>
+            )}
+            {releaseDate && (
+              <p className="text-gray-600">
+                Released on {releaseDate.toLocaleDateString()}
+              </p>
+            )}
+          </div>
+          <p className="text-sm text-gray-500 mt-1">
+            by {" "}
+            <Link
+              href={`/producer/${strain.producer.slug ?? strain.producer.id}`}
+              className="underline hover:text-blue-600"
+            >
+              {strain.producer.name}
+            </Link>
+          </p>
+        </div>
+      </div>
+
+      {strain.description && (
+        <p className="text-gray-700 mb-8 whitespace-pre-wrap">
+          {strain.description}
+        </p>
+      )}
+
+      <div className="mt-8">
+        <h3 className="text-xl font-semibold mb-4">
+          Reviews ({reviews.length})
+        </h3>
+        {userReview ? (
+          <StrainReviewCard
+            review={userReview}
+            currentUserId={currentUserId ?? undefined}
+            highlighted
+          />
+        ) : (
+          <AddStrainReviewForm
+            strainId={strain.id}
+            producerId={strain.producerId}
+          />
+        )}
+        {otherReviews.map((r) => (
+          <StrainReviewCard
+            key={r.id}
+            review={r}
+            currentUserId={currentUserId ?? undefined}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
