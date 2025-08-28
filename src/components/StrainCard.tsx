@@ -11,7 +11,7 @@ interface StrainCardProps {
   strain: Pick<
     Strain,
     "id" | "name" | "imageUrl" | "strainSlug"
-  > & { _count?: { reviews: number } };
+  > & { _count?: { StrainReview: number } };
   producerSlug: string;
   children?: ReactNode;
 }
@@ -40,7 +40,7 @@ export default function StrainCard({
       </div>
       <div className="flex items-center text-sm text-gray-600">
         <MessageCircle className="w-4 h-4 mr-1" />
-        {strain._count?.reviews ?? 0}
+        {strain._count?.StrainReview ?? 0}
       </div>
     </Link>
   );

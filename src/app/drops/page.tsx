@@ -19,7 +19,7 @@ export default async function DropsPage() {
       imageUrl: true,
       releaseDate: true,
       strainSlug: true,
-      _count: { select: { reviews: true } },
+      _count: { select: { StrainReview: true } },
       producer: {
         select: {
           id: true,

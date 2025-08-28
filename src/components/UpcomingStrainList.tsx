@@ -5,7 +5,7 @@ import StrainCard from "./StrainCard";
 type StrainListItem = Pick<
   Strain,
   "id" | "name" | "description" | "imageUrl" | "releaseDate" | "strainSlug"
-> & { _count?: { reviews: number } };
+> & { _count?: { StrainReview: number } };
 
 interface UpcomingStrainListProps {
   strains: StrainListItem[];

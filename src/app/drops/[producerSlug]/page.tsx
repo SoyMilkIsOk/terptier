@@ -42,7 +42,7 @@ export default async function DropsByProducerPage({
           imageUrl: true,
           releaseDate: true,
           strainSlug: true,
-          _count: { select: { reviews: true } },
+          _count: { select: { StrainReview: true } },
         },
       },
     },
