@@ -37,6 +37,14 @@ export default async function DropsByProducerPage({
           },
         },
         orderBy: { releaseDate: "asc" },
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          imageUrl: true,
+          releaseDate: true,
+          strainSlug: true,
+        },
       },
     },
   });
