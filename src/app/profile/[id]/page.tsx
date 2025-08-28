@@ -50,7 +50,7 @@ export default async function ProfilePage({
         include: { producer: true, user: true },
         orderBy: { updatedAt: "desc" },
       },
-      strainReviews: {
+      StrainReview: {
         include: { strain: { include: { producer: true } } },
         orderBy: { updatedAt: "desc" },
       },
@@ -68,7 +68,7 @@ export default async function ProfilePage({
           include: { producer: true, user: true },
           orderBy: { updatedAt: "desc" },
         },
-        strainReviews: {
+        StrainReview: {
           include: { strain: { include: { producer: true } } },
           orderBy: { updatedAt: "desc" },
         },
@@ -249,11 +249,11 @@ export default async function ProfilePage({
 
       <div className="bg-white shadow-xl rounded-lg p-6 md:p-8 max-w-6xl mx-auto">
         <h2 className="text-2xl font-bold mb-6">
-          Reviewed Strains ({user.strainReviews.length})
+          Reviewed Strains ({user.StrainReview.length})
         </h2>
-        {user.strainReviews.length > 0 ? (
+        {user.StrainReview.length > 0 ? (
           <div className="space-y-6">
-            {user.strainReviews.map((review) => (
+            {user.StrainReview.map((review) => (
               <div key={review.id}>
                 <Link
                   href={`/producer/${review.strain.producer.slug}/${review.strain.strainSlug}`}
