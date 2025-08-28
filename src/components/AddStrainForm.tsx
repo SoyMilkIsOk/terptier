@@ -40,7 +40,7 @@ export default function AddStrainForm({
       description,
       imageUrl,
       releaseDate: releaseDate || null,
-      strainSlug: strainSlug ? Number(strainSlug) : undefined,
+      strainSlug: strainSlug || undefined,
     };
     if (strain) {
       await fetch(`/api/strains/${strain.id}`, {
@@ -74,7 +74,7 @@ export default function AddStrainForm({
         className="border p-2 rounded w-full"
       />
       <input
-        type="number"
+        type="text"
         placeholder="Strain slug"
         value={strainSlug}
         onChange={(e) => setStrainSlug(e.target.value)}

@@ -256,7 +256,7 @@ export default async function ProfilePage({
             {user.strainReviews.map((review) => (
               <div key={review.id}>
                 <Link
-                  href={`/${review.strain.producer.slug}/${review.strain.strainSlug}`}
+                  href={`/producer/${review.strain.producer.slug}/${review.strain.strainSlug}`}
                   className="text-lg font-semibold hover:underline"
                 >
                   {review.strain.name}

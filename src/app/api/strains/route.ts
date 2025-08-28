@@ -9,7 +9,7 @@ interface CreateStrainBody {
   description?: string;
   imageUrl?: string;
   releaseDate?: string | null;
-  strainSlug?: number;
+  strainSlug?: string;
 }
 
 async function canManageProducer(

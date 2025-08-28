@@ -8,7 +8,7 @@ interface UpdateStrainBody {
   description?: string | null;
   imageUrl?: string | null;
   releaseDate?: string | null;
-  strainSlug?: number;
+  strainSlug?: string;
 }
 
 async function canManageProducer(

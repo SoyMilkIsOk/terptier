@@ -7,11 +7,11 @@ import StrainReviewCard from "@/components/StrainReviewCard";
 import { createSupabaseServerClient } from "@/lib/supabaseServer";
 
 interface StrainPageProps {
-  params: Promise<{ producerSlug: string; strainSlug: string }>;
+  params: Promise<{ slug: string; strainSlug: string }>;
 }
 
 export default async function StrainPage({ params }: StrainPageProps) {
-  const { producerSlug, strainSlug } = await params;
+  const { slug: producerSlug, strainSlug } = await params;
 
   const supabase = createSupabaseServerClient();
   const {
@@ -27,7 +27,7 @@ export default async function StrainPage({ params }: StrainPageProps) {
   }
 
   const strain = await prisma.strain.findFirst({
-    where: { strainSlug: Number(strainSlug), producer: { slug: producerSlug } },
+    where: { strainSlug, producer: { slug: producerSlug } },
     include: {
       StrainReview: {
         include: { user: true },
