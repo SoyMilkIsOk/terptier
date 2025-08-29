@@ -9,12 +9,42 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function DropsPage() {
+  // Calculate start of today and upcoming range in Mountain Time
   const now = new Date();
-  const sevenDays = new Date();
-  sevenDays.setDate(now.getDate() + 7);
+  const tzString = Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Denver",
+    timeZoneName: "shortOffset",
+  })
+    .formatToParts(now)
+    .find((p) => p.type === "timeZoneName")?.value || "GMT-7";
+  const offsetRaw = tzString.replace("GMT", "");
+  const offsetStr = `${offsetRaw.startsWith("-") ? "-" : "+"}${offsetRaw
+    .replace("-", "")
+    .padStart(2, "0")}:00`;
+  const formatter = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Denver",
+    hour12: false,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
+  const parts = formatter.formatToParts(now);
+  const data: Record<string, string> = {};
+  for (const { type, value } of parts) {
+    if (type !== "literal") data[type] = value;
+  }
+  const startOfToday = new Date(
+    `${data.year}-${data.month}-${data.day}T00:00:00${offsetStr}`
+  );
+  const sevenDays = new Date(
+    startOfToday.getTime() + 7 * 24 * 60 * 60 * 1000
+  );
 
   const strains = await prisma.strain.findMany({
-    where: { releaseDate: { gte: now, lte: sevenDays } },
+    where: { releaseDate: { gte: startOfToday, lte: sevenDays } },
     select: {
       id: true,
       name: true,

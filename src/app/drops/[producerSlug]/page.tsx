@@ -24,9 +24,41 @@ export default async function DropsByProducerPage({
 }: DropsByProducerPageProps) {
   const { producerSlug } = await params;
 
+  // Align dates to Mountain Time so drops show up accurately
   const now = new Date();
-  const oneMonth = new Date();
-  oneMonth.setMonth(now.getMonth() + 1);
+  const tzString = Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Denver",
+    timeZoneName: "shortOffset",
+  })
+    .formatToParts(now)
+    .find((p) => p.type === "timeZoneName")?.value || "GMT-7";
+  const offsetRaw = tzString.replace("GMT", "");
+  const offsetStr = `${offsetRaw.startsWith("-") ? "-" : "+"}${offsetRaw
+    .replace("-", "")
+    .padStart(2, "0")}:00`;
+  const formatter = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Denver",
+    hour12: false,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
+  const parts = formatter.formatToParts(now);
+  const data: Record<string, string> = {};
+  for (const { type, value } of parts) {
+    if (type !== "literal") data[type] = value;
+  }
+  const mstNow = new Date(
+    `${data.year}-${data.month}-${data.day}T${data.hour}:${data.minute}:${data.second}${offsetStr}`
+  );
+  const startOfToday = new Date(
+    `${data.year}-${data.month}-${data.day}T00:00:00${offsetStr}`
+  );
+  const oneMonth = new Date(startOfToday);
+  oneMonth.setMonth(oneMonth.getMonth() + 1);
 
   const producer = await prisma.producer.findFirst({
     where: { OR: [{ slug: producerSlug }, { id: producerSlug }] },
@@ -34,7 +66,7 @@ export default async function DropsByProducerPage({
       strains: {
         where: {
           releaseDate: {
-            gte: now,
+            gte: startOfToday,
             lte: oneMonth,
           },
         },
@@ -88,7 +120,7 @@ export default async function DropsByProducerPage({
     return { ...rest, avgRating: avg };
   });
 
-  const currentDate = new Date();
+  const currentDate = mstNow;
   const currentYear = currentDate.getFullYear();
   const currentMonth = currentDate.getMonth();
 
@@ -139,16 +171,17 @@ export default async function DropsByProducerPage({
   };
 
   const isToday = (day: number) => {
-    const today = new Date();
     return (
-      today.getDate() === day &&
-      today.getMonth() === currentMonth &&
-      today.getFullYear() === currentYear
+      mstNow.getDate() === day &&
+      mstNow.getMonth() === currentMonth &&
+      mstNow.getFullYear() === currentYear
     );
   };
 
   const getDateKey = (day: number) => {
-    return new Date(currentYear, currentMonth, day).toISOString().split("T")[0];
+    const date = new Date(startOfToday);
+    date.setDate(day);
+    return date.toISOString().split("T")[0];
   };
 
   return (
