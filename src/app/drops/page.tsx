@@ -23,9 +23,8 @@ export default async function DropsPage() {
   const month = parseInt(mstParts.find((p) => p.type === "month")!.value, 10);
   const day = parseInt(mstParts.find((p) => p.type === "day")!.value, 10);
 
-  const start = new Date(Date.UTC(year, month - 1, day, 7));
-  const end = new Date(start);
-  end.setDate(end.getDate() + 7);
+  const start = new Date(Date.UTC(year, month - 1, day));
+  const end = new Date(Date.UTC(year, month - 1, day + 7));
 
   const strains = await prisma.strain.findMany({
     where: { releaseDate: { gte: start, lt: end } },
@@ -78,15 +77,6 @@ export default async function DropsPage() {
     },
     {}
   );
-
-  const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat("en-US", {
-      timeZone: "America/Denver",
-      weekday: "short",
-      month: "short",
-      day: "numeric",
-    }).format(date);
-  };
 
   const getDaysUntilDrop = (releaseDate: Date) => {
     const diffTime = releaseDate.getTime() - now.getTime();
@@ -214,7 +204,14 @@ export default async function DropsPage() {
                           if (!strain.releaseDate) return null;
                           const daysUntil = getDaysUntilDrop(strain.releaseDate);
                           return (
-                            <div key={strain.id} className="transform hover:scale-[1.02] transition-transform duration-200">
+                            <div
+                              key={strain.id}
+                              className={`transform hover:scale-[1.02] transition-transform duration-200 ${
+                                daysUntil === 0
+                                  ? "animate-pulse ring-2 ring-green-400"
+                                  : ""
+                              }`}
+                            >
                               <StrainCard
                                 strain={strain}
                                 producerSlug={producer.slug ?? producer.id}

@@ -37,7 +37,7 @@ export default async function DropsByProducerPage({
   const month = parseInt(mstParts.find((p) => p.type === "month")!.value, 10);
   const day = parseInt(mstParts.find((p) => p.type === "day")!.value, 10);
 
-  const todayStart = new Date(Date.UTC(year, month - 1, day, 7));
+  const todayStart = new Date(Date.UTC(year, month - 1, day));
   const oneMonthAgo = new Date(todayStart);
   oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
   const oneMonthAhead = new Date(todayStart);
@@ -132,7 +132,7 @@ export default async function DropsByProducerPage({
 
   // Group strains by date (MST)
   const dateKeyFormatter = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "America/Denver",
+    timeZone: "UTC",
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
@@ -153,7 +153,7 @@ export default async function DropsByProducerPage({
 
   const formatDate = (date: Date) => {
     return new Intl.DateTimeFormat("en-US", {
-      timeZone: "America/Denver",
+      timeZone: "UTC",
       weekday: "long",
       year: "numeric",
       month: "long",
@@ -167,7 +167,7 @@ export default async function DropsByProducerPage({
 
   const getDateKey = (day: number) => {
     return dateKeyFormatter.format(
-      new Date(Date.UTC(currentYear, currentMonth, day, 7))
+      new Date(Date.UTC(currentYear, currentMonth, day))
     );
   };
 
@@ -389,27 +389,59 @@ export default async function DropsByProducerPage({
                 Upcoming Releases
               </h3>
               <div className="grid gap-3 sm:gap-4">
-                {strains.map((strain) => (
-                  <StrainCard
-                    key={strain.id}
-                    strain={strain}
-                    producerSlug={producer.slug ?? producer.id}
-                  >
-                    {strain.description && (
-                      <p className="text-sm text-gray-600 line-clamp-2 mb-2">
-                        {strain.description}
-                      </p>
-                    )}
-                    <div className="flex items-center gap-3 text-sm text-gray-500">
-                      <Clock className="w-4 h-4 flex-shrink-0" />
-                      <span>
-                        {strain.releaseDate
-                          ? formatDate(strain.releaseDate)
-                          : "TBD"}
-                      </span>
-                    </div>
-                  </StrainCard>
-                ))}
+                {strains.map((strain) => {
+                  const releaseDate = strain.releaseDate
+                    ? new Date(strain.releaseDate)
+                    : null;
+                  const diffDays = releaseDate
+                    ? Math.ceil(
+                        (releaseDate.getTime() - now.getTime()) /
+                          (1000 * 60 * 60 * 24)
+                      )
+                    : null;
+                  const showBadge =
+                    diffDays !== null && diffDays >= 0 && diffDays <= 30;
+
+                  return (
+                    <StrainCard
+                      key={strain.id}
+                      strain={strain}
+                      producerSlug={producer.slug ?? producer.id}
+                    >
+                      {strain.description && (
+                        <p className="text-sm text-gray-600 line-clamp-2 mb-2">
+                          {strain.description}
+                        </p>
+                      )}
+                      <div className="flex items-center gap-3 text-sm text-gray-500">
+                        <Clock className="w-4 h-4 flex-shrink-0" />
+                        {releaseDate ? (
+                          showBadge ? (
+                            <span
+                              className={`inline-block px-2 py-0.5 rounded-full text-xs font-bold ${
+                                diffDays === 0
+                                  ? "bg-red-100 text-red-700"
+                                  : diffDays === 1
+                                  ? "bg-orange-100 text-orange-700"
+                                  : "bg-blue-100 text-blue-700"
+                              }`}
+                            >
+                              {diffDays === 0
+                                ? "Today"
+                                : diffDays === 1
+                                ? "Tomorrow"
+                                : `${diffDays}d`}
+                            </span>
+                          ) : (
+                            <span>{formatDate(releaseDate)}</span>
+                          )
+                        ) : (
+                          <span>TBD</span>
+                        )}
+                      </div>
+                    </StrainCard>
+                  );
+                })}
               </div>
             </div>
           )}
