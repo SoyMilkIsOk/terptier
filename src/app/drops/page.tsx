@@ -4,17 +4,31 @@ import Image from "next/image";
 import StrainCard from "@/components/StrainCard";
 import { prisma } from "@/lib/prismadb";
 import { Calendar, TrendingUp, Clock, ChevronRight } from "lucide-react";
+import { unstable_noStore as noStore } from "next/cache";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function DropsPage() {
+  noStore();
+
   const now = new Date();
-  const sevenDays = new Date();
-  sevenDays.setDate(now.getDate() + 7);
+  const mstParts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Denver",
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+  }).formatToParts(now);
+  const year = parseInt(mstParts.find((p) => p.type === "year")!.value, 10);
+  const month = parseInt(mstParts.find((p) => p.type === "month")!.value, 10);
+  const day = parseInt(mstParts.find((p) => p.type === "day")!.value, 10);
+
+  const start = new Date(Date.UTC(year, month - 1, day, 7));
+  const end = new Date(start);
+  end.setDate(end.getDate() + 7);
 
   const strains = await prisma.strain.findMany({
-    where: { releaseDate: { gte: now, lte: sevenDays } },
+    where: { releaseDate: { gte: start, lt: end } },
     select: {
       id: true,
       name: true,
@@ -66,10 +80,11 @@ export default async function DropsPage() {
   );
 
   const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat('en-US', {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric'
+    return new Intl.DateTimeFormat("en-US", {
+      timeZone: "America/Denver",
+      weekday: "short",
+      month: "short",
+      day: "numeric",
     }).format(date);
   };
 

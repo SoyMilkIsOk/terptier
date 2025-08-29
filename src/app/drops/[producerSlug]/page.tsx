@@ -11,6 +11,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import BackButton from "@/components/BackButton";
+import { unstable_noStore as noStore } from "next/cache";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -23,10 +24,24 @@ export default async function DropsByProducerPage({
   params,
 }: DropsByProducerPageProps) {
   const { producerSlug } = await params;
+  noStore();
 
   const now = new Date();
-  const oneMonth = new Date();
-  oneMonth.setMonth(now.getMonth() + 1);
+  const mstParts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Denver",
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+  }).formatToParts(now);
+  const year = parseInt(mstParts.find((p) => p.type === "year")!.value, 10);
+  const month = parseInt(mstParts.find((p) => p.type === "month")!.value, 10);
+  const day = parseInt(mstParts.find((p) => p.type === "day")!.value, 10);
+
+  const todayStart = new Date(Date.UTC(year, month - 1, day, 7));
+  const oneMonthAgo = new Date(todayStart);
+  oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+  const oneMonthAhead = new Date(todayStart);
+  oneMonthAhead.setMonth(oneMonthAhead.getMonth() + 1);
 
   const producer = await prisma.producer.findFirst({
     where: { OR: [{ slug: producerSlug }, { id: producerSlug }] },
@@ -34,8 +49,8 @@ export default async function DropsByProducerPage({
       strains: {
         where: {
           releaseDate: {
-            gte: now,
-            lte: oneMonth,
+            gte: oneMonthAgo,
+            lt: oneMonthAhead,
           },
         },
         orderBy: { releaseDate: "asc" },
@@ -88,9 +103,9 @@ export default async function DropsByProducerPage({
     return { ...rest, avgRating: avg };
   });
 
-  const currentDate = new Date();
-  const currentYear = currentDate.getFullYear();
-  const currentMonth = currentDate.getMonth();
+  const currentYear = year;
+  const currentMonth = month - 1;
+  const currentDay = day;
 
   // Get calendar days for current month
   const firstDay = new Date(currentYear, currentMonth, 1);
@@ -115,22 +130,30 @@ export default async function DropsByProducerPage({
 
   const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-  // Group strains by date
-  const strainsByDate = strains.reduce<
-    Record<string, typeof strains>
-  >((acc, strain) => {
-    if (strain.releaseDate) {
-      const dateKey = strain.releaseDate.toISOString().split("T")[0];
-      if (!acc[dateKey]) {
-        acc[dateKey] = [];
+  // Group strains by date (MST)
+  const dateKeyFormatter = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Denver",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+  const strainsByDate = strains.reduce<Record<string, typeof strains>>(
+    (acc, strain) => {
+      if (strain.releaseDate) {
+        const dateKey = dateKeyFormatter.format(strain.releaseDate);
+        if (!acc[dateKey]) {
+          acc[dateKey] = [];
+        }
+        acc[dateKey].push(strain);
       }
-      acc[dateKey].push(strain);
-    }
-    return acc;
-  }, {});
+      return acc;
+    },
+    {}
+  );
 
   const formatDate = (date: Date) => {
     return new Intl.DateTimeFormat("en-US", {
+      timeZone: "America/Denver",
       weekday: "long",
       year: "numeric",
       month: "long",
@@ -139,16 +162,13 @@ export default async function DropsByProducerPage({
   };
 
   const isToday = (day: number) => {
-    const today = new Date();
-    return (
-      today.getDate() === day &&
-      today.getMonth() === currentMonth &&
-      today.getFullYear() === currentYear
-    );
+    return day === currentDay;
   };
 
   const getDateKey = (day: number) => {
-    return new Date(currentYear, currentMonth, day).toISOString().split("T")[0];
+    return dateKeyFormatter.format(
+      new Date(Date.UTC(currentYear, currentMonth, day, 7))
+    );
   };
 
   return (
