@@ -11,6 +11,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import BackButton from "@/components/BackButton";
+import { unstable_noStore as noStore } from "next/cache";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -23,10 +24,24 @@ export default async function DropsByProducerPage({
   params,
 }: DropsByProducerPageProps) {
   const { producerSlug } = await params;
+  noStore();
 
   const now = new Date();
-  const oneMonth = new Date();
-  oneMonth.setMonth(now.getMonth() + 1);
+  const mstParts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Denver",
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+  }).formatToParts(now);
+  const year = parseInt(mstParts.find((p) => p.type === "year")!.value, 10);
+  const month = parseInt(mstParts.find((p) => p.type === "month")!.value, 10);
+  const day = parseInt(mstParts.find((p) => p.type === "day")!.value, 10);
+
+  const todayStart = new Date(Date.UTC(year, month - 1, day));
+  const oneMonthAgo = new Date(todayStart);
+  oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+  const oneMonthAhead = new Date(todayStart);
+  oneMonthAhead.setMonth(oneMonthAhead.getMonth() + 1);
 
   const producer = await prisma.producer.findFirst({
     where: { OR: [{ slug: producerSlug }, { id: producerSlug }] },
@@ -34,8 +49,8 @@ export default async function DropsByProducerPage({
       strains: {
         where: {
           releaseDate: {
-            gte: now,
-            lte: oneMonth,
+            gte: oneMonthAgo,
+            lt: oneMonthAhead,
           },
         },
         orderBy: { releaseDate: "asc" },
@@ -88,9 +103,9 @@ export default async function DropsByProducerPage({
     return { ...rest, avgRating: avg };
   });
 
-  const currentDate = new Date();
-  const currentYear = currentDate.getFullYear();
-  const currentMonth = currentDate.getMonth();
+  const currentYear = year;
+  const currentMonth = month - 1;
+  const currentDay = day;
 
   // Get calendar days for current month
   const firstDay = new Date(currentYear, currentMonth, 1);
@@ -115,22 +130,30 @@ export default async function DropsByProducerPage({
 
   const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-  // Group strains by date
-  const strainsByDate = strains.reduce<
-    Record<string, typeof strains>
-  >((acc, strain) => {
-    if (strain.releaseDate) {
-      const dateKey = strain.releaseDate.toISOString().split("T")[0];
-      if (!acc[dateKey]) {
-        acc[dateKey] = [];
+  // Group strains by date (MST)
+  const dateKeyFormatter = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "UTC",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+  const strainsByDate = strains.reduce<Record<string, typeof strains>>(
+    (acc, strain) => {
+      if (strain.releaseDate) {
+        const dateKey = dateKeyFormatter.format(strain.releaseDate);
+        if (!acc[dateKey]) {
+          acc[dateKey] = [];
+        }
+        acc[dateKey].push(strain);
       }
-      acc[dateKey].push(strain);
-    }
-    return acc;
-  }, {});
+      return acc;
+    },
+    {}
+  );
 
   const formatDate = (date: Date) => {
     return new Intl.DateTimeFormat("en-US", {
+      timeZone: "UTC",
       weekday: "long",
       year: "numeric",
       month: "long",
@@ -139,16 +162,13 @@ export default async function DropsByProducerPage({
   };
 
   const isToday = (day: number) => {
-    const today = new Date();
-    return (
-      today.getDate() === day &&
-      today.getMonth() === currentMonth &&
-      today.getFullYear() === currentYear
-    );
+    return day === currentDay;
   };
 
   const getDateKey = (day: number) => {
-    return new Date(currentYear, currentMonth, day).toISOString().split("T")[0];
+    return dateKeyFormatter.format(
+      new Date(Date.UTC(currentYear, currentMonth, day))
+    );
   };
 
   return (
@@ -369,27 +389,59 @@ export default async function DropsByProducerPage({
                 Upcoming Releases
               </h3>
               <div className="grid gap-3 sm:gap-4">
-                {strains.map((strain) => (
-                  <StrainCard
-                    key={strain.id}
-                    strain={strain}
-                    producerSlug={producer.slug ?? producer.id}
-                  >
-                    {strain.description && (
-                      <p className="text-sm text-gray-600 line-clamp-2 mb-2">
-                        {strain.description}
-                      </p>
-                    )}
-                    <div className="flex items-center gap-3 text-sm text-gray-500">
-                      <Clock className="w-4 h-4 flex-shrink-0" />
-                      <span>
-                        {strain.releaseDate
-                          ? formatDate(strain.releaseDate)
-                          : "TBD"}
-                      </span>
-                    </div>
-                  </StrainCard>
-                ))}
+                {strains.map((strain) => {
+                  const releaseDate = strain.releaseDate
+                    ? new Date(strain.releaseDate)
+                    : null;
+                  const diffDays = releaseDate
+                    ? Math.ceil(
+                        (releaseDate.getTime() - now.getTime()) /
+                          (1000 * 60 * 60 * 24)
+                      )
+                    : null;
+                  const showBadge =
+                    diffDays !== null && diffDays >= 0 && diffDays <= 30;
+
+                  return (
+                    <StrainCard
+                      key={strain.id}
+                      strain={strain}
+                      producerSlug={producer.slug ?? producer.id}
+                    >
+                      {strain.description && (
+                        <p className="text-sm text-gray-600 line-clamp-2 mb-2">
+                          {strain.description}
+                        </p>
+                      )}
+                      <div className="flex items-center gap-3 text-sm text-gray-500">
+                        <Clock className="w-4 h-4 flex-shrink-0" />
+                        {releaseDate ? (
+                          showBadge ? (
+                            <span
+                              className={`inline-block px-2 py-0.5 rounded-full text-xs font-bold ${
+                                diffDays === 0
+                                  ? "bg-red-100 text-red-700"
+                                  : diffDays === 1
+                                  ? "bg-orange-100 text-orange-700"
+                                  : "bg-blue-100 text-blue-700"
+                              }`}
+                            >
+                              {diffDays === 0
+                                ? "Today"
+                                : diffDays === 1
+                                ? "Tomorrow"
+                                : `${diffDays}d`}
+                            </span>
+                          ) : (
+                            <span>{formatDate(releaseDate)}</span>
+                          )
+                        ) : (
+                          <span>TBD</span>
+                        )}
+                      </div>
+                    </StrainCard>
+                  );
+                })}
               </div>
             </div>
           )}

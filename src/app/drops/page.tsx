@@ -3,18 +3,31 @@ import Link from "next/link";
 import Image from "next/image";
 import StrainCard from "@/components/StrainCard";
 import { prisma } from "@/lib/prismadb";
-import { Calendar, TrendingUp, Clock, ChevronRight } from "lucide-react";
+import { Calendar, TrendingUp, ChevronRight } from "lucide-react";
+import { unstable_noStore as noStore } from "next/cache";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function DropsPage() {
+  noStore();
+
   const now = new Date();
-  const sevenDays = new Date();
-  sevenDays.setDate(now.getDate() + 7);
+  const mstParts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Denver",
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+  }).formatToParts(now);
+  const year = parseInt(mstParts.find((p) => p.type === "year")!.value, 10);
+  const month = parseInt(mstParts.find((p) => p.type === "month")!.value, 10);
+  const day = parseInt(mstParts.find((p) => p.type === "day")!.value, 10);
+
+  const start = new Date(Date.UTC(year, month - 1, day));
+  const end = new Date(Date.UTC(year, month - 1, day + 7));
 
   const strains = await prisma.strain.findMany({
-    where: { releaseDate: { gte: now, lte: sevenDays } },
+    where: { releaseDate: { gte: start, lt: end } },
     select: {
       id: true,
       name: true,
@@ -65,14 +78,6 @@ export default async function DropsPage() {
     {}
   );
 
-  const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat('en-US', {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric'
-    }).format(date);
-  };
-
   const getDaysUntilDrop = (releaseDate: Date) => {
     const diffTime = releaseDate.getTime() - now.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -103,7 +108,6 @@ export default async function DropsPage() {
               </div>
               <div className="hidden sm:block w-px h-4 bg-green-300"></div>
               <div className="flex items-center gap-2">
-                <Clock className="w-5 h-5" />
                 <span className="text-sm font-medium">{Object.values(grouped).reduce((acc, group) => acc + group.strains.length, 0)} Strains</span>
               </div>
             </div>
@@ -195,33 +199,59 @@ export default async function DropsPage() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                       {strains
                         .slice(0, 3)
-                        .map((strain) => {
+                        .map((strain, index) => {
                           if (!strain.releaseDate) return null;
                           const daysUntil = getDaysUntilDrop(strain.releaseDate);
                           return (
-                            <div key={strain.id} className="transform hover:scale-[1.02] transition-transform duration-200">
-                              <StrainCard
-                                strain={strain}
-                                producerSlug={producer.slug ?? producer.id}
-                              >
-                                <div className="mt-2 sm:mt-3">
-                                  <div
-                                    className={`inline-block px-3 py-1.5 rounded-full text-xs font-bold ${
-                                      daysUntil === 0
-                                        ? "bg-red-100 text-red-700 shadow-sm"
+                            <div
+                              key={strain.id}
+                              className={`group/strain relative overflow-hidden transition-all duration-500 ease-out
+                                ${daysUntil === 0
+                                  ? "animate-pulse"
+                                  : ""
+                                }
+                                hover:-translate-y-1 hover:shadow-xl hover:shadow-green-100/50
+                              `}
+                              style={{
+                                opacity: 0,
+                                transform: 'translateY(30px)',
+                                animation: `fadeInUp 0.6s ease-out forwards`,
+                                animationDelay: `${index * 150}ms`,
+                              }}
+                            >
+                              {/* Glow effect for urgent drops */}
+                              {daysUntil <= 1 && (
+                                <div className="absolute -inset-0.5 bg-gradient-to-r from-orange-400 to-red-400 rounded-lg blur opacity-20 group-hover/strain:opacity-30 transition-opacity duration-300"></div>
+                              )}
+                              
+                              {/* Card wrapper with enhanced hover effects */}
+                              <div className="relative bg-white rounded-lg overflow-hidden border border-gray-100 group-hover/strain:border-green-200 transition-all duration-300">
+                                <StrainCard
+                                  strain={strain}
+                                  producerSlug={producer.slug ?? producer.id}
+                                >
+                                  <div className="mt-2 sm:mt-3">
+                                    <div
+                                      className={`inline-block px-3 py-1.5 rounded-full text-xs font-bold transition-all duration-300 group-hover/strain:scale-105 ${
+                                        daysUntil === 0
+                                          ? "bg-gradient-to-r from-red-500 to-pink-500 text-white shadow-lg shadow-red-200"
+                                          : daysUntil === 1
+                                          ? "bg-gradient-to-r from-orange-500 to-yellow-500 text-white shadow-lg shadow-orange-200"
+                                          : "bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg shadow-blue-200"
+                                      }`}
+                                    >
+                                      {daysUntil === 0
+                                        ? "🔥 Available Now"
                                         : daysUntil === 1
-                                        ? "bg-orange-100 text-orange-700 shadow-sm"
-                                        : "bg-blue-100 text-blue-700 shadow-sm"
-                                    }`}
-                                  >
-                                    {daysUntil === 0
-                                      ? "Today"
-                                      : daysUntil === 1
-                                      ? "Tomorrow"
-                                      : `${daysUntil}d`}
+                                        ? "⏰ Tomorrow"
+                                        : `📅 ${daysUntil} days`}
+                                    </div>
                                   </div>
-                                </div>
-                              </StrainCard>
+                                </StrainCard>
+                                
+                                {/* Shimmer effect overlay */}
+                                <div className="absolute inset-0 -translate-x-full group-hover/strain:translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-1000 pointer-events-none"></div>
+                              </div>
                             </div>
                           );
                         })
@@ -246,6 +276,30 @@ export default async function DropsPage() {
           </div>
         )}
       </div>
+
+      {/* Inline CSS for animations */}
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          @keyframes fadeInUp {
+            from {
+              opacity: 0;
+              transform: translateY(30px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+          
+          @media (prefers-reduced-motion: reduce) {
+            * {
+              animation-duration: 0.01ms !important;
+              animation-iteration-count: 1 !important;
+              transition-duration: 0.01ms !important;
+            }
+          }
+        `
+      }} />
     </div>
   );
 }
