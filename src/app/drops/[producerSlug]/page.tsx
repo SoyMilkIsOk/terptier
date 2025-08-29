@@ -11,18 +11,20 @@ import {
   ExternalLink,
 } from "lucide-react";
 import BackButton from "@/components/BackButton";
+import { unstable_noStore as noStore } from "next/cache";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 interface DropsByProducerPageProps {
-  params: Promise<{ producerSlug: string }>;
+  params: { producerSlug: string };
 }
 
 export default async function DropsByProducerPage({
   params,
 }: DropsByProducerPageProps) {
-  const { producerSlug } = await params;
+  noStore();
+  const { producerSlug } = params;
 
   // Align dates to Mountain Time so drops show up accurately
   const now = new Date();

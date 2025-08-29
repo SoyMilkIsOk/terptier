@@ -4,11 +4,13 @@ import Image from "next/image";
 import StrainCard from "@/components/StrainCard";
 import { prisma } from "@/lib/prismadb";
 import { Calendar, TrendingUp, Clock, ChevronRight } from "lucide-react";
+import { unstable_noStore as noStore } from "next/cache";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function DropsPage() {
+  noStore();
   // Calculate start of today and upcoming range in Mountain Time
   const now = new Date();
   const tzString = Intl.DateTimeFormat("en-US", {
