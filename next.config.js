@@ -13,6 +13,12 @@ const nextConfig = {
       new URL('https://placehold.co/**'),
     ],
   },
+  experimental: {
+    serverComponentsExternalPackages: [
+      '@supabase/auth-helpers-nextjs',
+      '@supabase/supabase-js',
+    ],
+  },
 };
 
 module.exports = nextConfig;
