@@ -23,7 +23,7 @@ export default async function DropsPage() {
   const month = parseInt(mstParts.find((p) => p.type === "month")!.value, 10);
   const day = parseInt(mstParts.find((p) => p.type === "day")!.value, 10);
 
-  const start = new Date(Date.UTC(year, month - 1, day));
+  const start = new Date(Date.UTC(year, month - 1, day - 7));
   const end = new Date(Date.UTC(year, month - 1, day + 7));
 
   const strains = await prisma.strain.findMany({
@@ -96,15 +96,15 @@ export default async function DropsPage() {
               <span className="text-sm font-medium">Weekly Drops</span>
             </div>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-3 sm:mb-4 py-2 sm:py-4 bg-gradient-to-r from-white to-green-100 bg-clip-text text-transparent">
-              Upcoming Drops
+              Recent & Upcoming Drops
             </h1>
             <p className="text-lg sm:text-xl text-green-100 mb-6 sm:mb-8 max-w-2xl mx-auto px-2">
-              Discover the latest premium strains dropping this week from top-tier producers
+              Discover premium strains from the last week and the upcoming week from top-tier producers
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 text-green-100">
               <div className="flex items-center gap-2">
                 <Calendar className="w-5 h-5" />
-                <span className="text-sm font-medium">Next 7 Days</span>
+                <span className="text-sm font-medium">Last 7 & Next 7 Days</span>
               </div>
               <div className="hidden sm:block w-px h-4 bg-green-300"></div>
               <div className="flex items-center gap-2">
@@ -220,10 +220,10 @@ export default async function DropsPage() {
                               }}
                             >
                               {/* Glow effect for urgent drops */}
-                              {daysUntil <= 1 && (
+                              {daysUntil <= 1 && daysUntil >= 0 && (
                                 <div className="absolute -inset-0.5 bg-gradient-to-r from-orange-400 to-red-400 rounded-lg blur opacity-20 group-hover/strain:opacity-30 transition-opacity duration-300"></div>
                               )}
-                              
+
                               {/* Card wrapper with enhanced hover effects */}
                               <div className="relative bg-white rounded-lg overflow-hidden border border-gray-100 group-hover/strain:border-green-200 transition-all duration-300">
                                 <StrainCard
@@ -237,14 +237,20 @@ export default async function DropsPage() {
                                           ? "bg-gradient-to-r from-red-500 to-pink-500 text-white shadow-lg shadow-red-200"
                                           : daysUntil === 1
                                           ? "bg-gradient-to-r from-orange-500 to-yellow-500 text-white shadow-lg shadow-orange-200"
-                                          : "bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg shadow-blue-200"
+                                          : daysUntil > 1
+                                          ? "bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg shadow-blue-200"
+                                          : "bg-gradient-to-r from-gray-500 to-gray-700 text-white shadow-lg shadow-gray-200"
                                       }`}
                                     >
                                       {daysUntil === 0
                                         ? "🔥 Available Now"
                                         : daysUntil === 1
                                         ? "⏰ Tomorrow"
-                                        : `📅 ${daysUntil} days`}
+                                        : daysUntil > 1
+                                        ? `📅 In ${daysUntil} days`
+                                        : daysUntil === -1
+                                        ? "✅ Yesterday"
+                                        : `✅ ${Math.abs(daysUntil)} days ago`}
                                     </div>
                                   </div>
                                 </StrainCard>
