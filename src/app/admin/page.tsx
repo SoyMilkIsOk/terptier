@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import AddProducerForm from "@/components/AddProducerForm";
 import Modal from "@/components/Modal";
@@ -127,7 +128,18 @@ export default function AdminPage() {
               {producers.map((p) => (
                 <tr key={p.id}>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{p.name || 'N/A'}</div>
+                    {p.slug ? (
+                      <Link
+                        href={`/admin/${p.slug}`}
+                        className="text-sm font-medium text-gray-900 hover:underline"
+                      >
+                        {p.name || 'N/A'}
+                      </Link>
+                    ) : (
+                      <div className="text-sm font-medium text-gray-900">
+                        {p.name || 'N/A'}
+                      </div>
+                    )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
