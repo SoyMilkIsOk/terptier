@@ -23,10 +23,14 @@ export default function ProducerStrainList({
   producerSlug,
 }: ProducerStrainListProps) {
   const [searchTerm, setSearchTerm] = useState("");
-
-  const filteredStrains = strains.filter((strain) =>
-    strain.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const term = searchTerm.toLowerCase();
+  const filteredStrains = strains.filter((strain) => {
+    if (!term) return true;
+    return strain.name
+      .toLowerCase()
+      .split(/\s+/)
+      .some((word) => word.startsWith(term));
+  });
 
   return (
     <>

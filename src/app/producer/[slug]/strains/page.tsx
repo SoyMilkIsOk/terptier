@@ -2,6 +2,7 @@
 import Link from "next/link";
 import BackButton from "@/components/BackButton";
 import ProducerStrainList from "@/components/ProducerStrainList";
+import { ArrowRight } from "lucide-react";
 import { prisma } from "@/lib/prismadb";
 
 interface ProducerStrainsPageProps {
@@ -64,9 +65,10 @@ export default async function ProducerStrainsPage({
         <BackButton />
         <Link
           href={`/drops/${producerSlug}`}
-          className="text-green-600 hover:underline"
+          className="flex items-center text-green-600 hover:underline"
         >
-          Upcoming Drops -&gt;
+          Upcoming Drops
+          <ArrowRight className="w-4 h-4 ml-1" />
         </Link>
       </div>
       <ProducerStrainList
