@@ -8,12 +8,16 @@ export default function SearchBar({
   selectedAttributes = [],
   onAttributesChange,
   category,
+  placeholder = "Search producers...",
+  enableFilters = true,
 }: {
   onSearch: (q: string) => void;
   initialQuery?: string;
   selectedAttributes?: string[];
-  onAttributesChange: (attrs: string[]) => void;
-  category: "FLOWER" | "HASH";
+  onAttributesChange?: (attrs: string[]) => void;
+  category?: "FLOWER" | "HASH";
+  placeholder?: string;
+  enableFilters?: boolean;
 }) {
   const [query, setQuery] = useState(initialQuery);
   const [isFocused, setIsFocused] = useState(false);
@@ -67,7 +71,7 @@ export default function SearchBar({
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           onKeyDown={handleKeyDown}
-          placeholder="Search producers..."
+          placeholder={placeholder}
           className={`w-full h-12 pl-12 pr-12 py-3 rounded-full border bg-gradient-to-r from-gray-50 to-gray-100 text-gray-700 placeholder-gray-400 font-medium transition-all duration-200 shadow-inner focus:outline-none ${
             isFocused 
               ? "border-green-400 shadow-md bg-white" 
@@ -76,27 +80,29 @@ export default function SearchBar({
         />
 
         {/* Filter toggle button */}
-        <button
-          onClick={() => setShowFilters((s) => !s)}
-          className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 p-1"
-          aria-label="Toggle filters"
-        >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
+        {enableFilters && (
+          <button
+            onClick={() => setShowFilters((s) => !s)}
+            className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 p-1"
+            aria-label="Toggle filters"
           >
-            <path
-              d="M3 4h18M6 12h12M10 20h4"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </button>
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M3 4h18M6 12h12M10 20h4"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+        )}
 
         {/* Clear button */}
         {query && (
@@ -131,7 +137,7 @@ export default function SearchBar({
         />
       </div>
 
-      {showFilters && (
+      {enableFilters && showFilters && onAttributesChange && category && (
         <div className="mt-3 w-5/6 md:w-2/3 max-w-md bg-white p-3 rounded shadow">
           <AttributesFilter
             selected={selectedAttributes}
