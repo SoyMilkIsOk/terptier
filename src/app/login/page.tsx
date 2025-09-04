@@ -37,7 +37,7 @@ function LoginForm() {
         if (meData.role === "ADMIN") {
           router.push("/admin");
         } else {
-          router.push(`/profile/${meData.username || meData.id}`);
+          router.push("/rankings");
         }
       } else {
         router.push("/");
