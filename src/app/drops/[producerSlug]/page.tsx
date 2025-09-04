@@ -57,7 +57,6 @@ export default async function DropsByProducerPage({
         select: {
           id: true,
           name: true,
-          description: true,
           imageUrl: true,
           releaseDate: true,
           strainSlug: true,
@@ -408,11 +407,6 @@ export default async function DropsByProducerPage({
                       strain={strain}
                       producerSlug={producer.slug ?? producer.id}
                     >
-                      {strain.description && (
-                        <p className="text-sm text-gray-600 line-clamp-2 mb-2">
-                          {strain.description}
-                        </p>
-                      )}
                       <div className="flex items-center gap-3 text-sm text-gray-500">
                         <Clock className="w-4 h-4 flex-shrink-0" />
                         {releaseDate ? (
