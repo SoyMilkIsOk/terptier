@@ -1,16 +1,16 @@
 // src/app/profile/[id]/page.tsx
 import React from "react";
-import ProducerCard from "@/components/ProducerCard";
 import CommentCard from "@/components/CommentCard";
 import ProfileImageUpload from "@/components/ProfileImageUpload";
 import NotificationOptInToggle from "@/components/NotificationOptInToggle";
 import BackButton from "@/components/BackButton";
 import StrainReviewCard from "@/components/StrainReviewCard";
+import ExpandableSection from "@/components/ExpandableSection";
 import Link from "next/link";
 import { prisma } from "@/lib/prismadb";
 import { cookies } from "next/headers";
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
-import { Instagram, ExternalLink, Link as LinkIcon, ChevronDown, ChevronUp } from "lucide-react";
+import { Instagram, ExternalLink, Link as LinkIcon } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -25,70 +25,6 @@ const getSocialPlatform = (url: string) => {
   return 'other';
 };
 
-// Client component for expandable sections
-function ExpandableSection({ 
-  children, 
-  title, 
-  count, 
-  initialShowCount = 3,
-  className = ""
-}: {
-  children: React.ReactNode;
-  title: string;
-  count: number;
-  initialShowCount?: number;
-  className?: string;
-}) {
-  return (
-    <div className={`bg-white shadow-lg rounded-2xl border border-green-100 hover:shadow-xl transition-shadow duration-300 ${className}`}>
-      <div className="p-6 md:p-8">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-            {title}
-            <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-semibold">
-              {count}
-            </span>
-          </h2>
-        </div>
-        
-        {count > 0 ? (
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 gap-4">
-              {React.Children.toArray(children).slice(0, initialShowCount)}
-            </div>
-            
-            {count > initialShowCount && (
-              <details className="group">
-                <summary className="cursor-pointer list-none">
-                  <div className="flex items-center justify-center gap-2 py-3 text-green-600 hover:text-green-700 font-medium transition-colors">
-                    <span className="group-open:hidden">Show {count - initialShowCount} more</span>
-                    <span className="hidden group-open:block">Show less</span>
-                    <ChevronDown className="w-4 h-4 group-open:hidden" />
-                    <ChevronUp className="w-4 h-4 hidden group-open:block" />
-                  </div>
-                </summary>
-                <div className="mt-4 space-y-4">
-                  <div className="grid grid-cols-1 gap-4">
-                    {React.Children.toArray(children).slice(initialShowCount)}
-                  </div>
-                </div>
-              </details>
-            )}
-          </div>
-        ) : (
-          <div className="text-center py-12">
-            <div className="text-gray-400 mb-2">
-              <div className="w-16 h-16 mx-auto bg-gray-100 rounded-full flex items-center justify-center">
-                <span className="text-2xl">📝</span>
-              </div>
-            </div>
-            <p className="text-gray-500 text-lg">No {title.toLowerCase()} yet</p>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
 
 export default async function ProfilePage({
   params,
