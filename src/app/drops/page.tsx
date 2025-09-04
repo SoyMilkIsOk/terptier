@@ -23,8 +23,9 @@ export default async function DropsPage() {
   const month = parseInt(mstParts.find((p) => p.type === "month")!.value, 10);
   const day = parseInt(mstParts.find((p) => p.type === "day")!.value, 10);
 
-  const start = new Date(Date.UTC(year, month - 1, day - 7));
-  const end = new Date(Date.UTC(year, month - 1, day + 7));
+  const todayUtc = Date.UTC(year, month - 1, day);
+  const start = new Date(todayUtc - 7 * 24 * 60 * 60 * 1000);
+  const end = new Date(todayUtc + 7 * 24 * 60 * 60 * 1000);
 
   const strains = await prisma.strain.findMany({
     where: { releaseDate: { gte: start, lt: end } },
@@ -79,9 +80,12 @@ export default async function DropsPage() {
   );
 
   const getDaysUntilDrop = (releaseDate: Date) => {
-    const diffTime = releaseDate.getTime() - now.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
+    const releaseUtc = Date.UTC(
+      releaseDate.getUTCFullYear(),
+      releaseDate.getUTCMonth(),
+      releaseDate.getUTCDate()
+    );
+    return Math.round((releaseUtc - todayUtc) / (1000 * 60 * 60 * 24));
   };
 
   return (

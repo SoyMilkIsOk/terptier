@@ -37,10 +37,11 @@ export default async function DropsByProducerPage({
   const month = parseInt(mstParts.find((p) => p.type === "month")!.value, 10);
   const day = parseInt(mstParts.find((p) => p.type === "day")!.value, 10);
 
-  const todayStart = new Date(Date.UTC(year, month - 1, day));
-  const oneMonthAgo = new Date(todayStart);
+  const todayUtc = Date.UTC(year, month - 1, day);
+  const todayStart = new Date(todayUtc);
+  const oneMonthAgo = new Date(todayUtc);
   oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-  const oneMonthAhead = new Date(todayStart);
+  const oneMonthAhead = new Date(todayUtc);
   oneMonthAhead.setMonth(oneMonthAhead.getMonth() + 1);
 
   const producer = await prisma.producer.findFirst({
@@ -393,8 +394,12 @@ export default async function DropsByProducerPage({
                     ? new Date(strain.releaseDate)
                     : null;
                   const diffDays = releaseDate
-                    ? Math.ceil(
-                        (releaseDate.getTime() - now.getTime()) /
+                    ? Math.round(
+                        (Date.UTC(
+                          releaseDate.getUTCFullYear(),
+                          releaseDate.getUTCMonth(),
+                          releaseDate.getUTCDate()
+                        ) - todayUtc) /
                           (1000 * 60 * 60 * 24)
                       )
                     : null;
