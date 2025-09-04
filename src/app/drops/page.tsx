@@ -216,10 +216,10 @@ export default async function DropsPage() {
                         {/* Action Button */}
                         <div className="flex-shrink-0 self-end mb-1">
                           <Link
-                            href={`/drops/${producer.slug ?? producer.id}`}
+                            href={`/producer/${producer.slug ?? producer.id}/strains`}
                             className="group/btn bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 border border-white/20 flex items-center gap-1"
                           >
-                            <span className="hidden sm:inline">All Drops</span>
+                            <span className="hidden sm:inline">All Strains</span>
                             <span className="sm:hidden">View All</span>
                             <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 group-hover/btn:translate-x-0.5 transition-transform" />
                           </Link>
@@ -299,13 +299,13 @@ export default async function DropsPage() {
                         .filter(Boolean)}
                     </div>
                     
-                    {strains.length > 3 && (
+                    {strains.length > 0 && (
                       <div className="mt-4 sm:mt-6 text-center">
                         <Link
-                          href={`/producer/${producer.slug ?? producer.id}/strains`}
+                          href={`/drops/${producer.slug ?? producer.id}`}
                           className="group inline-flex items-center justify-center gap-2 text-green-600 hover:text-green-700 font-semibold text-sm sm:text-base bg-white hover:bg-gray-50 px-4 py-2 rounded-lg border border-green-200 hover:border-green-300 transition-all duration-200 shadow-sm hover:shadow"
                         >
-                          <span>See all {strains.length} strains</span>
+                          <span>See upcoming drops</span>
                           <TrendingUp className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                         </Link>
                       </div>
