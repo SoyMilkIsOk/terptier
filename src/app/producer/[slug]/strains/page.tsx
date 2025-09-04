@@ -5,13 +5,13 @@ import ProducerStrainList from "@/components/ProducerStrainList";
 import { prisma } from "@/lib/prismadb";
 
 interface ProducerStrainsPageProps {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }
 
 export default async function ProducerStrainsPage({
   params,
 }: ProducerStrainsPageProps) {
-  const { slug } = params;
+  const { slug } = await params;
 
   const producer = await prisma.producer.findFirst({
     where: { OR: [{ slug }, { id: slug }] },
