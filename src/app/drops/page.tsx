@@ -267,10 +267,10 @@ export default async function DropsPage() {
                     {strains.length > 3 && (
                       <div className="mt-4 sm:mt-6 text-center">
                         <Link
-                          href={`/drops/${producer.slug ?? producer.id}`}
+                          href={`/producer/${producer.slug ?? producer.id}/strains`}
                           className="group inline-flex items-center justify-center gap-2 text-green-600 hover:text-green-700 font-semibold text-sm sm:text-base bg-white hover:bg-gray-50 px-4 py-2 rounded-lg border border-green-200 hover:border-green-300 transition-all duration-200 shadow-sm hover:shadow"
                         >
-                          <span>View all {strains.length} strains</span>
+                          <span>See all {strains.length} strains</span>
                           <TrendingUp className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                         </Link>
                       </div>
