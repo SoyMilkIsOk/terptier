@@ -5,13 +5,13 @@ import ProducerStrainList from "@/components/ProducerStrainList";
 import { prisma } from "@/lib/prismadb";
 
 interface ProducerStrainsPageProps {
-  params: Promise<{ slug: string }>;
+  params: { slug: string };
 }
 
 export default async function ProducerStrainsPage({
   params,
 }: ProducerStrainsPageProps) {
-  const { slug } = await params;
+  const { slug } = params;
 
   const producer = await prisma.producer.findFirst({
     where: { OR: [{ slug }, { id: slug }] },
@@ -56,12 +56,14 @@ export default async function ProducerStrainsPage({
     return a.name.localeCompare(b.name);
   });
 
+  const producerSlug = producer.slug ?? slug;
+
   return (
     <div className="container mx-auto p-4">
       <div className="flex justify-between items-center mb-4">
         <BackButton />
         <Link
-          href={`/drops/${producer.slug}`}
+          href={`/drops/${producerSlug}`}
           className="text-green-600 hover:underline"
         >
           Upcoming Drops -&gt;
@@ -69,7 +71,7 @@ export default async function ProducerStrainsPage({
       </div>
       <ProducerStrainList
         strains={sortedStrains}
-        producerSlug={producer.slug}
+        producerSlug={producerSlug}
       />
     </div>
   );
