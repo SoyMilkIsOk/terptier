@@ -103,6 +103,23 @@ export default async function DropsByProducerPage({
     return { ...rest, avgRating: avg };
   });
 
+  const getDaysUntilDrop = (releaseDate: Date) => {
+    const releaseUtc = Date.UTC(
+      releaseDate.getUTCFullYear(),
+      releaseDate.getUTCMonth(),
+      releaseDate.getUTCDate()
+    );
+    return Math.round((releaseUtc - todayUtc) / (1000 * 60 * 60 * 24));
+  };
+
+  const upcomingStrains = strains
+    .filter(
+      (s) => s.releaseDate && getDaysUntilDrop(s.releaseDate) >= 0
+    )
+    .sort((a, b) =>
+      getDaysUntilDrop(a.releaseDate!) - getDaysUntilDrop(b.releaseDate!)
+    );
+
   const currentYear = year;
   const currentMonth = month - 1;
   const currentDay = day;
@@ -383,25 +400,18 @@ export default async function DropsByProducerPage({
           </div>
 
           {/* Upcoming Drops List */}
-          {strains.length > 0 && (
+          {upcomingStrains.length > 0 && (
             <div>
               <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">
                 Upcoming Releases
               </h3>
               <div className="grid gap-3 sm:gap-4">
-                {strains.map((strain) => {
+                {upcomingStrains.map((strain) => {
                   const releaseDate = strain.releaseDate
                     ? new Date(strain.releaseDate)
                     : null;
                   const diffDays = releaseDate
-                    ? Math.round(
-                        (Date.UTC(
-                          releaseDate.getUTCFullYear(),
-                          releaseDate.getUTCMonth(),
-                          releaseDate.getUTCDate()
-                        ) - todayUtc) /
-                          (1000 * 60 * 60 * 24)
-                      )
+                    ? getDaysUntilDrop(releaseDate)
                     : null;
                   const showBadge =
                     diffDays !== null && diffDays >= 0 && diffDays <= 30;
@@ -446,7 +456,7 @@ export default async function DropsByProducerPage({
           )}
 
           {/* Empty State - Enhanced */}
-          {strains.length === 0 && (
+          {upcomingStrains.length === 0 && (
             <div className="text-center py-12 sm:py-16">
               <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
                 <Calendar className="w-10 h-10 sm:w-12 sm:h-12 text-gray-400" />
