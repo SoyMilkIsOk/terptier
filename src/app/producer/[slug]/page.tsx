@@ -85,6 +85,18 @@ export default async function ProducerProfilePage({
     return { ...rest, avgRating: avg };
   });
 
+  strainsWithAvg.sort((a, b) => {
+    if (a.releaseDate && b.releaseDate) {
+      return b.releaseDate.getTime() - a.releaseDate.getTime();
+    }
+    if (a.releaseDate) return -1;
+    if (b.releaseDate) return 1;
+    return a.name.localeCompare(b.name);
+  });
+
+  const totalStrains = strainsWithAvg.length;
+  const displayStrains = strainsWithAvg.slice(0, 5);
+
   const userVoteRecord = currentUserId
     ? await prisma.vote.findUnique({
         where: {
@@ -145,6 +157,7 @@ export default async function ProducerProfilePage({
     rank = producerIndex + 1;
   }
   const producerCategoryFormatted = capitalize(producer.category);
+  const producerSlug = producer.slug ?? producer.id;
 
   return (
     <div className="container mx-auto p-4">
@@ -256,18 +269,18 @@ export default async function ProducerProfilePage({
 
         <div className="mt-8">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xl font-semibold">Strains</h3>
+            <h3 className="text-xl font-semibold">Strains ({totalStrains})</h3>
             <Link
-              href={`/drops/${producer.slug ?? producer.id}`}
+              href={`/producer/${producerSlug}/strains`}
               className="text-green-700 hover:text-green-800 hover:underline flex items-center"
             >
-              <span>See all drops</span>
+              <span>See all strains</span>
               <ArrowRight className="ml-1 h-4 w-4" />
             </Link>
           </div>
           <UpcomingStrainList
-            strains={strainsWithAvg}
-            producerSlug={producer.slug ?? producer.id}
+            strains={displayStrains}
+            producerSlug={producerSlug}
           />
         </div>
 

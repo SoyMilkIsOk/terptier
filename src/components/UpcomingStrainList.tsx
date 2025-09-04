@@ -21,6 +21,16 @@ export default function UpcomingStrainList({
   }
 
   const now = new Date();
+  const mstParts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Denver",
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+  }).formatToParts(now);
+  const year = parseInt(mstParts.find((p) => p.type === "year")!.value, 10);
+  const month = parseInt(mstParts.find((p) => p.type === "month")!.value, 10);
+  const day = parseInt(mstParts.find((p) => p.type === "day")!.value, 10);
+  const todayUtc = Date.UTC(year, month - 1, day);
 
   const formatDate = (date: Date) =>
     new Intl.DateTimeFormat("en-US", {
@@ -34,10 +44,23 @@ export default function UpcomingStrainList({
           ? new Date(strain.releaseDate)
           : null;
         const diffDays = releaseDate
-          ? Math.ceil((releaseDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+          ? Math.round(
+              (Date.UTC(
+                releaseDate.getUTCFullYear(),
+                releaseDate.getUTCMonth(),
+                releaseDate.getUTCDate()
+              ) - todayUtc) /
+                (1000 * 60 * 60 * 24)
+            )
           : null;
         const showBadge = diffDays !== null && diffDays >= 0 && diffDays <= 30;
-        const hasDropped = releaseDate ? releaseDate < now : false;
+        const hasDropped = releaseDate
+          ? Date.UTC(
+              releaseDate.getUTCFullYear(),
+              releaseDate.getUTCMonth(),
+              releaseDate.getUTCDate()
+            ) < todayUtc
+          : false;
 
         return (
           <li key={strain.id}>
