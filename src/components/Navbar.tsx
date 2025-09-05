@@ -125,7 +125,7 @@ export default function Navbar() {
       <motion.nav
         initial={{ y: 0 }}
         animate={{ y: showBar ? 0 : -80 }}
-        transition={{ type: "tween", duration: 0.3 }}
+        transition={{ type: "tween", ease: "easeInOut", duration: 0.5 }}
         className="bg-green-700 text-white shadow-md fixed top-0 left-0 right-0 z-50"
       >
         <div className="container mx-auto px-4 flex items-center justify-between h-20">
@@ -232,7 +232,7 @@ export default function Navbar() {
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.3 }}
+              transition={{ duration: 0.45, ease: "easeInOut" }}
               className="md:hidden overflow-hidden bg-green-800 border-t border-b border-green-900 pt-4 pb-6 space-y-4 flex flex-col items-center text-white"
             >
               <Link
