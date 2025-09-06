@@ -2,7 +2,6 @@
 import { prisma } from "@/lib/prismadb";
 import Image from "next/image";
 import Link from "next/link";
-import { Category } from "@prisma/client"; // Import Category enum if needed for type safety
 import CommentCard from "@/components/CommentCard";
 import AddCommentForm from "@/components/AddCommentForm";
 import VoteButton from "@/components/VoteButton";
@@ -37,10 +36,10 @@ export default async function ProducerProfilePage({
 
   let currentUserId: string | null = null;
   if (session?.user?.email) {
-    const prismaUser = await prisma.user.findUnique({
+    const user = await prisma.user.findUnique({
       where: { email: session.user.email },
     });
-    currentUserId = prismaUser?.id || null;
+    currentUserId = user?.id ?? null;
   }
 
   const producer = await prisma.producer.findFirst({
@@ -71,6 +70,17 @@ export default async function ProducerProfilePage({
       </div>
     );
   }
+
+  const isAdmin = currentUserId
+    ? !!(await prisma.producerAdmin.findUnique({
+        where: {
+          userId_producerId: {
+            userId: currentUserId,
+            producerId: producer.id,
+          },
+        },
+      }))
+    : false;
 
   const totalScore = producer.votes.reduce((sum, vote) => sum + vote.value, 0);
   const averageRating =
@@ -130,11 +140,11 @@ export default async function ProducerProfilePage({
   }));
 
   const userComment = currentUserId
-    ? commentsWithVotes.find((c) => c.userId === currentUserId) ?? null
+    ? (commentsWithVotes.find((c) => c.userId === currentUserId) ?? null)
     : null;
 
   const otherComments = commentsWithVotes.filter(
-    (c) => c.userId !== currentUserId
+    (c) => c.userId !== currentUserId,
   );
 
   // Calculate rank
@@ -196,6 +206,14 @@ export default async function ProducerProfilePage({
                 {producer.ingredients && (
                   <IngredientsButton ingredients={producer.ingredients} />
                 )}
+                {isAdmin && (
+                  <Link
+                    href={`/admin/${producerSlug}`}
+                    className="bg-green-700 hover:bg-green-800 text-white px-3 py-1 rounded"
+                  >
+                    Admin
+                  </Link>
+                )}
               </div>
             </div>
             {rank > 0 && (
@@ -214,7 +232,7 @@ export default async function ProducerProfilePage({
               <div className="flex flex-wrap gap-2 my-4">
                 {producer.attributes.map((a) => {
                   const opt = ATTRIBUTE_OPTIONS[producer.category].find(
-                    (o) => o.key === a
+                    (o) => o.key === a,
                   );
                   return (
                     <Tooltip key={a} content={opt?.tooltip}>
