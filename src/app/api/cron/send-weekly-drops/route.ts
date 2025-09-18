@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prismadb";
 import { sendEmail } from "@/lib/email";
+import { weeklyDropsEmail } from "@/lib/emailTemplates";
 
 export async function GET() {
   const baseUrl = process.env.BASE_URL;
@@ -18,11 +19,10 @@ export async function GET() {
 
   for (const user of users) {
     try {
-      await sendEmail(
-        user.email,
-        "Upcoming Drops",
-        `${baseUrl}/drops`
-      );
+      const profileSlug = user.username || user.id;
+      const html = weeklyDropsEmail(baseUrl, profileSlug);
+      const text = `Check out this week's drops: ${baseUrl}/drops\n\nManage preferences: ${baseUrl}/profile/${profileSlug}`;
+      await sendEmail(user.email, "This Week's Drops", text, html);
     } catch (err) {
       console.error("sendEmail failed", err);
     }

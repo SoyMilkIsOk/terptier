@@ -2,7 +2,7 @@ import { serve } from "https://deno.land/std@0.203.0/http/server.ts";
 
 serve(async (req) => {
   try {
-    const { to, subject, text } = await req.json();
+    const { to, subject, text, html } = await req.json();
     const apiKey = Deno.env.get("RESEND_API_KEY");
     const from = Deno.env.get("MAIL_FROM");
     if (!apiKey || !from) {
@@ -16,7 +16,7 @@ serve(async (req) => {
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ from, to, subject, text }),
+      body: JSON.stringify({ from, to, subject, text, ...(html ? { html } : {}) }),
     });
 
     if (!res.ok) {
