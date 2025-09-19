@@ -55,13 +55,19 @@ function createResendBatchClient(apiKey: string) {
         headers["Idempotency-Key"] = options.idempotencyKey;
       }
 
+      const payload: Record<string, unknown> = {
+        emails: items,
+      };
+
+      const validationSetting = options.batchValidation ?? "strict";
+      if (validationSetting) {
+        payload.batchValidation = validationSetting;
+      }
+
       const res = await fetch(endpoint, {
         method: "POST",
         headers,
-        body: JSON.stringify({
-          items,
-          batchValidation: options.batchValidation ?? "strict",
-        }),
+        body: JSON.stringify(payload),
       });
 
       let json: unknown;
