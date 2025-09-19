@@ -42,7 +42,7 @@ function createResendBatchClient(apiKey: string) {
   const endpoint = "https://api.resend.com/emails/batch";
 
   async function batchSend(
-    items: BatchEmailItem[],
+    emails: BatchEmailItem[],
     options: BatchSendOptions = {}
   ): Promise<BatchSendResult> {
     try {
@@ -55,13 +55,19 @@ function createResendBatchClient(apiKey: string) {
         headers["Idempotency-Key"] = options.idempotencyKey;
       }
 
+      const validationSetting = options.batchValidation ?? "strict";
+      const payload = {
+        emails,
+        ...(validationSetting ? { batchValidation: validationSetting } : {}),
+      } satisfies {
+        emails: BatchEmailItem[];
+        batchValidation?: "permissive" | "strict";
+      };
+
       const res = await fetch(endpoint, {
         method: "POST",
         headers,
-        body: JSON.stringify({
-          items,
-          batchValidation: options.batchValidation ?? "strict",
-        }),
+        body: JSON.stringify(payload),
       });
 
       let json: unknown;
@@ -190,7 +196,7 @@ export async function GET() {
 
   for (let chunkIndex = 0; chunkIndex < chunks.length; chunkIndex += 1) {
     const chunkUsers = chunks[chunkIndex];
-    const items: BatchEmailItem[] = chunkUsers.map((user) => {
+    const emails: BatchEmailItem[] = chunkUsers.map((user) => {
       const profileSlug = user.username || user.id;
       const html = weeklyDropsEmail(baseUrl, profileSlug);
       const text = `Check out this week's drops: ${baseUrl}/drops\n\nManage preferences: ${baseUrl}/profile/${profileSlug}`;
@@ -208,7 +214,7 @@ export async function GET() {
 
     let attempt = 0;
     while (attempt < MAX_ATTEMPTS) {
-      const { data, error, errors } = await resend.batch.send(items, {
+      const { data, error, errors } = await resend.batch.send(emails, {
         batchValidation: "permissive",
         idempotencyKey,
       });
