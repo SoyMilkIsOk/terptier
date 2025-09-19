@@ -1,15 +1,28 @@
-// src/app/drops/page.tsx
+// src/app/[stateName]/drops/page.tsx
 import Link from "next/link";
 import Image from "next/image";
 import StrainCard from "@/components/StrainCard";
 import { prisma } from "@/lib/prismadb";
 import { Calendar, TrendingUp, ChevronRight } from "lucide-react";
 import { unstable_noStore as noStore } from "next/cache";
+import { getStateMetadata } from "@/lib/states";
+import { notFound } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-export default async function DropsPage() {
+export default async function DropsPage({
+  params,
+}: {
+  params: Promise<{ stateName: string }>;
+}) {
+  const { stateName } = await params;
+  const state = getStateMetadata(stateName);
+
+  if (!state) {
+    notFound();
+  }
+
   noStore();
 
   const now = new Date();
@@ -28,7 +41,10 @@ export default async function DropsPage() {
   const end = new Date(todayUtc + 7 * 24 * 60 * 60 * 1000);
 
   const strains = await prisma.strain.findMany({
-    where: { releaseDate: { gte: start, lt: end } },
+    where: {
+      releaseDate: { gte: start, lt: end },
+      ...(state.strainWhere ?? {}),
+    },
     select: {
       id: true,
       name: true,
@@ -45,6 +61,7 @@ export default async function DropsPage() {
           slug: true,
           category: true,
           profileImage: true,
+          attributes: true,
         },
       },
     },
@@ -131,10 +148,10 @@ export default async function DropsPage() {
               <span className="text-sm font-medium">Weekly Drops</span>
             </div>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-3 sm:mb-4 py-2 sm:py-4 bg-gradient-to-r from-white to-green-100 bg-clip-text text-transparent">
-              Recent & Upcoming Drops
+              Recent & Upcoming Drops in {state.name}
             </h1>
             <p className="text-lg sm:text-xl text-green-100 mb-6 sm:mb-8 max-w-2xl mx-auto px-2">
-              Discover premium strains from the last week and the upcoming week from top-tier producers
+              Discover premium strains from the last week and the upcoming week from top-tier {state.name} producers
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 text-green-100">
               <div className="flex items-center gap-2">
@@ -174,7 +191,10 @@ export default async function DropsPage() {
                       <div className="flex items-end justify-between gap-3">
                         
                         {/* Producer Info - Clickable */}
-                        <Link href={`/producer/${producer.slug ?? producer.id}`} className="flex items-center gap-3 group/producer hover:opacity-90 transition-opacity flex-1 min-w-0">
+                        <Link
+                          href={`/${state.slug}/producer/${producer.slug ?? producer.id}`}
+                          className="flex items-center gap-3 group/producer hover:opacity-90 transition-opacity flex-1 min-w-0"
+                        >
                           {/* Producer Avatar */}
                           <div className="relative flex-shrink-0">
                             <div className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-white rounded-full p-0.5 sm:p-1 shadow-lg group-hover/producer:shadow-xl transition-shadow">
@@ -216,7 +236,7 @@ export default async function DropsPage() {
                         {/* Action Button */}
                         <div className="flex-shrink-0 self-end mb-1">
                           <Link
-                            href={`/producer/${producer.slug ?? producer.id}/strains`}
+                            href={`/${state.slug}/producer/${producer.slug ?? producer.id}/strains`}
                             className="group/btn bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 border border-white/20 flex items-center gap-1"
                           >
                             <span className="hidden sm:inline">All Strains</span>
@@ -302,7 +322,7 @@ export default async function DropsPage() {
                     {strains.length > 0 && (
                       <div className="mt-4 sm:mt-6 text-center">
                         <Link
-                          href={`/drops/${producer.slug ?? producer.id}`}
+                          href={`/${state.slug}/drops/${producer.slug ?? producer.id}`}
                           className="group inline-flex items-center justify-center gap-2 text-green-600 hover:text-green-700 font-semibold text-sm sm:text-base bg-white hover:bg-gray-50 px-4 py-2 rounded-lg border border-green-200 hover:border-green-300 transition-all duration-200 shadow-sm hover:shadow"
                         >
                           <span>See upcoming drops</span>

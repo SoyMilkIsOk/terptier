@@ -7,6 +7,7 @@ import { Leaf, Trash2, FilePenLine } from "lucide-react";
 import VoteButton from "@/components/VoteButton";
 import UploadButton from "./UploadButton";
 import { deleteBlob } from "@/utils/blob";
+import { useStateSlug } from "./StateProvider";
 
 export interface CommentData {
   id: string;
@@ -43,6 +44,7 @@ export default function CommentCard({
   const [expandedImage, setExpandedImage] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const router = useRouter();
+  const stateSlug = useStateSlug();
 
   const MAX_SIZE = 5 * 1024 * 1024;
 
@@ -171,7 +173,13 @@ export default function CommentCard({
       </div>
       {comment.producer && (
         <p className="text-sm text-gray-700 mb-1">
-          For producer: <a href={`/producer/${comment.producer.slug ?? comment.producer.id}`} className="underline hover:text-blue-600">{comment.producer.name}</a>
+          For producer:
+          <Link
+            href={`/${stateSlug}/producer/${comment.producer.slug ?? comment.producer.id}`}
+            className="ml-1 underline hover:text-blue-600"
+          >
+            {comment.producer.name}
+          </Link>
         </p>
       )}
       {showRating && (

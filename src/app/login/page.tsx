@@ -3,6 +3,7 @@
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
+import { DEFAULT_STATE_SLUG } from "@/lib/states";
 
 function LoginForm() {
   const router = useRouter();
@@ -37,7 +38,7 @@ function LoginForm() {
         if (meData.role === "ADMIN") {
           router.push("/admin");
         } else {
-          router.push("/rankings");
+          router.push(`/${DEFAULT_STATE_SLUG}/rankings`);
         }
       } else {
         router.push("/");

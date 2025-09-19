@@ -1,4 +1,4 @@
-// src/app/rankings/page.tsx
+// src/app/[stateName]/rankings/page.tsx
 import { cookies } from "next/headers";
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import AgeGate from "@/components/AgeGate";
@@ -6,6 +6,8 @@ import ProducerList, { ProducerWithVotes } from "@/components/ProducerList";
 import Link from "next/link";
 import { prisma } from "@/lib/prismadb";
 import { Category } from "@prisma/client";
+import { getStateMetadata } from "@/lib/states";
+import { notFound } from "next/navigation";
 import {
   Crown,
   TrendingUp,
@@ -16,10 +18,19 @@ import {
 } from "lucide-react";
 
 export default async function RankingsPage({
+  params,
   searchParams,
 }: {
+  params: Promise<{ stateName: string }>;
   searchParams: Promise<{ view?: string }>;
 }) {
+  const { stateName } = await params;
+  const state = getStateMetadata(stateName);
+
+  if (!state) {
+    notFound();
+  }
+
   // Age gate
   const cookieStore = await cookies();
   const is21 = cookieStore.get("ageVerify")?.value === "true";
@@ -52,12 +63,18 @@ export default async function RankingsPage({
 
   // Load producers + votes
   const flowerRaw = (await prisma.producer.findMany({
-    where: { category: Category.FLOWER },
+    where: {
+      ...(state.producerWhere ?? {}),
+      category: Category.FLOWER,
+    },
     include: { votes: true, _count: { select: { comments: true } } },
   })) as ProducerWithVotes[];
 
   const hashRaw = (await prisma.producer.findMany({
-    where: { category: Category.HASH },
+    where: {
+      ...(state.producerWhere ?? {}),
+      category: Category.HASH,
+    },
     include: { votes: true, _count: { select: { comments: true } } },
   })) as ProducerWithVotes[];
 
@@ -94,7 +111,7 @@ export default async function RankingsPage({
             </div>
 
             <h1 className="text-5xl md:text-6xl font-bold mb-4 py-4 bg-gradient-to-r from-white to-green-100 bg-clip-text text-transparent">
-              Colorado Producer Rankings
+              {state.name} Producer Rankings
             </h1>
 
             <p className="text-lg md:text-xl text-green-100 mb-8 max-w-2xl mx-auto">

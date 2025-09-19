@@ -1,4 +1,4 @@
-// src/app/drops/[producerSlug]/page.tsx
+// src/app/[stateName]/drops/[producerSlug]/page.tsx
 import Link from "next/link";
 import Image from "next/image";
 import StrainCard from "@/components/StrainCard";
@@ -12,18 +12,26 @@ import {
 } from "lucide-react";
 import BackButton from "@/components/BackButton";
 import { unstable_noStore as noStore } from "next/cache";
+import { getStateMetadata } from "@/lib/states";
+import { notFound } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 interface DropsByProducerPageProps {
-  params: Promise<{ producerSlug: string }>;
+  params: Promise<{ stateName: string; producerSlug: string }>;
 }
 
 export default async function DropsByProducerPage({
   params,
 }: DropsByProducerPageProps) {
-  const { producerSlug } = await params;
+  const { stateName, producerSlug } = await params;
+  const state = getStateMetadata(stateName);
+
+  if (!state) {
+    notFound();
+  }
+
   noStore();
 
   const now = new Date();
@@ -45,7 +53,12 @@ export default async function DropsByProducerPage({
   oneMonthAhead.setMonth(oneMonthAhead.getMonth() + 1);
 
   const producer = await prisma.producer.findFirst({
-    where: { OR: [{ slug: producerSlug }, { id: producerSlug }] },
+    where: {
+      AND: [
+        { OR: [{ slug: producerSlug }, { id: producerSlug }] },
+        state.producerWhere ?? {},
+      ],
+    },
     include: {
       strains: {
         where: {
@@ -82,7 +95,7 @@ export default async function DropsByProducerPage({
             The producer you're looking for doesn't exist.
           </p>
           <Link
-            href="/drops"
+            href={`/${state.slug}/drops`}
             className="inline-flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-all duration-200 text-sm sm:text-base"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -248,7 +261,7 @@ export default async function DropsByProducerPage({
             {/* Action Button */}
             <div className="flex justify-center sm:justify-start">
               <Link
-                href={`/producer/${producer.slug ?? producer.id}`}
+                href={`/${state.slug}/producer/${producer.slug ?? producer.id}`}
                 className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm hover:bg-white/30 border border-white/20 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 text-sm sm:text-base"
               >
                 View Full Profile
@@ -469,7 +482,7 @@ export default async function DropsByProducerPage({
                 in the next month. Check back soon!
               </p>
               <Link
-                href={`/producer/${producer.slug ?? producer.id}`}
+                href={`/${state.slug}/producer/${producer.slug ?? producer.id}`}
                 className="inline-flex items-center gap-2 bg-green-600 text-white px-6 py-3 rounded-xl hover:bg-green-700 transition-all duration-200 shadow-lg hover:shadow-xl font-medium text-sm sm:text-base"
               >
                 View Producer Profile

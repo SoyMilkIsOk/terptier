@@ -1,21 +1,30 @@
-// src/app/producer/[slug]/strains/page.tsx
+// src/app/[stateName]/producer/[slug]/strains/page.tsx
 import Link from "next/link";
 import BackButton from "@/components/BackButton";
 import ProducerStrainList from "@/components/ProducerStrainList";
 import { ArrowRight } from "lucide-react";
 import { prisma } from "@/lib/prismadb";
+import { getStateMetadata } from "@/lib/states";
+import { notFound } from "next/navigation";
 
 interface ProducerStrainsPageProps {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ stateName: string; slug: string }>;
 }
 
 export default async function ProducerStrainsPage({
   params,
 }: ProducerStrainsPageProps) {
-  const { slug } = await params;
+  const { stateName, slug } = await params;
+  const state = getStateMetadata(stateName);
+
+  if (!state) {
+    notFound();
+  }
 
   const producer = await prisma.producer.findFirst({
-    where: { OR: [{ slug }, { id: slug }] },
+    where: {
+      AND: [{ OR: [{ slug }, { id: slug }] }, state.producerWhere ?? {}],
+    },
     include: {
       strains: {
         select: {
@@ -64,7 +73,7 @@ export default async function ProducerStrainsPage({
       <div className="flex justify-between items-center mb-4">
         <BackButton />
         <Link
-          href={`/drops/${producerSlug}`}
+          href={`/${state.slug}/drops/${producerSlug}`}
           className="flex items-center text-green-600 hover:underline"
         >
           Upcoming Drops

@@ -10,9 +10,12 @@ import Image from "next/image";
 import { LogIn, LogOut } from "lucide-react";
 import type { Session } from "@supabase/supabase-js";
 import DropOptInModal from "./DropOptInModal";
+import { DEFAULT_STATE_SLUG } from "@/lib/states";
 
 export default function Navbar() {
   const pathname = usePathname();
+  const defaultDropsPath = `/${DEFAULT_STATE_SLUG}/drops`;
+  const defaultRankingsPath = `/${DEFAULT_STATE_SLUG}/rankings`;
   const [session, setSession] = useState<Session | null>(null);
   const [profileUsername, setProfileUsername] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -161,17 +164,21 @@ export default function Navbar() {
           <div className="absolute right-8 top-1/2 -translate-y-1/2 md:hidden"></div>
           <div className="hidden md:flex items-center space-x-6">
             <Link
-              href="/drops"
+              href={defaultDropsPath}
               className={`${
-                pathname === "/drops" ? "underline" : "hover:underline"
+                pathname?.includes("/drops")
+                  ? "underline"
+                  : "hover:underline"
               }`}
             >
               Drops
             </Link>
             <Link
-              href="/rankings"
+              href={defaultRankingsPath}
               className={`${
-                pathname === "/rankings" ? "underline" : "hover:underline"
+                pathname?.includes("/rankings")
+                  ? "underline"
+                  : "hover:underline"
               }`}
             >
               Rankings
@@ -236,14 +243,14 @@ export default function Navbar() {
               className="md:hidden overflow-hidden bg-green-800 border-t border-b border-green-900 pt-4 pb-6 space-y-4 flex flex-col items-center text-white"
             >
               <Link
-                href="/drops"
+                href={defaultDropsPath}
                 onClick={() => setMenuOpen(false)}
                 className="w-full text-center py-1"
               >
                 Drops
               </Link>
               <Link
-                href="/rankings"
+                href={defaultRankingsPath}
                 onClick={() => setMenuOpen(false)}
                 className="w-full text-center py-1"
               >
