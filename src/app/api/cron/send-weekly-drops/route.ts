@@ -1,209 +1,292 @@
+/* eslint-disable no-console */
+// src/app/api/notify/weekly-drops/route.ts
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prismadb";
 import { weeklyDropsEmail } from "@/lib/emailTemplates";
 
+/** ─────────────────────────────────────────────────────────────────────────────
+ * Types for our domain
+ * ────────────────────────────────────────────────────────────────────────────*/
+type SubscribedUser = {
+  id: string;
+  email: string;
+  username: string | null;
+};
+
 type BatchEmailItem = {
   from: string;
-  to: string[];
+  to: readonly string[]; // Resend allows an array; we keep it readonly for safety
   subject: string;
   html?: string;
   text?: string;
+  // NOTE: keep fields minimal; Batch API currently doesn't support attachments/tags/scheduled_at
 };
 
+type BatchValidationMode = "permissive" | "strict";
+
 type BatchSendOptions = {
-  batchValidation?: "permissive" | "strict";
+  batchValidation?: BatchValidationMode;
   idempotencyKey?: string;
 };
 
+/** What Resend returns for each successfully-accepted item. */
 type BatchSendResponseItem = {
-  id?: string;
-  to?: string | string[];
-  status?: string;
+  id: string;
+  to: string | string[];
+  status: string; // e.g., "queued" / "sent"
   batchId?: string;
 };
 
-type BatchSendError = {
-  index?: number;
-  message?: string;
+/** Validation error for a specific item index when batchValidation=permissive */
+type BatchSendItemError = {
+  index: number;        // index in the submitted array
+  message: string;      // validation error message
 };
 
-type BatchSendResult = {
-  data: BatchSendResponseItem[] | null;
-  errors: BatchSendError[];
-  error: { statusCode?: number; message?: string } | null;
+/** Uniform result shape for our client */
+type BatchSendOk = {
+  ok: true;
+  status: number;                         // HTTP status
+  data: readonly BatchSendResponseItem[]; // accepted items for this chunk
+  errors: readonly BatchSendItemError[];  // per-item validation errors (if any)
 };
 
+type BatchSendErr = {
+  ok: false;
+  status: number; // 4xx/5xx or 429
+  message: string;
+  data?: readonly BatchSendResponseItem[];   // may be present from server
+  errors?: readonly BatchSendItemError[];    // may be present from server
+};
+
+type BatchSendResult = BatchSendOk | BatchSendErr;
+
+/** Response shape for our API route */
+type Summary = {
+  totalRecipients: number;
+  batches: number;
+  sent: number;
+  failed: number;
+  errors: Array<{
+    batch: number;
+    index: number;  // -1 if unknown
+    email: string;
+    message: string;
+  }>;
+};
+
+/** ─────────────────────────────────────────────────────────────────────────────
+ * Tunables
+ * ────────────────────────────────────────────────────────────────────────────*/
 const MAX_BATCH_SIZE = 100;
-const RATE_LIMIT_DELAY_MS = 700;
+const RATE_LIMIT_DELAY_MS = 700; // stay ≲ 2 rps
 const MAX_ATTEMPTS = 5;
 const MAX_BACKOFF_DELAY_MS = 8000;
 
-function createResendBatchClient(apiKey: string) {
-  const endpoint = "https://api.resend.com/emails/batch";
+/** ─────────────────────────────────────────────────────────────────────────────
+ * Tiny runtime guards (no zod dependency needed)
+ * ────────────────────────────────────────────────────────────────────────────*/
+function isObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+function isArray<T = unknown>(value: unknown): value is T[] {
+  return Array.isArray(value);
+}
+function asString(value: unknown): string | undefined {
+  return typeof value === "string" ? value : undefined;
+}
 
-  async function batchSend(
-    emails: BatchEmailItem[],
-    options: BatchSendOptions = {}
-  ): Promise<BatchSendResult> {
-    try {
-      const headers: Record<string, string> = {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      };
-
-      if (options.idempotencyKey) {
-        headers["Idempotency-Key"] = options.idempotencyKey;
-      }
-
-      const validationSetting = options.batchValidation ?? "strict";
-      const payload = {
-        emails,
-        ...(validationSetting ? { batchValidation: validationSetting } : {}),
-      } satisfies {
-        emails: BatchEmailItem[];
-        batchValidation?: "permissive" | "strict";
-      };
-
-      const res = await fetch(endpoint, {
-        method: "POST",
-        headers,
-        body: JSON.stringify(payload),
-      });
-
-      let json: unknown;
-      try {
-        json = await res.json();
-      } catch (parseErr) {
-        json = undefined;
-      }
-
-      const parsed = (json as {
-        data?: BatchSendResponseItem[];
-        errors?: BatchSendError[];
-        message?: string;
-        error?: { message?: string };
-      }) ?? { data: undefined, errors: undefined };
-
-      if (res.status === 429) {
-        return {
-          data: parsed.data ?? null,
-          errors: parsed.errors ?? [],
-          error: { statusCode: 429, message: parsed.message ?? parsed.error?.message },
-        };
-      }
-
-      if (!res.ok) {
-        return {
-          data: parsed.data ?? null,
-          errors: parsed.errors ?? [],
-          error: {
-            statusCode: res.status,
-            message: parsed.message ?? parsed.error?.message ?? "Resend batch request failed",
-          },
-        };
-      }
-
-      return {
-        data: parsed.data ?? null,
-        errors: parsed.errors ?? [],
-        error: null,
-      };
-    } catch (err) {
-      return {
-        data: null,
-        errors: [],
-        error: {
-          message:
-            err instanceof Error ? err.message : "Resend batch request threw an unknown error",
-        },
-      };
+/** Narrow unknown JSON into the shapes we care about from Resend */
+function coerceBatchResponse(json: unknown, status: number): BatchSendResult {
+  if (!isObject(json)) {
+    // If Resend returned no JSON body (rare), construct a generic error/success by status.
+    if (status >= 200 && status < 300) {
+      return { ok: true, status, data: [], errors: [] };
     }
+    return { ok: false, status, message: "Resend returned a non-JSON response." };
+  }
+
+  const message = asString(json.message);
+
+  // Success-ish payload may include data[] and/or errors[]
+  const rawData = isArray(json.data) ? json.data : [];
+  const data: BatchSendResponseItem[] = rawData
+    .map((item) => (isObject(item) ? item : null))
+    .filter((i): i is Record<string, unknown> => i !== null)
+    .map((i) => {
+      const id = asString(i.id) ?? "";
+      const to = i.to as string | string[] | undefined;
+      const statusStr = asString(i.status) ?? "queued";
+      const batchId = asString(i.batchId);
+      return { id, to: to ?? "", status: statusStr, batchId };
+    });
+
+  const rawErrors = isArray(json.errors) ? json.errors : [];
+  const errors: BatchSendItemError[] = rawErrors
+    .map((e) => (isObject(e) ? e : null))
+    .filter((e): e is Record<string, unknown> => e !== null)
+    .map((e) => {
+      const index =
+        typeof e.index === "number"
+          ? e.index
+          : Number.isFinite((e as { index?: unknown }).index)
+          ? Number((e as { index?: unknown }).index)
+          : -1;
+      const message = asString(e.message) ?? "validation error";
+      return { index, message };
+    });
+
+  if (status >= 200 && status < 300) {
+    return { ok: true, status, data, errors };
   }
 
   return {
-    batch: {
-      send: batchSend,
-    },
+    ok: false,
+    status,
+    message: message ?? "Resend batch request failed",
+    data,
+    errors,
   };
 }
 
-function chunkArray<T>(values: T[], size: number): T[][] {
-  const result: T[][] = [];
-  for (let i = 0; i < values.length; i += size) {
-    result.push(values.slice(i, i + size));
+/** ─────────────────────────────────────────────────────────────────────────────
+ * Minimal Resend Batch REST client (typed)
+ * ────────────────────────────────────────────────────────────────────────────*/
+function createResendBatchClient(apiKey: string) {
+  const endpoint = "https://api.resend.com/emails/batch" as const;
+
+  async function batchSend(
+    items: readonly BatchEmailItem[],
+    options: BatchSendOptions = {}
+  ): Promise<BatchSendResult> {
+    const headers = {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+      ...(options.idempotencyKey ? { "Idempotency-Key": options.idempotencyKey } : {}),
+      ...(options.batchValidation ? { "x-batch-validation": options.batchValidation } : {}),
+    } satisfies Record<string, string>;
+
+    let res: Response;
+    try {
+      // IMPORTANT: Body must be the ARRAY itself (no wrapper key)
+      res = await fetch(endpoint, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(items),
+      });
+    } catch (e) {
+      const msg =
+        e instanceof Error ? e.message : "Failed to call Resend batch endpoint (network)";
+      return { ok: false, status: 0, message: msg };
+    }
+
+    let json: unknown;
+    try {
+      json = await res.json();
+    } catch {
+      json = undefined;
+    }
+
+    // 429 will be retried by caller; still surface parsed content, if any
+    return coerceBatchResponse(json, res.status);
   }
-  return result;
+
+  return {
+    batch: { send: batchSend },
+  };
 }
 
-function sleep(ms: number) {
+/** ─────────────────────────────────────────────────────────────────────────────
+ * Utilities
+ * ────────────────────────────────────────────────────────────────────────────*/
+function chunkArray<T>(values: readonly T[], size: number): T[][] {
+  const out: T[][] = [];
+  for (let i = 0; i < values.length; i += size) {
+    out.push(values.slice(i, i + size));
+  }
+  return out;
+}
+
+function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function getIsoWeekKey(date: Date) {
-  const utcDate = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
-  const day = utcDate.getUTCDay() || 7;
-  utcDate.setUTCDate(utcDate.getUTCDate() + 4 - day);
-  const yearStart = new Date(Date.UTC(utcDate.getUTCFullYear(), 0, 1));
-  const week = Math.ceil(((utcDate.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
-  return `${utcDate.getUTCFullYear()}-W${week.toString().padStart(2, "0")}`;
+/** Returns an ISO week key like "2025-W38" (UTC-based) */
+function getIsoWeekKey(date: Date): string {
+  const utc = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+  const day = utc.getUTCDay() || 7;
+  utc.setUTCDate(utc.getUTCDate() + 4 - day);
+  const yearStart = new Date(Date.UTC(utc.getUTCFullYear(), 0, 1));
+  const week = Math.ceil(((utc.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
+  return `${utc.getUTCFullYear()}-W${week.toString().padStart(2, "0")}`;
 }
 
+/** ─────────────────────────────────────────────────────────────────────────────
+ * API Route
+ * ────────────────────────────────────────────────────────────────────────────*/
 export async function GET() {
   const baseUrl = process.env.BASE_URL;
   const resendApiKey = process.env.RESEND_API_KEY;
   const from = process.env.MAIL_FROM;
 
   if (!baseUrl || !resendApiKey || !from) {
-    console.error("Missing email configuration", { hasBaseUrl: !!baseUrl, hasKey: !!resendApiKey, hasFrom: !!from });
-    return NextResponse.json(
-      { success: false, error: "Server misconfig" },
-      { status: 500 }
-    );
+    console.error("Missing email configuration", {
+      hasBaseUrl: Boolean(baseUrl),
+      hasKey: Boolean(resendApiKey),
+      hasFrom: Boolean(from),
+    });
+    return NextResponse.json({ success: false, error: "Server misconfig" }, { status: 500 });
   }
 
-  const users = await prisma.user.findMany({
+  // NOTE: select only the fields we actually use (type-safe)
+  const users: SubscribedUser[] = await prisma.user.findMany({
     where: { notificationOptIn: true },
+    select: { id: true, email: true, username: true },
   });
 
+  const noRecipients: Summary = {
+    totalRecipients: users.length,
+    batches: 0,
+    sent: 0,
+    failed: 0,
+    errors: [],
+  };
+
   if (users.length === 0) {
-    return NextResponse.json({
-      totalRecipients: 0,
-      batches: 0,
-      sent: 0,
-      failed: 0,
-      errors: [],
-    });
+    return NextResponse.json(noRecipients satisfies Summary);
   }
 
   const resend = createResendBatchClient(resendApiKey);
   const chunks = chunkArray(users, MAX_BATCH_SIZE);
   const isoWeekKey = getIsoWeekKey(new Date());
-  const idempotencyPrefix = `weekly-drops/${isoWeekKey}`;
-  const summary = {
+  const idempotencyPrefix = `weekly-drops/${isoWeekKey}` as const;
+
+  const summary: Summary = {
     totalRecipients: users.length,
     batches: chunks.length,
     sent: 0,
     failed: 0,
-    errors: [] as Array<{
-      batch: number;
-      index: number;
-      email: string;
-      message: string;
-    }>,
+    errors: [],
   };
 
-  const subject = "This Week's Drops";
+  const subject = "This Week's Drops" as const;
 
   for (let chunkIndex = 0; chunkIndex < chunks.length; chunkIndex += 1) {
     const chunkUsers = chunks[chunkIndex];
-    const emails: BatchEmailItem[] = chunkUsers.map((user) => {
-      const profileSlug = user.username || user.id;
-      const html = weeklyDropsEmail(baseUrl, profileSlug);
-      const text = `Check out this week's drops: ${baseUrl}/drops\n\nManage preferences: ${baseUrl}/profile/${profileSlug}`;
+
+    // Build typed items
+    const items: readonly BatchEmailItem[] = chunkUsers.map((user) => {
+      const profileSlug = user.username ?? user.id;
+      const html: string = weeklyDropsEmail(baseUrl, profileSlug); // ensure template returns string
+      const text = [
+        `Check out this week's drops: ${baseUrl}/drops`,
+        "",
+        `Manage preferences: ${baseUrl}/profile/${profileSlug}`,
+      ].join("\n");
 
       return {
         from,
-        to: [user.email],
+        to: [user.email] as const,
         subject,
         html,
         text,
@@ -213,19 +296,27 @@ export async function GET() {
     const idempotencyKey = `${idempotencyPrefix}/chunk-${chunkIndex}`;
 
     let attempt = 0;
+    // Retry on HTTP 429 with exponential backoff; always reuse idempotencyKey
+    // to maintain idempotent semantics.
+    // We exit the loop on first non-429 outcome (success or other failure).
+    // If all attempts 429, we record as a failure for this chunk.
     while (attempt < MAX_ATTEMPTS) {
-      const { data, error, errors } = await resend.batch.send(emails, {
+      const result = await resend.batch.send(items, {
         batchValidation: "permissive",
         idempotencyKey,
       });
 
-      if (error?.statusCode === 429 && attempt < MAX_ATTEMPTS - 1) {
-        const backoff = Math.min(1000 * 2 ** attempt + Math.floor(Math.random() * 250), MAX_BACKOFF_DELAY_MS);
+      // Handle 429 retry path
+      if (!result.ok && result.status === 429 && attempt < MAX_ATTEMPTS - 1) {
+        const backoff = Math.min(
+          1000 * 2 ** attempt + Math.floor(Math.random() * 250),
+          MAX_BACKOFF_DELAY_MS
+        );
         console.warn("Resend batch rate limited", {
           batch: chunkIndex,
           attempt,
           delayMs: backoff,
-          message: error.message,
+          message: result.message,
           idempotencyKey,
         });
         attempt += 1;
@@ -233,77 +324,89 @@ export async function GET() {
         continue;
       }
 
-      if (error) {
+      // Non-429 error: count whole chunk as failed (plus item-level context if present)
+      if (!result.ok) {
         console.error("Resend batch send failed", {
           batch: chunkIndex,
-          statusCode: error.statusCode,
-          message: error.message,
+          statusCode: result.status,
+          message: result.message,
           idempotencyKey,
         });
 
         summary.failed += chunkUsers.length;
-        chunkUsers.forEach((user, index) => {
-          summary.errors.push({
-            batch: chunkIndex,
-            index,
-            email: user.email,
-            message: error.message ?? "Batch send failed",
+
+        // Prefer item-level indices if present
+        if (result.errors && result.errors.length > 0) {
+          for (const itemErr of result.errors) {
+            const idx = itemErr.index ?? -1;
+            const recipient = chunkUsers[idx]?.email ?? "unknown";
+            summary.errors.push({
+              batch: chunkIndex,
+              index: idx,
+              email: recipient,
+              message: itemErr.message,
+            });
+          }
+        } else {
+          // Fall back: mark each address with the generic error message
+          chunkUsers.forEach((user, index) => {
+            summary.errors.push({
+              batch: chunkIndex,
+              index,
+              email: user.email,
+              message: result.message,
+            });
           });
-        });
+        }
       } else {
-        const sentCount = data?.length ?? 0;
+        // Success path: add sent count and log item-level IDs
+        const sentCount = result.data.length;
         summary.sent += sentCount;
 
-        data?.forEach((item, index) => {
-          console.info("weekly-drops batch item sent", {
+        result.data.forEach((item, index) => {
+          console.info("weekly-drops batch item accepted", {
             batch: chunkIndex,
             index,
             recipient: chunkUsers[index]?.email,
             id: item.id,
             batchId: item.batchId,
-            status: item.status ?? "sent",
+            status: item.status,
             idempotencyKey,
           });
         });
 
-        const itemErrors = errors ?? [];
-        if (itemErrors.length > 0) {
-          itemErrors.forEach((itemError) => {
-            const errorIndex = itemError.index ?? -1;
-            const recipient = chunkUsers[errorIndex]?.email ?? "unknown";
+        // Record per-item validation errors (permissive mode)
+        if (result.errors.length > 0) {
+          for (const itemErr of result.errors) {
+            const idx = itemErr.index ?? -1;
+            const recipient = chunkUsers[idx]?.email ?? "unknown";
             summary.errors.push({
               batch: chunkIndex,
-              index: errorIndex,
+              index: idx,
               email: recipient,
-              message: itemError.message ?? "Validation error",
+              message: itemErr.message,
             });
-            summary.failed += 1;
-            console.warn("weekly-drops batch item error", {
-              batch: chunkIndex,
-              index: errorIndex,
-              recipient,
-              message: itemError.message,
-              idempotencyKey,
-            });
-          });
+          }
+          summary.failed += result.errors.length;
         }
 
         console.info("weekly-drops batch complete", {
           batch: chunkIndex,
           sent: sentCount,
-          failed: itemErrors.length,
+          failed: result.errors.length,
           idempotencyKey,
         });
       }
 
+      // Basic throttle to respect ~2 rps for the next chunk
       if (chunkIndex < chunks.length - 1) {
         await sleep(RATE_LIMIT_DELAY_MS);
       }
 
+      // Exit retry loop after a terminal outcome (success or non-429 failure)
       break;
     }
   }
 
-  return NextResponse.json(summary);
+  return NextResponse.json(summary satisfies Summary);
 }
-
