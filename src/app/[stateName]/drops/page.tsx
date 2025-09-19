@@ -3,7 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import StrainCard from "@/components/StrainCard";
 import { prisma } from "@/lib/prismadb";
-import { Calendar, TrendingUp, ChevronRight } from "lucide-react";
+import { Calendar, ChevronRight, TrendingUp } from "lucide-react";
 import { unstable_noStore as noStore } from "next/cache";
 import { getStateMetadata } from "@/lib/states";
 import { notFound } from "next/navigation";
@@ -138,35 +138,6 @@ export default async function DropsPage({
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50">
-      {/* Hero Section */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-green-600 to-emerald-600 text-white">
-        <div className="absolute inset-0 bg-black/10"></div>
-        <div className="relative px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
-          <div className="max-w-4xl mx-auto text-center">
-            <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-3 sm:px-4 py-2 mb-4 sm:mb-6">
-              <TrendingUp className="w-4 h-4" />
-              <span className="text-sm font-medium">Weekly Drops</span>
-            </div>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-3 sm:mb-4 py-2 sm:py-4 bg-gradient-to-r from-white to-green-100 bg-clip-text text-transparent">
-              Recent & Upcoming Drops in {state.name}
-            </h1>
-            <p className="text-lg sm:text-xl text-green-100 mb-6 sm:mb-8 max-w-2xl mx-auto px-2">
-              Discover premium strains from the last week and the upcoming week from top-tier {state.name} producers
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 text-green-100">
-              <div className="flex items-center gap-2">
-                <Calendar className="w-5 h-5" />
-                <span className="text-sm font-medium">Last 7 & Next 7 Days</span>
-              </div>
-              <div className="hidden sm:block w-px h-4 bg-green-300"></div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium">{producerGroups.reduce((acc, group) => acc + group.strains.length, 0)} Strains</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <div className="px-4 sm:px-6 lg:px-8 py-8 sm:py-12 max-w-7xl mx-auto">
         {producerGroups.length === 0 ? (
           <div className="text-center py-12 sm:py-16">
