@@ -1,9 +1,7 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import {
   getStateMetadata,
-  STATES,
   generateStateStaticParams,
 } from "@/lib/states";
 import { StateProvider } from "@/components/StateProvider";
@@ -50,21 +48,6 @@ export default async function StateLayout({
                     {state.tagline}
                   </p>
                 ) : null}
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {STATES.map((s) => (
-                  <Link
-                    key={s.slug}
-                    href={`/${s.slug}/rankings`}
-                    className={`rounded-full border px-4 py-1.5 text-sm font-medium transition-colors ${
-                      s.slug === state.slug
-                        ? "bg-green-600 text-white border-green-600"
-                        : "bg-white text-gray-700 hover:bg-gray-50"
-                    }`}
-                  >
-                    {s.abbreviation}
-                  </Link>
-                ))}
               </div>
             </div>
             <StateNavLinks links={navLinks} />
