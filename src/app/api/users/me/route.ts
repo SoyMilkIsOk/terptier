@@ -10,6 +10,11 @@ type StateAdminSummary = {
   abbreviation: string;
 };
 
+type StateAdminAssignment = {
+  stateId: string;
+  stateSlug: string;
+};
+
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
 
@@ -64,6 +69,13 @@ export async function GET() {
     abbreviation: stateAdmin.state.code,
   }));
 
+  const stateAdminAssignments: StateAdminAssignment[] = user.stateAdmins.map(
+    (stateAdmin) => ({
+      stateId: stateAdmin.stateId,
+      stateSlug: stateAdmin.state.slug,
+    }),
+  );
+
   const producerAdminIds = user.producerAdmins.map((producerAdmin) => producerAdmin.producerId);
 
   const isGlobalAdmin = user.role === "ADMIN";
@@ -81,6 +93,7 @@ export async function GET() {
     isStateAdmin,
     isProducerAdmin,
     adminStates: stateAdminSummaries,
+    stateAdminAssignments,
     adminProducers: producerAdminIds,
   });
 }

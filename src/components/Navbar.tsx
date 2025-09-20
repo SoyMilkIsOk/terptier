@@ -29,6 +29,7 @@ type CurrentUserResponse = {
   profilePicUrl?: string | null;
   notificationOptIn: boolean;
   adminStates?: { slug: string }[];
+  stateAdminAssignments?: { stateId: string; stateSlug: string }[];
   adminProducers?: string[];
   isGlobalAdmin?: boolean;
   isStateAdmin?: boolean;
@@ -191,11 +192,15 @@ export default function Navbar() {
 
     setProfileUsername(data.username || data.id);
     setNotificationOptIn(data.notificationOptIn);
-    const adminSlugs = Array.isArray(data.adminStates)
-      ? data.adminStates
-          .map((state) => state?.slug)
+    const adminSlugs = Array.isArray(data.stateAdminAssignments)
+      ? data.stateAdminAssignments
+          .map((assignment) => assignment?.stateSlug)
           .filter((slug): slug is string => Boolean(slug))
-      : [];
+      : Array.isArray(data.adminStates)
+        ? data.adminStates
+            .map((state) => state?.slug)
+            .filter((slug): slug is string => Boolean(slug))
+        : [];
     const nextIsGlobalAdmin = data.isGlobalAdmin ?? data.role === "ADMIN";
     setIsGlobalAdmin(nextIsGlobalAdmin);
     setAdminStateSlugs(adminSlugs);

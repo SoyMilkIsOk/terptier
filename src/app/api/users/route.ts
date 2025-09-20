@@ -46,33 +46,51 @@ export async function POST(request: Request) {
     );
   }
 
-  const role = email === process.env.ADMIN_EMAIL ? Role.ADMIN : Role.USER;
+  if (!email) {
+    return NextResponse.json(
+      { ok: false, error: "Email is required" },
+      { status: 400 },
+    );
+  }
+
+  const normalizedAdminEmail = process.env.ADMIN_EMAIL?.toLowerCase();
+  const normalizedEmail = email.toLowerCase();
+  const shouldForceAdmin =
+    normalizedAdminEmail && normalizedEmail
+      ? normalizedAdminEmail === normalizedEmail
+      : false;
+
+  const existingUser = await prisma.user.findUnique({ where: { email } });
+
+  const updateData = {
+    name,
+    username,
+    birthday: birthday ? new Date(birthday) : undefined,
+    profilePicUrl,
+    socialLink,
+    notificationOptIn,
+    ...(shouldForceAdmin ? { role: Role.ADMIN } : {}),
+  } as any;
+
+  const createData = {
+    id,
+    email,
+    name,
+    username,
+    birthday: birthday ? new Date(birthday) : undefined,
+    profilePicUrl,
+    socialLink,
+    notificationOptIn,
+    role: shouldForceAdmin ? Role.ADMIN : Role.USER,
+  } as any;
 
   try {
     // Upsert a Prisma User record matching the Supabase user
     // Use email as the unique key to support existing accounts
     await prisma.user.upsert({
       where: { email },
-      update: {
-        name,
-        username,
-        birthday: birthday ? new Date(birthday) : undefined,
-        profilePicUrl,
-        socialLink,
-        notificationOptIn,
-        role,
-      } as any,
-      create: {
-        id,
-        email,
-        name,
-        username,
-        birthday: birthday ? new Date(birthday) : undefined,
-        profilePicUrl,
-        socialLink,
-        notificationOptIn,
-        role,
-      } as any,
+      update: updateData,
+      create: existingUser ? { ...createData, role: existingUser.role } : createData,
     });
 
     return NextResponse.json({ ok: true });
