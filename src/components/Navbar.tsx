@@ -52,6 +52,7 @@ export default function Navbar() {
   const [selectedState, setSelectedState] = useState(DEFAULT_STATE_SLUG);
   const [stateDropdownOpen, setStateDropdownOpen] = useState(false);
   const lastScrollY = useRef(0);
+  const adminDefaultApplied = useRef(false);
 
   const slugSet = useMemo(
     () => new Set(states.map((state) => state.slug)),
@@ -187,9 +188,11 @@ export default function Navbar() {
       setNotificationOptIn(true);
       setShowDropModal(false);
       setIsAdmin(false);
+      adminDefaultApplied.current = false;
       return;
     }
 
+    adminDefaultApplied.current = false;
     setProfileUsername(data.username || data.id);
     setNotificationOptIn(data.notificationOptIn);
     const adminSlugs = Array.isArray(data.stateAdminAssignments)
@@ -267,6 +270,42 @@ export default function Navbar() {
   useEffect(() => {
     setIsAdmin(isGlobalAdmin || adminStateSlugs.includes(selectedState));
   }, [isGlobalAdmin, adminStateSlugs, selectedState]);
+
+  useEffect(() => {
+    if (isGlobalAdmin) {
+      adminDefaultApplied.current = true;
+      return;
+    }
+
+    if (adminDefaultApplied.current) {
+      return;
+    }
+
+    if (!adminStateSlugs.length) {
+      return;
+    }
+
+    setSelectedState((current) => {
+      if (adminStateSlugs.includes(current)) {
+        adminDefaultApplied.current = true;
+        return current;
+      }
+
+      const fallback = adminStateSlugs[0];
+      if (!fallback) {
+        adminDefaultApplied.current = true;
+        return current;
+      }
+
+      adminDefaultApplied.current = true;
+      if (fallback !== current) {
+        persistSelectedState(fallback);
+        return fallback;
+      }
+
+      return current;
+    });
+  }, [adminStateSlugs, isGlobalAdmin, persistSelectedState]);
 
   useEffect(() => {
     const handleScroll = () => {

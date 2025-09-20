@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
 import AddProducerForm from "@/components/AddProducerForm";
 import Modal from "@/components/Modal";
+import { DEFAULT_STATE_SLUG } from "@/lib/stateConstants";
 import type { Producer } from "@prisma/client";
 import { XCircle, FilePenLine } from "lucide-react";
 
@@ -86,6 +87,19 @@ export default function StateAdminPage() {
         const meResponse = await fetch("/api/users/me", {
           credentials: "include",
         });
+        if (!meResponse.ok) {
+          if (meResponse.status === 401) {
+            router.replace("/login?reason=admin_required");
+            if (!isActive) return;
+            setIsLoading(false);
+            return;
+          }
+          const message = await meResponse
+            .json()
+            .then((data) => data?.error || data?.message)
+            .catch(() => null);
+          throw new Error(message || "Failed to determine admin access");
+        }
         const meData = (await meResponse.json()) as {
           success: boolean;
           role?: string;
@@ -99,16 +113,29 @@ export default function StateAdminPage() {
               .map((assignment) => assignment?.stateSlug)
               .filter((slug): slug is string => Boolean(slug))
           : Array.isArray(meData.adminStates)
-            ? meData.adminStates
-                .map((state) => state?.slug)
-                .filter((slug): slug is string => Boolean(slug))
-            : [];
+              ? meData.adminStates
+                  .map((state) => state?.slug)
+                  .filter((slug): slug is string => Boolean(slug))
+              : [];
 
         const isGlobalAdmin = Boolean(meData.isGlobalAdmin || meData.role === "ADMIN");
         const canManageState = isGlobalAdmin || adminStateSlugs.includes(stateSlug);
 
-        if (!meData.success || !canManageState) {
-          router.push("/");
+        if (!meData.success) {
+          router.replace("/login?reason=admin_required");
+          if (!isActive) return;
+          setIsLoading(false);
+          return;
+        }
+
+        if (!canManageState) {
+          const firstAssigned = adminStateSlugs[0];
+          const fallbackRankingState = stateSlug || DEFAULT_STATE_SLUG;
+          if (firstAssigned) {
+            router.replace(`/${firstAssigned}/admin`);
+          } else {
+            router.replace(`/${fallbackRankingState}/rankings`);
+          }
           if (!isActive) return;
           setIsLoading(false);
           return;
@@ -129,7 +156,19 @@ export default function StateAdminPage() {
           (candidate: StateSummary) => candidate.slug === stateSlug,
         );
         if (!metadata) {
-          throw new Error("Unknown or unauthorized state");
+          if (!isGlobalAdmin) {
+            const firstAssigned = adminStateSlugs[0];
+            const fallbackRankingState = stateSlug || DEFAULT_STATE_SLUG;
+            if (firstAssigned) {
+              router.replace(`/${firstAssigned}/admin`);
+            } else {
+              router.replace(`/${fallbackRankingState}/rankings`);
+            }
+            if (!isActive) return;
+            setIsLoading(false);
+            return;
+          }
+          throw new Error("Unknown state");
         }
         if (!isActive) return;
         setStateMetadata(metadata);
