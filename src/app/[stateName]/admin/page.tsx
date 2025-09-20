@@ -200,9 +200,7 @@ export default function StateAdminPage() {
         )}
         {stateMetadata && (
           <AddProducerForm
-            stateSlug={stateMetadata.slug}
-            stateCode={stateMetadata.abbreviation}
-            stateName={stateMetadata.name}
+            state={stateMetadata}
             onSaved={refreshProducers}
           />
         )}
@@ -312,9 +310,7 @@ export default function StateAdminPage() {
         <Modal isOpen={true} onClose={() => setEditing(null)}>
           <AddProducerForm
             producer={editing}
-            stateSlug={stateMetadata.slug}
-            stateCode={stateMetadata.abbreviation}
-            stateName={stateMetadata.name}
+            state={stateMetadata}
             onSaved={() => {
               setEditing(null);
               refreshProducers();

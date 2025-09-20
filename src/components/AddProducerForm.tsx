@@ -3,23 +3,26 @@ import { useState } from "react";
 import ImageUpload from "./ImageUpload";
 import type { Producer } from "@prisma/client";
 
-type ProducerWithAttrs = Producer & { attributes: string[] };
+type ProducerWithAttrs = Producer & {
+  attributes: string[];
+  state?: { name?: string | null; slug?: string | null } | null;
+};
 import { ATTRIBUTE_OPTIONS } from "@/constants/attributes";
 
 type AddProducerFormProps = {
   producer?: ProducerWithAttrs;
   onSaved?: () => void;
-  stateSlug: string;
-  stateCode: string;
-  stateName?: string;
+  state: {
+    slug: string;
+    abbreviation: string;
+    name: string;
+  };
 };
 
 export default function AddProducerForm({
   producer,
   onSaved,
-  stateSlug,
-  stateCode,
-  stateName,
+  state,
 }: AddProducerFormProps) {
   const [name, setName] = useState(producer?.name ?? "");
   const [category, setCategory] = useState<"FLOWER" | "HASH">(
@@ -35,6 +38,8 @@ export default function AddProducerForm({
     producer?.profileImage ?? null,
   );
 
+  const displayStateName = producer?.state?.name ?? state.name;
+
   const save = async () => {
     const body = {
       name,
@@ -44,11 +49,11 @@ export default function AddProducerForm({
       slug,
       profileImage,
       attributes,
-      stateCode,
-      stateSlug,
+      stateCode: state.abbreviation,
+      stateSlug: state.slug,
     };
     if (producer) {
-      await fetch(`/api/producers/${producer.id}?state=${stateSlug}`, {
+      await fetch(`/api/producers/${producer.id}?state=${state.slug}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -75,11 +80,16 @@ export default function AddProducerForm({
 
   return (
     <div className="mb-6 space-y-2">
-      {stateName && (
-        <p className="text-sm text-gray-600">
-          Creating producers for {stateName}
-        </p>
-      )}
+      <div>
+        <label className="block text-xs font-semibold text-gray-500">
+          State
+        </label>
+        <input
+          value={displayStateName}
+          readOnly
+          className="border p-2 rounded w-full bg-gray-100 text-gray-700"
+        />
+      </div>
       <ImageUpload value={profileImage} onChange={setProfileImage} />
       <input
         placeholder="Producer name"
