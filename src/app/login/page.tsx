@@ -5,6 +5,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { DEFAULT_STATE_SLUG } from "@/lib/stateConstants";
 
+const STATE_STORAGE_KEY = "terptier:selectedState";
+const STATE_COOKIE_NAME = "preferredState";
+
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -15,6 +18,34 @@ function LoginForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const getPreferredStateSlug = () => {
+    if (typeof window === "undefined") {
+      return DEFAULT_STATE_SLUG;
+    }
+
+    const cookieSlug = document.cookie
+      .split(";")
+      .map((cookie) => cookie.trim())
+      .find((cookie) => cookie.startsWith(`${STATE_COOKIE_NAME}=`));
+
+    if (cookieSlug) {
+      const value = cookieSlug.split("=")[1];
+      if (value) {
+        const decoded = decodeURIComponent(value);
+        if (decoded) {
+          return decoded;
+        }
+      }
+    }
+
+    const stored = window.localStorage.getItem(STATE_STORAGE_KEY);
+    if (stored) {
+      return stored;
+    }
+
+    return DEFAULT_STATE_SLUG;
+  };
 
   const finalizeAuth = async () => {
     const {
@@ -36,7 +67,8 @@ function LoginForm() {
       const meData = await meRes.json();
       if (meData.success) {
         if (meData.role === "ADMIN") {
-          router.push("/admin");
+          const preferredState = getPreferredStateSlug();
+          router.push(`/${preferredState}/admin`);
         } else {
           router.push(`/${DEFAULT_STATE_SLUG}/rankings`);
         }
