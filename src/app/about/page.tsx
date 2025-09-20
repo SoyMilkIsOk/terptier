@@ -1,4 +1,5 @@
 import React from "react";
+import { cookies } from "next/headers";
 import {
   Heart,
   Users,
@@ -17,8 +18,16 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 import { DEFAULT_STATE_SLUG } from "@/lib/stateConstants";
+import { getStateMetadata } from "@/lib/states";
 
-export default function AboutPage() {
+const STATE_COOKIE_NAME = "preferredState";
+
+export default async function AboutPage() {
+  const cookieStore = await cookies();
+  const preferredState = cookieStore.get(STATE_COOKIE_NAME)?.value ?? null;
+  const state = preferredState ? await getStateMetadata(preferredState) : null;
+  const stateSlug = state?.slug ?? DEFAULT_STATE_SLUG;
+
   return (
     <div className="min-h-screen min-w-screen bg-gradient-to-br from-green-50 via-white to-emerald-50">
       {/* Hero Section */}
@@ -323,13 +332,13 @@ export default function AboutPage() {
 
             {/* Navigation Buttons */}
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center mb-6 sm:mb-8">
-              <Link href={`/${DEFAULT_STATE_SLUG}/rankings`} className="w-full sm:w-auto">
+              <Link href={`/${stateSlug}/rankings`} className="w-full sm:w-auto">
                 <button className="group w-full sm:w-auto inline-flex cursor-pointer items-center justify-center px-6 sm:px-8 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105">
                   <span>Explore Brands</span>
                   <ChevronRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                 </button>
               </Link>
-              <Link href={`/${DEFAULT_STATE_SLUG}/drops`} className="w-full sm:w-auto">
+              <Link href={`/${stateSlug}/drops`} className="w-full sm:w-auto">
                 <button className="group w-full sm:w-auto inline-flex cursor-pointer items-center justify-center px-6 sm:px-8 py-3 bg-purple-600 text-white font-semibold rounded-lg hover:bg-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105">
                   <Calendar className="w-5 h-5 mr-2" />
                   <span>Upcoming Drops</span>
