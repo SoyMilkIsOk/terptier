@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prismadb";
-import { authorize, JwtClaims } from "@/lib/authorize";
-import { Role } from "@prisma/client";
+import { authorize } from "@/lib/authorize";
+import {
+  evaluateAdminAccess,
+  getAdminScopedUserByEmail,
+} from "@/lib/adminAuthorization";
 
 interface CreateStrainBody {
   producerId: string;
@@ -10,57 +13,6 @@ interface CreateStrainBody {
   imageUrl?: string;
   releaseDate?: string | null;
   strainSlug?: string;
-}
-
-async function canManageProducer(
-  producerId: string,
-  claims: JwtClaims | null,
-  session: any,
-) {
-  if (claims?.role === "ADMIN") return true;
-  const producerClaims = claims?.producer_ids;
-  if (Array.isArray(producerClaims) && producerClaims.includes(producerId)) {
-    return true;
-  }
-  const stateIdsClaim = claims?.state_ids;
-  const stateSlugsClaim = claims?.state_slugs;
-  if (
-    (Array.isArray(stateIdsClaim) && stateIdsClaim.length > 0) ||
-    (Array.isArray(stateSlugsClaim) && stateSlugsClaim.length > 0)
-  ) {
-    const producer = await prisma.producer.findUnique({
-      where: { id: producerId },
-      select: { stateId: true, state: { select: { slug: true } } },
-    });
-
-    if (producer) {
-      if (Array.isArray(stateIdsClaim) && stateIdsClaim.includes(producer.stateId)) {
-        return true;
-      }
-
-      const stateSlug = producer.state?.slug;
-      if (
-        stateSlug &&
-        Array.isArray(stateSlugsClaim) &&
-        stateSlugsClaim.includes(stateSlug)
-      ) {
-        return true;
-      }
-    }
-  }
-  if (session?.user?.email) {
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-      include: { producerAdmins: true },
-    });
-    if (user) {
-      return (
-        user.role === Role.ADMIN ||
-        user.producerAdmins.some((pa) => pa.producerId === producerId)
-      );
-    }
-  }
-  return false;
 }
 
 export async function GET(request: NextRequest) {
@@ -74,8 +26,27 @@ export async function GET(request: NextRequest) {
   if (!producerId) {
     return NextResponse.json({ success: false, error: "Missing producerId" }, { status: 400 });
   }
-  if (!(await canManageProducer(producerId, claims, session))) {
+
+  const email = session.user.email;
+  if (!email) {
     return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
+  }
+
+  const user = await getAdminScopedUserByEmail(email);
+  if (!user) {
+    return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
+  }
+
+  const access = await evaluateAdminAccess(
+    { user, claims },
+    { targetProducerId: producerId },
+  );
+
+  if (!access.allowed) {
+    const status = access.reason === "producer_not_found" ? 404 : 403;
+    const message =
+      access.reason === "producer_not_found" ? "Producer not found" : "Forbidden";
+    return NextResponse.json({ success: false, error: message }, { status });
   }
 
   try {
@@ -113,16 +84,31 @@ export async function POST(request: NextRequest) {
   if (!body.producerId || !body.name) {
     return NextResponse.json({ success: false, error: "Missing fields" }, { status: 400 });
   }
-  if (!(await canManageProducer(body.producerId, claims, session))) {
+
+  const email = session.user.email;
+  if (!email) {
     return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
   }
 
-  try {
-    const producer = await prisma.producer.findUnique({
-      where: { id: body.producerId },
-      select: { stateId: true },
-    });
+  const user = await getAdminScopedUserByEmail(email);
+  if (!user) {
+    return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
+  }
 
+  const access = await evaluateAdminAccess(
+    { user, claims },
+    { targetProducerId: body.producerId },
+  );
+
+  if (!access.allowed) {
+    const status = access.reason === "producer_not_found" ? 404 : 403;
+    const message =
+      access.reason === "producer_not_found" ? "Producer not found" : "Forbidden";
+    return NextResponse.json({ success: false, error: message }, { status });
+  }
+
+  try {
+    const producer = access.producer;
     if (!producer) {
       return NextResponse.json({ success: false, error: "Producer not found" }, { status: 404 });
     }

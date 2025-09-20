@@ -18,7 +18,7 @@ export interface JwtClaims {
   [key: string]: any;
 }
 
-function decodeJwt(token: string): JwtClaims {
+export function decodeJwt(token: string): JwtClaims {
   try {
     const payload = token.split(".")[1];
     const decoded = Buffer.from(payload, "base64").toString();

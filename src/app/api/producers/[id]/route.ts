@@ -3,19 +3,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prismadb";
 import { createServerActionClient } from "@supabase/auth-helpers-nextjs"; // Correct import for Route Handlers
 import { cookies } from "next/headers";
+import { decodeJwt } from "@/lib/authorize";
+import {
+  evaluateAdminAccess,
+  getAdminScopedUserByEmail,
+} from "@/lib/adminAuthorization";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
-import { Role } from "@prisma/client";
 
 function getStateSlug(request: NextRequest) {
   return request.nextUrl.searchParams.get("state")?.toLowerCase();
-}
-
-async function ensureProducerInState(producerId: string, stateSlug: string) {
-  return prisma.producer.findFirst({
-    where: { id: producerId, state: { slug: stateSlug } },
-  });
 }
 
 export async function DELETE(
@@ -48,18 +46,6 @@ export async function DELETE(
     }
 
     // Fetch Prisma user to check role
-    const prismaUser = await prisma.user.findUnique({
-      where: { email: session.user.email! }, // Assuming email is reliable for fetching user
-    });
-
-    if (!prismaUser || prismaUser.role !== Role.ADMIN) {
-      return NextResponse.json(
-        { success: false, error: "Forbidden: Admin access required" },
-        { status: 403 },
-      );
-    }
-
-    // 2. Deletion Logic
     const { id: producerId } = await params;
 
     if (!producerId) {
@@ -69,12 +55,36 @@ export async function DELETE(
       );
     }
 
-    const producer = await ensureProducerInState(producerId, stateSlug);
-
-    if (!producer) {
+    const email = session.user.email;
+    if (!email) {
       return NextResponse.json(
-        { success: false, error: "Producer not found" },
-        { status: 404 },
+        { success: false, error: "Forbidden" },
+        { status: 403 },
+      );
+    }
+
+    const user = await getAdminScopedUserByEmail(email);
+    if (!user) {
+      return NextResponse.json(
+        { success: false, error: "Forbidden" },
+        { status: 403 },
+      );
+    }
+    const claims = decodeJwt(session.access_token);
+    const access = await evaluateAdminAccess(
+      { user, claims },
+      { targetProducerId: producerId, targetStateSlug: stateSlug },
+    );
+
+    if (!access.allowed) {
+      const status = access.reason === "producer_not_found" ? 404 : 403;
+      const message =
+        access.reason === "producer_not_found"
+          ? "Producer not found"
+          : "Forbidden";
+      return NextResponse.json(
+        { success: false, error: message },
+        { status },
       );
     }
 
@@ -121,17 +131,6 @@ export async function PUT(
       );
     }
 
-    const prismaUser = await prisma.user.findUnique({
-      where: { email: session.user.email! },
-    });
-
-    if (!prismaUser || prismaUser.role !== Role.ADMIN) {
-      return NextResponse.json(
-        { success: false, error: "Forbidden: Admin access required" },
-        { status: 403 },
-      );
-    }
-
     const { id } = await params;
     const data = await request.json();
 
@@ -143,11 +142,35 @@ export async function PUT(
       ...rest
     } = data;
 
-    const existingProducer = await ensureProducerInState(id, stateSlug);
-    if (!existingProducer) {
+    const email = session.user.email;
+    if (!email) {
       return NextResponse.json(
-        { success: false, error: "Producer not found" },
-        { status: 404 },
+        { success: false, error: "Forbidden" },
+        { status: 403 },
+      );
+    }
+
+    const user = await getAdminScopedUserByEmail(email);
+    if (!user) {
+      return NextResponse.json(
+        { success: false, error: "Forbidden" },
+        { status: 403 },
+      );
+    }
+    const claims = decodeJwt(session.access_token);
+    const access = await evaluateAdminAccess(
+      { user, claims },
+      { targetProducerId: id, targetStateSlug: stateSlug },
+    );
+    if (!access.allowed) {
+      const status = access.reason === "producer_not_found" ? 404 : 403;
+      const message =
+        access.reason === "producer_not_found"
+          ? "Producer not found"
+          : "Forbidden";
+      return NextResponse.json(
+        { success: false, error: message },
+        { status },
       );
     }
 
