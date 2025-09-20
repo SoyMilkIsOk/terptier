@@ -24,7 +24,7 @@ export default async function RankingsPage({
   searchParams: Promise<{ view?: string }>;
 }) {
   const { stateName } = await params;
-  const state = getStateMetadata(stateName);
+  const state = await getStateMetadata(stateName);
 
   if (!state) {
     notFound();

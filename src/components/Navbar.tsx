@@ -1,7 +1,7 @@
 // src/components/Navbar.tsx
 "use client";
 
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -10,24 +10,14 @@ import Image from "next/image";
 import { LogIn, LogOut } from "lucide-react";
 import type { Session } from "@supabase/supabase-js";
 import DropOptInModal from "./DropOptInModal";
-import { DEFAULT_STATE_SLUG, STATES } from "@/lib/states";
+import { DEFAULT_STATE, DEFAULT_STATE_SLUG } from "@/lib/stateConstants";
 
 const STATE_STORAGE_KEY = "terptier:selectedState";
 
-const stateSlugSet = new Set(STATES.map((state) => state.slug));
-
-const getStateSlugFromPath = (pathname: string | null): string | null => {
-  if (!pathname) {
-    return null;
-  }
-
-  const match = pathname.match(/^\/([^/]+)(?:\/|$)/);
-  if (!match) {
-    return null;
-  }
-
-  const slug = match[1];
-  return stateSlugSet.has(slug) ? slug : null;
+type StateOption = {
+  slug: string;
+  name: string;
+  abbreviation: string;
 };
 
 export default function Navbar() {
@@ -40,8 +30,35 @@ export default function Navbar() {
   const [showBar, setShowBar] = useState(true);
   const [notificationOptIn, setNotificationOptIn] = useState(true);
   const [showDropModal, setShowDropModal] = useState(false);
+  const [states, setStates] = useState<StateOption[]>([DEFAULT_STATE]);
   const [selectedState, setSelectedState] = useState(DEFAULT_STATE_SLUG);
   const lastScrollY = useRef(0);
+
+  const slugSet = useMemo(
+    () => new Set(states.map((state) => state.slug)),
+    [states],
+  );
+
+  const getStateSlugFromPath = useCallback(
+    (currentPath: string | null): string | null => {
+      if (!currentPath) {
+        return null;
+      }
+
+      const match = currentPath.match(/^\/([^/]+)(?:\/|$)/);
+      if (!match) {
+        return null;
+      }
+
+      const slug = match[1];
+      if (!slugSet.size || slugSet.has(slug)) {
+        return slug;
+      }
+
+      return null;
+    },
+    [slugSet],
+  );
 
   const dropsPath = useMemo(
     () => `/${selectedState}/drops`,
@@ -74,6 +91,31 @@ export default function Navbar() {
   };
 
   useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const response = await fetch("/api/states");
+        if (!response.ok) {
+          return;
+        }
+        const data = (await response.json()) as {
+          success: boolean;
+          states?: StateOption[];
+        };
+        if (!cancelled && data.success && data.states?.length) {
+          setStates(data.states);
+        }
+      } catch (error) {
+        console.error("Failed to fetch states", error);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
     if (typeof window === "undefined") {
       return;
     }
@@ -86,12 +128,12 @@ export default function Navbar() {
     }
 
     const stored = window.localStorage.getItem(STATE_STORAGE_KEY);
-    if (stored && stateSlugSet.has(stored)) {
+    if (stored && (!slugSet.size || slugSet.has(stored))) {
       setSelectedState(stored);
     } else {
       setSelectedState(DEFAULT_STATE_SLUG);
     }
-  }, [pathname]);
+  }, [pathname, slugSet, getStateSlugFromPath]);
 
   useEffect(() => {
     // fetch initial session
@@ -241,7 +283,7 @@ export default function Navbar() {
                 value={selectedState}
                 onChange={(event) => handleStateChange(event.target.value)}
               >
-                {STATES.map((state) => (
+                {states.map((state) => (
                   <option key={state.slug} value={state.slug}>
                     {state.name}
                   </option>
@@ -340,7 +382,7 @@ export default function Navbar() {
                     setMenuOpen(false);
                   }}
                 >
-                  {STATES.map((state) => (
+                  {states.map((state) => (
                     <option key={state.slug} value={state.slug}>
                       {state.name}
                     </option>

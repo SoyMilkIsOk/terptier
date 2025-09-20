@@ -34,6 +34,7 @@ export default function AddProducerForm({
       slug,
       profileImage,
       attributes,
+      stateCode: "CO",
     };
     if (producer) {
       await fetch(`/api/producers/${producer.id}`, {

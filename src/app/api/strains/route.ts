@@ -91,9 +91,19 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    const producer = await prisma.producer.findUnique({
+      where: { id: body.producerId },
+      select: { stateId: true },
+    });
+
+    if (!producer) {
+      return NextResponse.json({ success: false, error: "Producer not found" }, { status: 404 });
+    }
+
     const strain = await prisma.strain.create({
       data: {
         producerId: body.producerId,
+        stateId: producer.stateId,
         name: body.name,
         description: body.description,
         imageUrl: body.imageUrl,

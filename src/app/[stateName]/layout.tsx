@@ -6,7 +6,7 @@ import {
 } from "@/lib/states";
 import { StateProvider } from "@/components/StateProvider";
 
-export function generateStaticParams() {
+export async function generateStaticParams() {
   return generateStateStaticParams();
 }
 
@@ -18,7 +18,7 @@ export default async function StateLayout({
   params: Promise<{ stateName: string }>;
 }) {
   const { stateName } = await params;
-  const state = getStateMetadata(stateName);
+  const state = await getStateMetadata(stateName);
 
   if (!state) {
     notFound();

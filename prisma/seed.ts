@@ -9,6 +9,31 @@ const prisma = new PrismaClient({
 
 async function main() {
   await prisma.$executeRawUnsafe("DEALLOCATE ALL;");
+
+  const stateSeeds = [
+    { code: "CO", name: "Colorado", slug: "colorado" },
+    { code: "CA", name: "California", slug: "california" },
+    { code: "OR", name: "Oregon", slug: "oregon" },
+    { code: "WA", name: "Washington", slug: "washington" },
+    { code: "MA", name: "Massachusetts", slug: "massachusetts" },
+    { code: "MD", name: "Maryland", slug: "maryland" },
+    { code: "VT", name: "Vermont", slug: "vermont" },
+    { code: "ME", name: "Maine", slug: "maine" },
+  ];
+
+  for (const state of stateSeeds) {
+    await prisma.state.upsert({
+      where: { code: state.code },
+      update: {},
+      create: state,
+    });
+  }
+
+  const colorado = await prisma.state.findUnique({ where: { code: "CO" } });
+
+  if (!colorado) {
+    throw new Error("Colorado state not found; cannot seed producers");
+  }
   // 1) Create admin user from env
   const adminPass = process.env.ADMIN_PASS || "changeme";
   const hash = await bcrypt.hash(adminPass, 10);
@@ -40,9 +65,15 @@ async function main() {
   ];
   for (const name of flowerNames) {
     await prisma.producer.upsert({
-      where: { name_category: { name, category: Category.FLOWER } },
+      where: {
+        stateId_name_category: {
+          stateId: colorado.id,
+          name,
+          category: Category.FLOWER,
+        },
+      },
       update: {},
-      create: { name, category: Category.FLOWER },
+      create: { name, category: Category.FLOWER, stateId: colorado.id },
     });
   }
 
@@ -62,9 +93,15 @@ async function main() {
   ];
   for (const name of hashNames) {
     await prisma.producer.upsert({
-      where: { name_category: { name, category: Category.HASH } },
+      where: {
+        stateId_name_category: {
+          stateId: colorado.id,
+          name,
+          category: Category.HASH,
+        },
+      },
       update: {},
-      create: { name, category: Category.HASH },
+      create: { name, category: Category.HASH, stateId: colorado.id },
     });
   }
 

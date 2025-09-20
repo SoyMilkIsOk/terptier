@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { DEFAULT_STATE_SLUG } from "@/lib/states";
+import { DEFAULT_STATE_SLUG } from "@/lib/stateConstants";
 
 export default function AboutPage() {
   return (

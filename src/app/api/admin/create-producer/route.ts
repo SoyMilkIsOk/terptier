@@ -36,7 +36,16 @@ export async function POST(request: Request) {
     attributes,
     slug,
     profileImage,
+    stateCode,
   } = await request.json();
+
+  const state = await prisma.state.findUnique({
+    where: { code: typeof stateCode === "string" ? stateCode : "CO" },
+  });
+
+  if (!state) {
+    return NextResponse.json({ error: "Invalid state" }, { status: 400 });
+  }
   await prisma.producer.create({
     data: {
       name,
@@ -47,6 +56,7 @@ export async function POST(request: Request) {
       slug,
       profileImage,
       createdById: user.id,
+      stateId: state.id,
     },
   });
   return NextResponse.json({ ok: true });
