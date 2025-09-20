@@ -12,6 +12,7 @@ enum Role {
   USER
   ADMIN
   PRODUCER_ADMIN
+  STATE_ADMIN
 }
 
 enum Category {
@@ -29,6 +30,7 @@ model State {
   strains                Strain[]
   votes                  Vote[]
   producerRatingSnapshots ProducerRatingSnapshot[]
+  stateAdmins            StateAdmin[]
 }
 
 model User {
@@ -45,6 +47,7 @@ model User {
   votes             Vote[]
   comments          Comment[]
   producerAdmins    ProducerAdmin[]
+  stateAdmins       StateAdmin[]
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
   Producer          Producer[]
@@ -129,6 +132,15 @@ model ProducerAdmin {
   producerId String
 
   @@id([userId, producerId])
+}
+
+model StateAdmin {
+  user    User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId  String
+  state   State @relation(fields: [stateId], references: [id], onDelete: Cascade)
+  stateId String
+
+  @@id([userId, stateId])
 }
 
 model Strain {
