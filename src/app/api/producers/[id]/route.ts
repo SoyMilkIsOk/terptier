@@ -8,11 +8,29 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
 import { Role } from "@prisma/client";
 
+function getStateSlug(request: NextRequest) {
+  return request.nextUrl.searchParams.get("state")?.toLowerCase();
+}
+
+async function ensureProducerInState(producerId: string, stateSlug: string) {
+  return prisma.producer.findFirst({
+    where: { id: producerId, state: { slug: stateSlug } },
+  });
+}
+
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const stateSlug = getStateSlug(request);
+    if (!stateSlug) {
+      return NextResponse.json(
+        { success: false, error: "State slug is required" },
+        { status: 400 },
+      );
+    }
+
     // 1. Authentication & Authorization
     const supabase = createServerActionClient({ cookies }, {
       supabaseUrl,
@@ -25,7 +43,7 @@ export async function DELETE(
     if (!session) {
       return NextResponse.json(
         { success: false, error: "Not authenticated" },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -37,7 +55,7 @@ export async function DELETE(
     if (!prismaUser || prismaUser.role !== Role.ADMIN) {
       return NextResponse.json(
         { success: false, error: "Forbidden: Admin access required" },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -47,19 +65,16 @@ export async function DELETE(
     if (!producerId) {
       return NextResponse.json(
         { success: false, error: "Producer ID is missing" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
-    // Check if producer exists before attempting to delete (optional, delete throws error if not found)
-    const producer = await prisma.producer.findUnique({
-      where: { id: producerId },
-    });
+    const producer = await ensureProducerInState(producerId, stateSlug);
 
     if (!producer) {
       return NextResponse.json(
         { success: false, error: "Producer not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -69,12 +84,11 @@ export async function DELETE(
 
     console.log(`[API] Producer ${producerId} deleted by admin ${session.user.email}`);
     return NextResponse.json({ success: true, message: "Producer deleted successfully" });
-
   } catch (error: any) {
     console.error("[API DELETE /api/producers/[id]] Error:", error);
     return NextResponse.json(
       { success: false, error: error.message || "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -84,6 +98,14 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const stateSlug = getStateSlug(request);
+    if (!stateSlug) {
+      return NextResponse.json(
+        { success: false, error: "State slug is required" },
+        { status: 400 },
+      );
+    }
+
     const supabase = createServerActionClient({ cookies }, {
       supabaseUrl,
       supabaseKey,
@@ -95,7 +117,7 @@ export async function PUT(
     if (!session) {
       return NextResponse.json(
         { success: false, error: "Not authenticated" },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -106,16 +128,47 @@ export async function PUT(
     if (!prismaUser || prismaUser.role !== Role.ADMIN) {
       return NextResponse.json(
         { success: false, error: "Forbidden: Admin access required" },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
     const { id } = await params;
     const data = await request.json();
 
+    const { stateSlug: bodyStateSlug, stateCode, ...rest } = data;
+
+    const existingProducer = await ensureProducerInState(id, stateSlug);
+    if (!existingProducer) {
+      return NextResponse.json(
+        { success: false, error: "Producer not found" },
+        { status: 404 },
+      );
+    }
+
+    let stateId = existingProducer.stateId;
+    const normalizedBodySlug =
+      typeof bodyStateSlug === "string" ? bodyStateSlug.toLowerCase() : undefined;
+    const normalizedBodyCode =
+      typeof stateCode === "string" ? stateCode.toUpperCase() : undefined;
+
+    if (normalizedBodySlug && normalizedBodySlug !== stateSlug) {
+      const state = await prisma.state.findUnique({ where: { slug: normalizedBodySlug } });
+      if (state) {
+        stateId = state.id;
+      }
+    } else if (normalizedBodyCode) {
+      const state = await prisma.state.findUnique({ where: { code: normalizedBodyCode } });
+      if (state) {
+        stateId = state.id;
+      }
+    }
+
     await prisma.producer.update({
       where: { id },
-      data,
+      data: {
+        ...rest,
+        stateId,
+      },
     });
 
     return NextResponse.json({ success: true });
@@ -123,7 +176,7 @@ export async function PUT(
     console.error("[API PUT /api/producers/[id]] Error:", error);
     return NextResponse.json(
       { success: false, error: error.message || "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

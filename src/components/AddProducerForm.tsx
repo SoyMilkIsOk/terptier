@@ -6,23 +6,33 @@ import type { Producer } from "@prisma/client";
 type ProducerWithAttrs = Producer & { attributes: string[] };
 import { ATTRIBUTE_OPTIONS } from "@/constants/attributes";
 
+type AddProducerFormProps = {
+  producer?: ProducerWithAttrs;
+  onSaved?: () => void;
+  stateSlug: string;
+  stateCode: string;
+  stateName?: string;
+};
+
 export default function AddProducerForm({
   producer,
   onSaved,
-}: {
-  producer?: ProducerWithAttrs;
-  onSaved?: () => void;
-}) {
+  stateSlug,
+  stateCode,
+  stateName,
+}: AddProducerFormProps) {
   const [name, setName] = useState(producer?.name ?? "");
   const [category, setCategory] = useState<"FLOWER" | "HASH">(
-    producer?.category ?? "FLOWER"
+    producer?.category ?? "FLOWER",
   );
   const [website, setWebsite] = useState(producer?.website ?? "");
   const [ingredients, setIngredients] = useState(producer?.ingredients ?? "");
   const [slug, setSlug] = useState(producer?.slug ?? "");
-  const [attributes, setAttributes] = useState<string[]>(producer?.attributes ?? []);
+  const [attributes, setAttributes] = useState<string[]>(
+    producer?.attributes ?? [],
+  );
   const [profileImage, setProfileImage] = useState<string | null>(
-    producer?.profileImage ?? null
+    producer?.profileImage ?? null,
   );
 
   const save = async () => {
@@ -34,18 +44,21 @@ export default function AddProducerForm({
       slug,
       profileImage,
       attributes,
-      stateCode: "CO",
+      stateCode,
+      stateSlug,
     };
     if (producer) {
-      await fetch(`/api/producers/${producer.id}`, {
+      await fetch(`/api/producers/${producer.id}?state=${stateSlug}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(body),
       });
     } else {
       await fetch("/api/admin/create-producer", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(body),
       });
     }
@@ -62,6 +75,11 @@ export default function AddProducerForm({
 
   return (
     <div className="mb-6 space-y-2">
+      {stateName && (
+        <p className="text-sm text-gray-600">
+          Creating producers for {stateName}
+        </p>
+      )}
       <ImageUpload value={profileImage} onChange={setProfileImage} />
       <input
         placeholder="Producer name"
@@ -97,7 +115,7 @@ export default function AddProducerForm({
                 setAttributes((prev) =>
                   prev.includes(attr.key)
                     ? prev.filter((a) => a !== attr.key)
-                    : [...prev, attr.key]
+                    : [...prev, attr.key],
                 )
               }
             />
@@ -114,7 +132,10 @@ export default function AddProducerForm({
         <option value="FLOWER">Flower</option>
         <option value="HASH">Hash</option>
       </select>
-      <button onClick={save} className="bg-green-600 text-white px-4 py-2 rounded cursor-pointer">
+      <button
+        onClick={save}
+        className="bg-green-600 text-white px-4 py-2 rounded cursor-pointer"
+      >
         {producer ? "Save" : "Add"}
       </button>
     </div>
