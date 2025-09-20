@@ -31,7 +31,7 @@ export default async function ProducerProfilePage({
   params,
 }: ProducerProfilePageProps) {
   const { stateName, slug } = await params;
-  const state = getStateMetadata(stateName);
+  const state = await getStateMetadata(stateName);
 
   if (!state) {
     notFound();

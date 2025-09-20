@@ -23,7 +23,12 @@ export interface CommentData {
   userId: string;
   producerId: string;
   updatedAt: string | Date;
-  producer?: { id: string; name: string; slug: string | null };
+  producer?: {
+    id: string;
+    name: string;
+    slug: string | null;
+    state?: { slug: string } | null;
+  };
   voteValue?: number | null;
 }
 

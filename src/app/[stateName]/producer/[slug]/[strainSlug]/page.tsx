@@ -78,7 +78,7 @@ function ExpandableReviewSection({
 
 export default async function StrainPage({ params }: StrainPageProps) {
   const { stateName, slug: producerSlug, strainSlug } = await params;
-  const state = getStateMetadata(stateName);
+  const state = await getStateMetadata(stateName);
 
   if (!state) {
     notFound();

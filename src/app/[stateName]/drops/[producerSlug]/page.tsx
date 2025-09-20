@@ -26,7 +26,7 @@ export default async function DropsByProducerPage({
   params,
 }: DropsByProducerPageProps) {
   const { stateName, producerSlug } = await params;
-  const state = getStateMetadata(stateName);
+  const state = await getStateMetadata(stateName);
 
   if (!state) {
     notFound();

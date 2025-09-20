@@ -17,7 +17,7 @@ export default async function DropsPage({
   params: Promise<{ stateName: string }>;
 }) {
   const { stateName } = await params;
-  const state = getStateMetadata(stateName);
+  const state = await getStateMetadata(stateName);
 
   if (!state) {
     notFound();

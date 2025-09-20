@@ -1,4 +1,7 @@
+import { cache } from "react";
 import { Prisma } from "@prisma/client";
+import { prisma } from "@/lib/prismadb";
+import { DEFAULT_STATE, DEFAULT_STATE_SLUG, STATE_TAGLINES } from "./stateConstants";
 
 export type StateMetadata = {
   slug: string;
@@ -9,19 +12,17 @@ export type StateMetadata = {
   strainWhere?: Prisma.StrainWhereInput;
 };
 
-type StateConfig = {
-  slug: string;
-  name: string;
-  abbreviation: string;
-  tagline?: string;
-};
-
 const createStateMetadata = ({
   slug,
   name,
   abbreviation,
   tagline,
-}: StateConfig): StateMetadata => ({
+}: {
+  slug: string;
+  name: string;
+  abbreviation: string;
+  tagline?: string;
+}): StateMetadata => ({
   slug,
   name,
   abbreviation,
@@ -30,70 +31,50 @@ const createStateMetadata = ({
   strainWhere: { state: { slug } },
 });
 
-const STATE_CONFIGS: StateConfig[] = [
-  {
-    slug: "colorado",
-    name: "Colorado",
-    abbreviation: "CO",
-    tagline: "Celebrating the Centennial State's finest producers",
-  },
-  {
-    slug: "california",
-    name: "California",
-    abbreviation: "CA",
-  },
-  {
-    slug: "oregon",
-    name: "Oregon",
-    abbreviation: "OR",
-  },
-  {
-    slug: "washington",
-    name: "Washington",
-    abbreviation: "WA",
-  },
-  {
-    slug: "massachusetts",
-    name: "Massachusetts",
-    abbreviation: "MA",
-  },
-  {
-    slug: "maryland",
-    name: "Maryland",
-    abbreviation: "MD",
-  },
-  {
-    slug: "vermont",
-    name: "Vermont",
-    abbreviation: "VT",
-  },
-  {
-    slug: "maine",
-    name: "Maine",
-    abbreviation: "ME",
-  },
-];
+const loadStateMetadata = cache(async (): Promise<StateMetadata[]> => {
+  const states = await prisma.state.findMany({
+    orderBy: { name: "asc" },
+  });
 
-export const STATES = STATE_CONFIGS.map(createStateMetadata);
-const STATE_MAP = new Map(STATES.map((state) => [state.slug, state]));
+  if (!states.length) {
+    return [
+      createStateMetadata({
+        slug: DEFAULT_STATE.slug,
+        name: DEFAULT_STATE.name,
+        abbreviation: DEFAULT_STATE.abbreviation,
+        tagline: STATE_TAGLINES[DEFAULT_STATE.slug],
+      }),
+    ];
+  }
 
-export const DEFAULT_STATE = STATES[0];
-export const DEFAULT_STATE_SLUG = DEFAULT_STATE.slug;
+  return states.map((state) =>
+    createStateMetadata({
+      slug: state.slug,
+      name: state.name,
+      abbreviation: state.code,
+      tagline: STATE_TAGLINES[state.slug],
+    }),
+  );
+});
 
-export function getStateMetadata(stateName: string): StateMetadata | null {
-  const normalized = stateName.toLowerCase();
-  return STATE_MAP.get(normalized) ?? null;
+export async function getAllStateMetadata() {
+  return loadStateMetadata();
 }
 
-export function getStateFromAttributes(
-  attributes?: string[] | null
-): StateMetadata {
+export async function getStateMetadata(stateName: string): Promise<StateMetadata | null> {
+  const normalized = stateName.toLowerCase();
+  const states = await loadStateMetadata();
+  return states.find((state) => state.slug === normalized) ?? null;
+}
+
+export async function getStateFromAttributes(attributes?: string[] | null) {
   if (attributes) {
     const prefix = "state:";
     for (const attribute of attributes) {
       if (attribute.startsWith(prefix)) {
         const slug = attribute.slice(prefix.length).toLowerCase();
-        const state = STATE_MAP.get(slug);
+        const states = await loadStateMetadata();
+        const state = states.find((candidate) => candidate.slug === slug);
         if (state) {
           return state;
         }
@@ -101,9 +82,13 @@ export function getStateFromAttributes(
     }
   }
 
-  return DEFAULT_STATE;
+  const states = await loadStateMetadata();
+  return (
+    states.find((state) => state.slug === DEFAULT_STATE_SLUG) ?? states[0]
+  );
 }
 
-export function generateStateStaticParams() {
-  return STATES.map((state) => ({ stateName: state.slug }));
+export async function generateStateStaticParams() {
+  const states = await loadStateMetadata();
+  return states.map((state) => ({ stateName: state.slug }));
 }

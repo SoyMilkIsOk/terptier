@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prismadb";
-import { STATES, getStateFromAttributes } from "@/lib/states";
+import { getAllStateMetadata } from "@/lib/states";
+import { DEFAULT_STATE_SLUG } from "@/lib/stateConstants";
 
 export const dynamic = "force-dynamic";
 
@@ -16,17 +17,19 @@ export async function GET(request: Request) {
     "/signup",
   ];
 
-  const statePaths = STATES.flatMap((state) => [
+  const states = await getAllStateMetadata();
+
+  const statePaths = states.flatMap((state) => [
     `/${state.slug}/rankings`,
     `/${state.slug}/drops`,
   ]);
 
   const producers = await prisma.producer.findMany({
-    select: { slug: true, id: true, attributes: true },
+    select: { slug: true, id: true, state: { select: { slug: true } } },
   });
   const producerPaths = producers.map((p) => {
-    const state = getStateFromAttributes(p.attributes);
-    return `/${state.slug}/producer/${p.slug ?? p.id}`;
+    const slug = p.state?.slug ?? DEFAULT_STATE_SLUG;
+    return `/${slug}/producer/${p.slug ?? p.id}`;
   });
 
   const users = await prisma.user.findMany({

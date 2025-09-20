@@ -15,7 +15,7 @@ export default async function ProducerStrainsPage({
   params,
 }: ProducerStrainsPageProps) {
   const { stateName, slug } = await params;
-  const state = getStateMetadata(stateName);
+  const state = await getStateMetadata(stateName);
 
   if (!state) {
     notFound();

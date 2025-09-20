@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext } from "react";
-import { DEFAULT_STATE_SLUG } from "@/lib/states";
+import { DEFAULT_STATE_SLUG } from "@/lib/stateConstants";
 
 const StateSlugContext = createContext<string>(DEFAULT_STATE_SLUG);
 

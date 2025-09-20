@@ -13,6 +13,7 @@ export type ProducerWithVotes = Producer & {
   votes: Vote[];
   attributes: string[];
   _count?: { comments: number };
+  state?: { slug: string } | null;
 };
 
 interface Props {

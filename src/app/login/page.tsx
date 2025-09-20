@@ -3,7 +3,7 @@
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
-import { DEFAULT_STATE_SLUG } from "@/lib/states";
+import { DEFAULT_STATE_SLUG } from "@/lib/stateConstants";
 
 function LoginForm() {
   const router = useRouter();
