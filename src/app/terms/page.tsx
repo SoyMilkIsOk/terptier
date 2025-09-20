@@ -36,8 +36,8 @@ export default function TermsPage() {
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">2. Eligibility</h2>
             <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-4">
               <p className="text-red-800">
-                <strong>Age Requirement:</strong> You must be 21 years of age or older to use TerpTier. 
-                This requirement is in compliance with Colorado state law regarding cannabis-related content.
+                <strong>Age Requirement:</strong> You must be 21 years of age or older to use TerpTier.
+                This requirement reflects applicable U.S. federal and state laws regarding cannabis-related content.
               </p>
             </div>
             <p className="text-gray-700 leading-relaxed">
@@ -75,7 +75,7 @@ export default function TermsPage() {
               TerpTier is a community-driven platform that allows users to:
             </p>
             <ul className="list-disc pl-6 space-y-2 text-gray-700">
-              <li>Vote for their favorite cannabis producers and brands in Colorado</li>
+              <li>Vote for their favorite cannabis producers and brands in eligible U.S. jurisdictions</li>
               <li>View rankings and community preferences</li>
               <li>Access information about cannabis producers</li>
               <li>Participate in weekly voting cycles</li>
@@ -231,14 +231,15 @@ export default function TermsPage() {
           <section>
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">11. Governing Law and Disputes</h2>
             <p className="text-gray-700 leading-relaxed mb-4">
-              These Terms are governed by the laws of the State of Colorado, without regard to 
-              conflict of law principles. Any disputes arising out of or relating to these Terms 
-              or your use of TerpTier shall be resolved in the state or federal courts located 
-              in Boulder County, Colorado.
+              These Terms are governed by the laws of the United States and the laws of the state in
+              which Terpmetrix, LLC maintains its principal place of business, without regard to
+              conflict of law principles. Any disputes arising out of or relating to these Terms or
+              your use of TerpTier shall be resolved in the state or federal courts located in that
+              jurisdiction.
             </p>
             <p className="text-gray-700 leading-relaxed">
-              You agree to submit to the personal jurisdiction of these courts for the purpose 
-              of litigating any such disputes.
+              You agree to submit to the personal jurisdiction of these courts for the purpose of
+              litigating any such disputes.
             </p>
           </section>
 
@@ -276,7 +277,7 @@ export default function TermsPage() {
               <div className="space-y-2 text-gray-700">
                 <p><strong>Email:</strong> <a href="mailto:help@terpmetrix.com" className="text-blue-600 hover:text-blue-800">help@terpmetrix.com</a></p>
                 <p><strong>Company:</strong> Terpmetrix, LLC</p>
-                <p><strong>Location:</strong> Boulder, Colorado, USA</p>
+                <p><strong>Location:</strong> United States</p>
               </div>
             </div>
           </section>

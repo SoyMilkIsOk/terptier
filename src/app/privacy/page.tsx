@@ -39,7 +39,7 @@ export default function PrivacyPage() {
             <h3 className="text-xl font-medium text-gray-800 mb-3">Personal Information You Provide</h3>
             <ul className="list-disc pl-6 space-y-2 text-gray-700">
               <li><strong>Email Address:</strong> Required for account creation, authentication, and password recovery</li>
-              <li><strong>Age Verification:</strong> We verify that you are 21 or older as required by Colorado state law</li>
+              <li><strong>Age Verification:</strong> We verify that you are 21 or older as required by applicable U.S. laws</li>
               <li><strong>Voting Data:</strong> Your weekly "hearts" (votes) for cannabis producers and brands</li>
             </ul>
 
@@ -168,8 +168,8 @@ export default function PrivacyPage() {
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">8. Age Restrictions</h2>
             <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4">
               <p className="text-yellow-800">
-                <strong>21+ Only:</strong> TerpTier is intended for adults 21 years of age or older, 
-                in compliance with Colorado state law regarding cannabis. We do not knowingly collect 
+                <strong>21+ Only:</strong> TerpTier is intended for adults 21 years of age or older,
+                in compliance with applicable U.S. federal and state cannabis laws. We do not knowingly collect
                 personal information from anyone under 21.
               </p>
             </div>
@@ -179,8 +179,8 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">9. International Users</h2>
             <p className="text-gray-700 leading-relaxed">
-              TerpTier is operated from Boulder, Colorado, USA. If you are accessing our service 
-              from outside the United States, please be aware that your information may be transferred 
+              TerpTier is operated from the United States. If you are accessing our service
+              from outside the United States, please be aware that your information may be transferred
               to, stored, and processed in the United States where our servers are located.
             </p>
           </section>
@@ -205,7 +205,7 @@ export default function PrivacyPage() {
               <div className="space-y-2 text-gray-700">
                 <p><strong>Email:</strong> <a href="mailto:help@terpmetrix.com" className="text-blue-600 hover:text-blue-800">help@terpmetrix.com</a></p>
                 <p><strong>Company:</strong> Terpmetrix, LLC</p>
-                <p><strong>Location:</strong> Boulder, Colorado, USA</p>
+                <p><strong>Location:</strong> United States</p>
               </div>
             </div>
           </section>
