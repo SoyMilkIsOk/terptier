@@ -7,56 +7,100 @@ export type StateMetadata = {
   tagline?: string;
   producerWhere?: Prisma.ProducerWhereInput;
   strainWhere?: Prisma.StrainWhereInput;
-  attributeTag?: string;
 };
 
-const createFilters = (
-  attributeTag?: string
-): Pick<StateMetadata, "producerWhere" | "strainWhere"> => {
-  if (!attributeTag) {
-    return { producerWhere: undefined, strainWhere: undefined };
-  }
-
-  const producerWhere: Prisma.ProducerWhereInput = {
-    attributes: { has: attributeTag },
-  };
-
-  const strainWhere: Prisma.StrainWhereInput = {
-    producer: { attributes: { has: attributeTag } },
-  };
-
-  return { producerWhere, strainWhere };
+type StateConfig = {
+  slug: string;
+  name: string;
+  abbreviation: string;
+  tagline?: string;
 };
 
-export const STATES: StateMetadata[] = [
+const createStateMetadata = ({
+  slug,
+  name,
+  abbreviation,
+  tagline,
+}: StateConfig): StateMetadata => ({
+  slug,
+  name,
+  abbreviation,
+  tagline: tagline ?? `Discover ${name}'s finest producers`,
+  producerWhere: { state: { slug } },
+  strainWhere: { state: { slug } },
+});
+
+const STATE_CONFIGS: StateConfig[] = [
   {
     slug: "colorado",
     name: "Colorado",
     abbreviation: "CO",
     tagline: "Celebrating the Centennial State's finest producers",
-    attributeTag: "state:colorado",
-    ...createFilters("state:colorado"),
+  },
+  {
+    slug: "california",
+    name: "California",
+    abbreviation: "CA",
+  },
+  {
+    slug: "oregon",
+    name: "Oregon",
+    abbreviation: "OR",
+  },
+  {
+    slug: "washington",
+    name: "Washington",
+    abbreviation: "WA",
+  },
+  {
+    slug: "massachusetts",
+    name: "Massachusetts",
+    abbreviation: "MA",
+  },
+  {
+    slug: "maryland",
+    name: "Maryland",
+    abbreviation: "MD",
+  },
+  {
+    slug: "vermont",
+    name: "Vermont",
+    abbreviation: "VT",
+  },
+  {
+    slug: "maine",
+    name: "Maine",
+    abbreviation: "ME",
   },
 ];
+
+export const STATES = STATE_CONFIGS.map(createStateMetadata);
+const STATE_MAP = new Map(STATES.map((state) => [state.slug, state]));
 
 export const DEFAULT_STATE = STATES[0];
 export const DEFAULT_STATE_SLUG = DEFAULT_STATE.slug;
 
 export function getStateMetadata(stateName: string): StateMetadata | null {
   const normalized = stateName.toLowerCase();
-  return STATES.find((state) => state.slug === normalized) ?? null;
+  return STATE_MAP.get(normalized) ?? null;
 }
 
 export function getStateFromAttributes(
   attributes?: string[] | null
 ): StateMetadata {
   if (attributes) {
-    for (const state of STATES) {
-      if (state.attributeTag && attributes.includes(state.attributeTag)) {
-        return state;
+    const prefix = "state:";
+    for (const attribute of attributes) {
+      if (attribute.startsWith(prefix)) {
+        const slug = attribute.slice(prefix.length).toLowerCase();
+        const state = STATE_MAP.get(slug);
+        if (state) {
+          return state;
+        }
       }
     }
   }
+
   return DEFAULT_STATE;
 }
 
