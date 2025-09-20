@@ -7,12 +7,13 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import Image from "next/image";
-import { LogIn, LogOut } from "lucide-react";
+import { LogIn, LogOut, UserPlus, ChevronDown, User, Shield, Calendar, Crown } from "lucide-react";
 import type { Session } from "@supabase/supabase-js";
 import DropOptInModal from "./DropOptInModal";
 import { DEFAULT_STATE, DEFAULT_STATE_SLUG } from "@/lib/stateConstants";
 
 const STATE_STORAGE_KEY = "terptier:selectedState";
+const STATE_COOKIE_NAME = "preferredState";
 
 type StateOption = {
   slug: string;
@@ -32,6 +33,7 @@ export default function Navbar() {
   const [showDropModal, setShowDropModal] = useState(false);
   const [states, setStates] = useState<StateOption[]>([DEFAULT_STATE]);
   const [selectedState, setSelectedState] = useState(DEFAULT_STATE_SLUG);
+  const [stateDropdownOpen, setStateDropdownOpen] = useState(false);
   const lastScrollY = useRef(0);
 
   const slugSet = useMemo(
@@ -60,6 +62,18 @@ export default function Navbar() {
     [slugSet],
   );
 
+  const persistSelectedState = useCallback((slug: string) => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    window.localStorage.setItem(STATE_STORAGE_KEY, slug);
+
+    const expires = new Date();
+    expires.setFullYear(expires.getFullYear() + 1);
+    document.cookie = `${STATE_COOKIE_NAME}=${slug};expires=${expires.toUTCString()};path=/;SameSite=Lax`;
+  }, []);
+
   const dropsPath = useMemo(
     () => `/${selectedState}/drops`,
     [selectedState],
@@ -69,25 +83,16 @@ export default function Navbar() {
     [selectedState],
   );
 
+  const selectedStateData = useMemo(
+    () => states.find(state => state.slug === selectedState) || states[0],
+    [states, selectedState]
+  );
+
   const handleStateChange = (newState: string) => {
     setSelectedState(newState);
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem(STATE_STORAGE_KEY, newState);
-    }
-
-    const activeSlug = getStateSlugFromPath(pathname);
-    if (activeSlug) {
-      const remainder = pathname?.slice(activeSlug.length + 1) ?? "";
-      const normalizedRemainder = remainder
-        ? remainder.startsWith("/")
-          ? remainder
-          : `/${remainder}`
-        : "/rankings";
-      const nextPath = `/${newState}${normalizedRemainder}`;
-      router.push(nextPath);
-    } else {
-      router.push(`/${newState}/rankings`);
-    }
+    persistSelectedState(newState);
+    setStateDropdownOpen(false);
+    router.push("/");
   };
 
   useEffect(() => {
@@ -123,7 +128,25 @@ export default function Navbar() {
     const slugFromPath = getStateSlugFromPath(pathname);
     if (slugFromPath) {
       setSelectedState(slugFromPath);
-      window.localStorage.setItem(STATE_STORAGE_KEY, slugFromPath);
+      persistSelectedState(slugFromPath);
+      return;
+    }
+
+    const getCookieValue = (name: string) => {
+      const cookies = document.cookie ? document.cookie.split(";") : [];
+      for (const cookie of cookies) {
+        const [key, ...rest] = cookie.trim().split("=");
+        if (key === name) {
+          return decodeURIComponent(rest.join("="));
+        }
+      }
+      return null;
+    };
+
+    const cookieState = getCookieValue(STATE_COOKIE_NAME);
+    if (cookieState && (!slugSet.size || slugSet.has(cookieState))) {
+      setSelectedState(cookieState);
+      persistSelectedState(cookieState);
       return;
     }
 
@@ -133,7 +156,7 @@ export default function Navbar() {
     } else {
       setSelectedState(DEFAULT_STATE_SLUG);
     }
-  }, [pathname, slugSet, getStateSlugFromPath]);
+  }, [pathname, slugSet, getStateSlugFromPath, persistSelectedState]);
 
   useEffect(() => {
     // fetch initial session
@@ -222,6 +245,7 @@ export default function Navbar() {
       } else if (currentY > lastScrollY.current) {
         setShowBar(false);
         setMenuOpen(false);
+        setStateDropdownOpen(false);
       }
       lastScrollY.current = currentY;
     };
@@ -231,7 +255,21 @@ export default function Navbar() {
 
   useEffect(() => {
     setMenuOpen(false);
+    setStateDropdownOpen(false);
   }, [pathname]);
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (!target.closest('[data-dropdown]')) {
+        setStateDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, []);
 
   return (
     <>
@@ -239,10 +277,11 @@ export default function Navbar() {
         initial={{ y: 0 }}
         animate={{ y: showBar ? 0 : -80 }}
         transition={{ type: "tween", ease: "easeInOut", duration: 0.5 }}
-        className="bg-green-700 text-white shadow-md fixed top-0 left-0 right-0 z-50"
+        className="bg-gradient-to-r from-green-900/95 via-green-800/95 to-green-700/95 backdrop-blur-lg border-b border-white/10 text-white shadow-2xl fixed top-0 left-0 right-0 z-50"
       >
         <div className="container mx-auto px-4 flex items-center justify-between h-20">
-          <Link href="/" className="flex items-center hover:opacity-90">
+          {/* Logo */}
+          <Link href="/" className="flex items-center hover:opacity-90 transition-opacity duration-200">
             <Image
               src="/TerpTier.svg"
               alt="TerpTier logo"
@@ -251,97 +290,136 @@ export default function Navbar() {
               height={50}
             />
           </Link>
+
+          {/* Mobile Menu Button */}
           <div className="flex md:hidden mr-4">
             <button
               onClick={() => setMenuOpen(!menuOpen)}
-              className="relative w-8 h-8 focus:outline-none"
+              className="relative w-10 h-10 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 focus:outline-none hover:bg-white/20 transition-all duration-200 flex items-center justify-center"
               aria-label="Toggle menu"
             >
-              <span
-                className={`absolute left-1/2 w-6 h-0.5 bg-white transition-transform duration-300 ease-in-out ${
-                  menuOpen ? "rotate-45 top-2.5" : "top-2"
-                }`}
-                style={{ transformOrigin: "center" }}
-              />
-              <span
-                className={`absolute left-1/2 w-6 h-0.5 bg-white transition-transform duration-300 ease-in-out ${
-                  menuOpen ? "-rotate-45 top-2.5" : "top-5"
-                }`}
-                style={{ transformOrigin: "center" }}
-              />
+              <div className="relative w-6 h-6">
+                <span
+                  className={`absolute left-1/2 -translate-x-1/2 w-5 h-0.5 bg-white transition-transform duration-300 ease-in-out ${
+                    menuOpen ? "rotate-45 top-1/2 -translate-y-1/2" : "top-1.5"
+                  }`}
+                />
+                <span
+                  className={`absolute left-1/2 -translate-x-1/2 w-5 h-0.5 bg-white transition-all duration-300 ease-in-out ${
+                    menuOpen ? "opacity-0" : "top-1/2 -translate-y-1/2"
+                  }`}
+                />
+                <span
+                  className={`absolute left-1/2 -translate-x-1/2 w-5 h-0.5 bg-white transition-transform duration-300 ease-in-out ${
+                    menuOpen ? "-rotate-45 top-1/2 -translate-y-1/2" : "bottom-1.5"
+                  }`}
+                />
+              </div>
             </button>
           </div>
-          <div className="absolute right-8 top-1/2 -translate-y-1/2 md:hidden"></div>
+
+          {/* Desktop Menu */}
           <div className="hidden md:flex items-center space-x-6">
-            <div className="flex items-center space-x-2">
-              <label htmlFor="state-select" className="text-sm text-green-100">
-                State
-              </label>
-              <select
-                id="state-select"
-                className="bg-white text-green-700 text-sm rounded-full px-3 py-1 focus:outline-none focus:ring-2 focus:ring-green-300"
-                value={selectedState}
-                onChange={(event) => handleStateChange(event.target.value)}
+            {/* State Dropdown */}
+            <div className="relative" data-dropdown>
+              <button
+                onClick={() => setStateDropdownOpen(!stateDropdownOpen)}
+                className="flex items-center space-x-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl px-4 py-2 hover:bg-white/20 transition-all duration-200 group"
               >
-                {states.map((state) => (
-                  <option key={state.slug} value={state.slug}>
-                    {state.name}
-                  </option>
-                ))}
-              </select>
+                <span className="text-sm font-medium">{selectedStateData?.name}</span>
+                <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${stateDropdownOpen ? 'rotate-180' : ''}`} />
+              </button>
+              
+              <AnimatePresence>
+                {stateDropdownOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                    transition={{ duration: 0.2, ease: "easeOut" }}
+                    className="absolute top-full mt-2 left-0 w-64 bg-white/95 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl overflow-hidden z-50"
+                  >
+                    <div className="p-2">
+                      {states.map((state, index) => (
+                        <motion.button
+                          key={state.slug}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: index * 0.05 }}
+                          onClick={() => handleStateChange(state.slug)}
+                          className={`w-full text-left px-4 py-3 rounded-xl text-green-800 hover:bg-green-50/80 transition-all duration-200 ${
+                            selectedState === state.slug ? 'bg-green-100/80 font-semibold' : ''
+                          }`}
+                        >
+                          {state.name}
+                        </motion.button>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
+
+            {/* Navigation Links */}
             <Link
               href={dropsPath}
-              className={`${
+              className={`flex items-center space-x-2 px-4 py-2 rounded-2xl text-sm font-medium transition-all duration-200 ${
                 pathname?.startsWith(dropsPath)
-                  ? "underline"
-                  : "hover:underline"
+                  ? "bg-white/20 backdrop-blur-sm"
+                  : "hover:bg-white/10 backdrop-blur-sm"
               }`}
             >
-              Drops
+              <Calendar className="w-4 h-4" />
+              <span>Drops</span>
             </Link>
             <Link
               href={rankingsPath}
-              className={`${
+              className={`flex items-center space-x-2 px-4 py-2 rounded-2xl text-sm font-medium transition-all duration-200 ${
                 pathname?.startsWith(rankingsPath)
-                  ? "underline"
-                  : "hover:underline"
+                  ? "bg-white/20 backdrop-blur-sm"
+                  : "hover:bg-white/10 backdrop-blur-sm"
               }`}
             >
-              Rankings
+              <Crown className="w-4 h-4" />
+              <span>Rankings</span>
             </Link>
 
             {profileUsername && (
               <Link
                 href={`/profile/${profileUsername}`}
-                className={`${
+                className={`flex items-center space-x-2 px-4 py-2 rounded-2xl text-sm font-medium transition-all duration-200 ${
                   pathname === `/profile/${profileUsername}`
-                    ? "underline"
-                    : "hover:underline"
+                    ? "bg-white/20 backdrop-blur-sm"
+                    : "hover:bg-white/10 backdrop-blur-sm"
                 }`}
               >
-                Profile
+                <User className="w-4 h-4" />
+                <span>Profile</span>
               </Link>
             )}
 
             {session && isAdmin && (
               <Link
                 href="/admin"
-                className={`${
-                  pathname === "/admin" ? "underline" : "hover:underline"
+                className={`flex items-center space-x-2 px-4 py-2 rounded-2xl text-sm font-medium transition-all duration-200 ${
+                  pathname === "/admin"
+                    ? "bg-white/20 backdrop-blur-sm"
+                    : "hover:bg-white/10 backdrop-blur-sm"
                 }`}
               >
-                Admin Panel
+                <Shield className="w-4 h-4" />
+                <span>Admin</span>
               </Link>
             )}
 
+            {/* Auth Buttons */}
             {!session ? (
               <Link
                 href="/login"
-                className="flex items-center space-x-1 bg-white text-green-700 px-3 py-1 rounded-full hover:bg-green-50"
+                className="flex items-center space-x-2 bg-white/95 backdrop-blur-sm text-green-800 px-6 py-2.5 rounded-2xl font-medium hover:bg-white/100 hover:scale-105 transition-all duration-200 shadow-lg"
               >
                 <LogIn className="w-4 h-4" />
-                <span>Log In / Sign Up</span>
+                <span>Log In</span>
               </Link>
             ) : (
               <button
@@ -351,7 +429,7 @@ export default function Navbar() {
                   setSession(null);
                   location.reload();
                 }}
-                className="flex items-center space-x-1 bg-red-600 hover:bg-red-700 px-3 py-1 rounded-full cursor-pointer"
+                className="flex items-center space-x-2 bg-red-500/90 backdrop-blur-sm hover:bg-red-600/90 px-6 py-2.5 rounded-2xl font-medium cursor-pointer hover:scale-105 transition-all duration-200 shadow-lg"
               >
                 <LogOut className="w-4 h-4 text-white" />
                 <span className="text-white">Sign Out</span>
@@ -359,6 +437,8 @@ export default function Navbar() {
             )}
           </div>
         </div>
+
+        {/* Mobile Menu */}
         <AnimatePresence>
           {menuOpen && (
             <motion.div
@@ -366,85 +446,102 @@ export default function Navbar() {
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.45, ease: "easeInOut" }}
-              className="md:hidden overflow-hidden bg-green-800 border-t border-b border-green-900 pt-4 pb-6 space-y-4 flex flex-col items-center text-white"
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              className="md:hidden overflow-hidden bg-gradient-to-b from-green-800/95 to-green-900/95 backdrop-blur-lg border-t border-white/10"
             >
-              <div className="w-full px-6">
-                <label htmlFor="mobile-state-select" className="block text-xs uppercase tracking-wide text-green-200 mb-1">
-                  State
-                </label>
-                <select
-                  id="mobile-state-select"
-                  className="w-full bg-white text-green-700 text-sm rounded-full px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-300"
-                  value={selectedState}
-                  onChange={(event) => {
-                    handleStateChange(event.target.value);
-                    setMenuOpen(false);
-                  }}
-                >
-                  {states.map((state) => (
-                    <option key={state.slug} value={state.slug}>
-                      {state.name}
-                    </option>
-                  ))}
-                </select>
+              <div className="px-6 py-6 space-y-4">
+                {/* Mobile State Selector */}
+                <div className="space-y-2">
+                  <label className="block text-xs uppercase tracking-wide text-green-200 font-medium">
+                    State
+                  </label>
+                  <div className="relative">
+                    <select
+                      className="w-full bg-white/95 backdrop-blur-sm text-green-800 rounded-2xl px-4 py-3 pr-10 focus:outline-none focus:ring-2 focus:ring-white/50 appearance-none font-medium shadow-lg"
+                      value={selectedState}
+                      onChange={(event) => {
+                        handleStateChange(event.target.value);
+                        setMenuOpen(false);
+                      }}
+                    >
+                      {states.map((state) => (
+                        <option key={state.slug} value={state.slug}>
+                          {state.name}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-600 pointer-events-none" />
+                  </div>
+                </div>
+
+                {/* Mobile Navigation Links */}
+                <div className="space-y-2 pt-4">
+                  <Link
+                    href={dropsPath}
+                    onClick={() => setMenuOpen(false)}
+                    className="flex items-center justify-center space-x-2 w-full py-3 bg-white/10 backdrop-blur-sm rounded-2xl hover:bg-white/20 transition-all duration-200 font-medium"
+                  >
+                    <Calendar className="w-4 h-4" />
+                    <span>Drops</span>
+                  </Link>
+                  <Link
+                    href={rankingsPath}
+                    onClick={() => setMenuOpen(false)}
+                    className="flex items-center justify-center space-x-2 w-full py-3 bg-white/10 backdrop-blur-sm rounded-2xl hover:bg-white/20 transition-all duration-200 font-medium"
+                  >
+                    <Crown className="w-4 h-4" />
+                    <span>Rankings</span>
+                  </Link>
+                  {profileUsername && (
+                    <Link
+                      href={`/profile/${profileUsername}`}
+                      onClick={() => setMenuOpen(false)}
+                      className="flex items-center justify-center space-x-2 w-full py-3 bg-white/10 backdrop-blur-sm rounded-2xl hover:bg-white/20 transition-all duration-200 font-medium"
+                    >
+                      <User className="w-4 h-4" />
+                      <span>Profile</span>
+                    </Link>
+                  )}
+                  {session && isAdmin && (
+                    <Link
+                      href="/admin"
+                      onClick={() => setMenuOpen(false)}
+                      className="flex items-center justify-center space-x-2 w-full py-3 bg-white/10 backdrop-blur-sm rounded-2xl hover:bg-white/20 transition-all duration-200 font-medium"
+                    >
+                      <Shield className="w-4 h-4" />
+                      <span>Admin Panel</span>
+                    </Link>
+                  )}
+                </div>
+
+                {/* Mobile Auth Buttons */}
+                <div className="pt-4 space-y-3">
+                  {!session ? (
+                    <Link
+                      href="/login"
+                      onClick={() => setMenuOpen(false)}
+                      className="flex items-center justify-center space-x-2 w-full py-3 bg-white/95 backdrop-blur-sm text-green-800 rounded-2xl font-medium shadow-lg"
+                    >
+                      <LogIn className="w-4 h-4" />
+                      <span>Log In</span>
+                    </Link>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        await supabase.auth.signOut();
+                        setSession(null);
+                        setMenuOpen(false);
+                        location.reload();
+                      }}
+                      className="flex items-center justify-center space-x-2 w-full py-3 bg-red-500/90 backdrop-blur-sm hover:bg-red-600/90 rounded-2xl font-medium cursor-pointer text-white shadow-lg"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      <span>Sign Out</span>
+                    </button>
+                  )}
+                </div>
               </div>
-              <Link
-                href={dropsPath}
-                onClick={() => setMenuOpen(false)}
-                className="w-full text-center py-1"
-              >
-                Drops
-              </Link>
-              <Link
-                href={rankingsPath}
-                onClick={() => setMenuOpen(false)}
-                className="w-full text-center py-1"
-              >
-                Rankings
-              </Link>
-              {profileUsername && (
-                <Link
-                  href={`/profile/${profileUsername}`}
-                  onClick={() => setMenuOpen(false)}
-                  className="w-full text-center py-1"
-                >
-                  Profile
-                </Link>
-              )}
-              {session && isAdmin && (
-                <Link
-                  href="/admin"
-                  onClick={() => setMenuOpen(false)}
-                  className="w-full text-center py-1"
-                >
-                  Admin Panel
-                </Link>
-              )}
-              {!session ? (
-                <Link
-                  href="/login"
-                  onClick={() => setMenuOpen(false)}
-                  className="text-center py-1 px-3 bg-white text-green-700 rounded-full flex items-center justify-center space-x-1"
-                >
-                  <LogIn className="w-4 h-4" />
-                  <span>Log In / Sign Up</span>
-                </Link>
-              ) : (
-                <button
-                  type="button"
-                  onClick={async () => {
-                    await supabase.auth.signOut();
-                    setSession(null);
-                    setMenuOpen(false);
-                    location.reload();
-                  }}
-                  className="text-center px-3 py-1 bg-red-600 hover:bg-red-700 rounded-full cursor-pointer text-white flex items-center justify-center space-x-1"
-                >
-                  <LogOut className="w-4 h-4" />
-                  <span>Sign Out</span>
-                </button>
-              )}
             </motion.div>
           )}
         </AnimatePresence>
