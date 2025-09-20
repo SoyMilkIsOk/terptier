@@ -8,6 +8,13 @@ import { prisma } from "@/lib/prismadb";
 import { Category } from "@prisma/client";
 import { getStateMetadata } from "@/lib/states";
 import { notFound } from "next/navigation";
+import {
+  Crown,
+  Users,
+  Star,
+  Flower2,
+  FlaskConical,
+} from "lucide-react";
 
 export default async function RankingsPage({
   params,
@@ -85,9 +92,64 @@ export default async function RankingsPage({
   const { view } = await searchParams;
   const initialViewParam = view === "hash" ? "hash" : "flower";
 
+  const totalProducers = flower.length + hash.length;
+  const totalVotes =
+    [...flower, ...hash].reduce((acc, p) => acc + p.votes.length, 0) || 0;
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 py-10 md:py-12">
-      <div className="container mx-auto px-2 md:px-4">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50">
+      <div className="relative overflow-hidden bg-gradient-to-r from-green-600 to-emerald-600 text-white">
+        <div className="absolute inset-0 bg-black/10"></div>
+        <div className="relative container mx-auto px-4 py-16">
+          <div className="max-w-4xl mx-auto text-center">
+            <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 mb-6">
+              <Crown className="w-4 h-4" />
+              <span className="text-sm font-medium">Community Rankings</span>
+            </div>
+
+            <h1 className="text-5xl md:text-6xl font-bold mb-4 py-4 bg-gradient-to-r from-white to-green-100 bg-clip-text text-transparent">
+              {state.name} Producer Rankings
+            </h1>
+
+            <p className="text-lg md:text-xl text-green-100 mb-8 max-w-2xl mx-auto">
+              {state.tagline ??
+                "Vote for your favorite producers and see who\'s in the lead! Scores are community-driven and update as votes roll in."}
+            </p>
+
+            <div className="flex flex-wrap items-center justify-center gap-6 text-green-100">
+              <div className="flex items-center gap-2">
+                <Users className="w-5 h-5" />
+                <span className="text-sm font-medium">
+                  {totalProducers} Producer{totalProducers === 1 ? "" : "s"}
+                </span>
+              </div>
+              <div className="w-px h-4 bg-green-300"></div>
+              <div className="flex items-center gap-2">
+                <Star className="w-5 h-5" />
+                <span className="text-sm font-medium">
+                  {totalVotes} Vote{totalVotes === 1 ? "" : "s"}
+                </span>
+              </div>
+              <div className="w-px h-4 bg-green-300"></div>
+              <div className="flex items-center gap-2">
+                <Flower2 className="w-5 h-5" />
+                <span className="text-sm font-medium">
+                  {flower.length} Grower{flower.length === 1 ? "" : "s"}
+                </span>
+              </div>
+              <div className="w-px h-4 bg-green-300"></div>
+              <div className="flex items-center gap-2">
+                <FlaskConical className="w-5 h-5" />
+                <span className="text-sm font-medium">
+                  {hash.length} Hasher{hash.length === 1 ? "" : "s"}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="container mx-auto px-2 md:px-4 py-10 md:py-12">
         <ProducerList
           initialData={{ flower, hash }}
           userVotes={userVotes}
