@@ -164,7 +164,10 @@ export default async function StrainPage({ params }: StrainPageProps) {
               <div className="mb-6 lg:mb-0 lg:mr-8 flex-shrink-0">
                 <div className="relative w-32 h-32 lg:w-40 lg:h-40 rounded-3xl overflow-hidden bg-gradient-to-br from-green-100 to-emerald-100 ring-4 ring-green-200 shadow-xl">
                   <Image
-                    src={strain.imageUrl || "https://placehold.co/160x160/22c55e/ffffff?text=🌿"}
+                    src={
+                      strain.imageUrl ||
+                      "https://placehold.co/160x160/22c55e/ffffff.png?text=%F0%9F%8C%BF"
+                    }
                     alt={strain.name}
                     fill
                     className="object-cover"

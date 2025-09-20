@@ -24,7 +24,12 @@ export default async function ProducerAdminPage({
 
   const user = await prisma.user.findUnique({
     where: { email: session.user.email },
-    include: { producerAdmins: true },
+    include: {
+      producerAdmins: true,
+      stateAdmins: {
+        include: { state: { select: { id: true, slug: true } } },
+      },
+    },
   });
   if (!user) redirect("/login");
 
@@ -52,7 +57,11 @@ export default async function ProducerAdminPage({
 
   const isAdmin =
     user.role === "ADMIN" ||
-    user.producerAdmins.some((pa) => pa.producerId === producer.id);
+    user.producerAdmins.some((pa) => pa.producerId === producer.id) ||
+    user.stateAdmins.some((sa) => {
+      const slug = sa.state?.slug?.toLowerCase();
+      return sa.stateId === producer.stateId || slug === normalizedState;
+    });
   if (!isAdmin) redirect("/");
 
   return (

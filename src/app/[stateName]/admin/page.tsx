@@ -86,8 +86,23 @@ export default function StateAdminPage() {
         const meResponse = await fetch("/api/users/me", {
           credentials: "include",
         });
-        const meData = await meResponse.json();
-        if (!meData.success || meData.role !== "ADMIN") {
+        const meData = (await meResponse.json()) as {
+          success: boolean;
+          role?: string;
+          isGlobalAdmin?: boolean;
+          adminStates?: { slug: string }[];
+        };
+
+        const adminStateSlugs = Array.isArray(meData.adminStates)
+          ? meData.adminStates
+              .map((state) => state?.slug)
+              .filter((slug): slug is string => Boolean(slug))
+          : [];
+
+        const isGlobalAdmin = Boolean(meData.isGlobalAdmin || meData.role === "ADMIN");
+        const canManageState = isGlobalAdmin || adminStateSlugs.includes(stateSlug);
+
+        if (!meData.success || !canManageState) {
           router.push("/");
           if (!isActive) return;
           setIsLoading(false);
@@ -99,11 +114,17 @@ export default function StateAdminPage() {
         if (!stateResponse.ok || !stateData.success) {
           throw new Error(stateData.error || "Failed to load states");
         }
-        const metadata: StateSummary | undefined = stateData.states.find(
+        const accessibleStates = isGlobalAdmin
+          ? stateData.states
+          : stateData.states.filter((candidate: StateSummary) =>
+              adminStateSlugs.includes(candidate.slug),
+            );
+
+        const metadata: StateSummary | undefined = accessibleStates.find(
           (candidate: StateSummary) => candidate.slug === stateSlug,
         );
         if (!metadata) {
-          throw new Error("Unknown state");
+          throw new Error("Unknown or unauthorized state");
         }
         if (!isActive) return;
         setStateMetadata(metadata);
