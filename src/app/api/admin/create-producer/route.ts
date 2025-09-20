@@ -45,15 +45,30 @@ export async function POST(request: Request) {
   const normalizedCode =
     typeof stateCode === "string" ? stateCode.toUpperCase() : undefined;
 
+  if (!normalizedSlug && !normalizedCode) {
+    return NextResponse.json(
+      { error: "State slug or code is required" },
+      { status: 400 },
+    );
+  }
+
   let state = null;
   if (normalizedSlug) {
     state = await prisma.state.findUnique({ where: { slug: normalizedSlug } });
-  }
-  if (!state && normalizedCode) {
+    if (!state) {
+      return NextResponse.json({ error: "Invalid state" }, { status: 400 });
+    }
+    if (normalizedCode && normalizedCode !== state.code) {
+      return NextResponse.json(
+        { error: "State slug and code do not match" },
+        { status: 400 },
+      );
+    }
+  } else if (normalizedCode) {
     state = await prisma.state.findUnique({ where: { code: normalizedCode } });
-  }
-  if (!state) {
-    state = await prisma.state.findUnique({ where: { code: "CO" } });
+    if (!state) {
+      return NextResponse.json({ error: "Invalid state" }, { status: 400 });
+    }
   }
 
   if (!state) {

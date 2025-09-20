@@ -6,19 +6,42 @@ export async function GET(request: NextRequest) {
     const stateParam = request.nextUrl.searchParams
       .get("state")
       ?.toLowerCase();
-    const stateFilter = stateParam ? { state: { slug: stateParam } } : {};
+
+    if (!stateParam) {
+      return NextResponse.json(
+        { flower: [], hash: [], error: "State slug is required" },
+        { status: 400 },
+      );
+    }
+
+    const state = await prisma.state.findUnique({ where: { slug: stateParam } });
+
+    if (!state) {
+      return NextResponse.json(
+        { flower: [], hash: [], error: "State not found" },
+        { status: 404 },
+      );
+    }
 
     const [flower, hash] = await Promise.all([
       prisma.producer.findMany({
-        where: { category: "FLOWER", ...stateFilter },
-        include: { votes: true, _count: { select: { comments: true } } },
+        where: { category: "FLOWER", stateId: state.id },
+        include: {
+          votes: true,
+          _count: { select: { comments: true } },
+          state: { select: { slug: true } },
+        },
       }),
       prisma.producer.findMany({
-        where: { category: "HASH", ...stateFilter },
-        include: { votes: true, _count: { select: { comments: true } } },
+        where: { category: "HASH", stateId: state.id },
+        include: {
+          votes: true,
+          _count: { select: { comments: true } },
+          state: { select: { slug: true } },
+        },
       }),
     ]);
-    return NextResponse.json({ flower, hash });
+    return NextResponse.json({ flower, hash, state: { slug: state.slug } });
   } catch (err: any) {
     console.error("[/api/producers] error:", err);
     // always return JSON, even on error

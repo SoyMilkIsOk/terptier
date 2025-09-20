@@ -135,7 +135,13 @@ export async function PUT(
     const { id } = await params;
     const data = await request.json();
 
-    const { stateSlug: bodyStateSlug, stateCode, ...rest } = data;
+    const {
+      stateSlug: _bodyStateSlug,
+      stateCode: _bodyStateCode,
+      stateId: _bodyStateId,
+      state: _bodyState,
+      ...rest
+    } = data;
 
     const existingProducer = await ensureProducerInState(id, stateSlug);
     if (!existingProducer) {
@@ -145,30 +151,9 @@ export async function PUT(
       );
     }
 
-    let stateId = existingProducer.stateId;
-    const normalizedBodySlug =
-      typeof bodyStateSlug === "string" ? bodyStateSlug.toLowerCase() : undefined;
-    const normalizedBodyCode =
-      typeof stateCode === "string" ? stateCode.toUpperCase() : undefined;
-
-    if (normalizedBodySlug && normalizedBodySlug !== stateSlug) {
-      const state = await prisma.state.findUnique({ where: { slug: normalizedBodySlug } });
-      if (state) {
-        stateId = state.id;
-      }
-    } else if (normalizedBodyCode) {
-      const state = await prisma.state.findUnique({ where: { code: normalizedBodyCode } });
-      if (state) {
-        stateId = state.id;
-      }
-    }
-
     await prisma.producer.update({
       where: { id },
-      data: {
-        ...rest,
-        stateId,
-      },
+      data: rest,
     });
 
     return NextResponse.json({ success: true });
