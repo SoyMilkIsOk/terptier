@@ -37,11 +37,24 @@ export async function POST(request: Request) {
     slug,
     profileImage,
     stateCode,
+    stateSlug,
   } = await request.json();
 
-  const state = await prisma.state.findUnique({
-    where: { code: typeof stateCode === "string" ? stateCode : "CO" },
-  });
+  const normalizedSlug =
+    typeof stateSlug === "string" ? stateSlug.toLowerCase() : undefined;
+  const normalizedCode =
+    typeof stateCode === "string" ? stateCode.toUpperCase() : undefined;
+
+  let state = null;
+  if (normalizedSlug) {
+    state = await prisma.state.findUnique({ where: { slug: normalizedSlug } });
+  }
+  if (!state && normalizedCode) {
+    state = await prisma.state.findUnique({ where: { code: normalizedCode } });
+  }
+  if (!state) {
+    state = await prisma.state.findUnique({ where: { code: "CO" } });
+  }
 
   if (!state) {
     return NextResponse.json({ error: "Invalid state" }, { status: 400 });
