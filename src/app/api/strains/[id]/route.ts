@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prismadb";
-import { authorize } from "@/lib/authorize";
+import { authorize, JwtClaims } from "@/lib/authorize";
 import { Role } from "@prisma/client";
 
 interface UpdateStrainBody {
@@ -13,12 +13,39 @@ interface UpdateStrainBody {
 
 async function canManageProducer(
   producerId: string,
-  claims: any | null,
+  claims: JwtClaims | null,
   session: any,
 ) {
   if (claims?.role === "ADMIN") return true;
-  if (Array.isArray(claims?.producer_ids) && claims.producer_ids.includes(producerId)) {
+  const producerClaims = claims?.producer_ids;
+  if (Array.isArray(producerClaims) && producerClaims.includes(producerId)) {
     return true;
+  }
+  const stateIdsClaim = claims?.state_ids;
+  const stateSlugsClaim = claims?.state_slugs;
+  if (
+    (Array.isArray(stateIdsClaim) && stateIdsClaim.length > 0) ||
+    (Array.isArray(stateSlugsClaim) && stateSlugsClaim.length > 0)
+  ) {
+    const producer = await prisma.producer.findUnique({
+      where: { id: producerId },
+      select: { stateId: true, state: { select: { slug: true } } },
+    });
+
+    if (producer) {
+      if (Array.isArray(stateIdsClaim) && stateIdsClaim.includes(producer.stateId)) {
+        return true;
+      }
+
+      const stateSlug = producer.state?.slug;
+      if (
+        stateSlug &&
+        Array.isArray(stateSlugsClaim) &&
+        stateSlugsClaim.includes(stateSlug)
+      ) {
+        return true;
+      }
+    }
   }
   if (session?.user?.email) {
     const user = await prisma.user.findUnique({

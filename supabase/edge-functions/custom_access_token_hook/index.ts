@@ -20,12 +20,28 @@ serve(async (req) => {
       .select("producerId")
       .eq("userId", user.id);
 
+    const { data: stateAdmins } = await supabase
+      .from("StateAdmin")
+      .select("stateId, state:State(slug)")
+      .eq("userId", user.id);
+
     const role = userRow?.role || "USER";
     const producer_ids = producers?.map((p) => p.producerId) || [];
+    const state_ids =
+      stateAdmins
+        ?.map((stateAdmin) => stateAdmin.stateId)
+        .filter((stateId): stateId is string => typeof stateId === "string") || [];
+    const state_slugs =
+      stateAdmins
+        ?.map((stateAdmin) => stateAdmin.state?.slug)
+        .filter((slug): slug is string => Boolean(slug)) || [];
 
-    return new Response(JSON.stringify({ role, producer_ids }), {
-      headers: { "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({ role, producer_ids, state_ids, state_slugs }),
+      {
+        headers: { "Content-Type": "application/json" },
+      },
+    );
   } catch (err) {
     console.error("token hook error", err);
     return new Response(JSON.stringify({}), { status: 200 });

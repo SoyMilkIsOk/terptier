@@ -13,6 +13,8 @@ if (!supabaseUrl || !supabaseKey) {
 export interface JwtClaims {
   role?: string;
   producer_ids?: string[];
+  state_ids?: string[];
+  state_slugs?: string[];
   [key: string]: any;
 }
 
