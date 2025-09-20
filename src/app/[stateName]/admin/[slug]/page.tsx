@@ -55,13 +55,16 @@ export default async function ProducerAdminPage({
   });
   if (!producer) return notFound();
 
+  const managesProducerByState = user.stateAdmins.some((assignment) => {
+    const assignmentSlug = assignment.state?.slug?.toLowerCase();
+    return assignment.stateId === producer.stateId || assignmentSlug === normalizedState;
+  });
+
   const isAdmin =
     user.role === "ADMIN" ||
     user.producerAdmins.some((pa) => pa.producerId === producer.id) ||
-    user.stateAdmins.some((sa) => {
-      const slug = sa.state?.slug?.toLowerCase();
-      return sa.stateId === producer.stateId || slug === normalizedState;
-    });
+    managesProducerByState;
+
   if (!isAdmin) redirect("/");
 
   return (

@@ -64,11 +64,26 @@ function LoginForm() {
         }),
       });
       const meRes = await fetch("/api/users/me");
-      const meData = await meRes.json();
+      const meData: {
+        success: boolean;
+        isGlobalAdmin?: boolean;
+        stateAdminAssignments?: { stateSlug?: string | null }[];
+      } = await meRes.json();
       if (meData.success) {
-        if (meData.role === "ADMIN") {
-          const preferredState = getPreferredStateSlug();
+        const preferredState = getPreferredStateSlug();
+        const assignedStates = Array.isArray(meData.stateAdminAssignments)
+          ? meData.stateAdminAssignments
+              .map((assignment: { stateSlug?: string | null }) => assignment?.stateSlug)
+              .filter((slug): slug is string => Boolean(slug))
+          : [];
+
+        if (meData.isGlobalAdmin) {
           router.push(`/${preferredState}/admin`);
+        } else if (assignedStates.length > 0) {
+          const targetState = assignedStates.includes(preferredState)
+            ? preferredState
+            : assignedStates[0];
+          router.push(`/${targetState}/admin`);
         } else {
           router.push(`/${DEFAULT_STATE_SLUG}/rankings`);
         }
