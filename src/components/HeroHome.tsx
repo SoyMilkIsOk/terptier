@@ -193,18 +193,6 @@ export default function HeroHome({ state }: HeroHomeProps) {
               </div>
             </motion.button>
           </Link>
-          <Link href="/login">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="group cursor-pointer bg-white/5 backdrop-blur-sm text-white font-semibold px-8 py-4 rounded-full border border-white/20 hover:bg-white/15 transition-all duration-300"
-            >
-              <div className="flex items-center justify-center gap-2">
-                <LogIn size={20} />
-                <span>Log In</span>
-              </div>
-            </motion.button>
-          </Link>
           <Link href="/signup">
             <motion.button
               whileHover={{ scale: 1.05 }}
