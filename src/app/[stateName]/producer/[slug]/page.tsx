@@ -37,6 +37,8 @@ export default async function ProducerProfilePage({
     notFound();
   }
 
+  const stateSlug = state.slug;
+
   const supabase = createSupabaseServerClient();
   const {
     data: { session },
@@ -221,7 +223,7 @@ export default async function ProducerProfilePage({
                 )}
                 {isAdmin && (
                   <Link
-                    href={`/admin/${producerSlug}`}
+                    href={`/${stateSlug}/admin/${producerSlug}`}
                     className="bg-green-700 hover:bg-green-800 text-white px-3 py-1 rounded"
                   >
                     Admin

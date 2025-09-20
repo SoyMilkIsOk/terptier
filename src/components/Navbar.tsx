@@ -82,6 +82,10 @@ export default function Navbar() {
     () => `/${selectedState}/rankings`,
     [selectedState],
   );
+  const adminPath = useMemo(
+    () => `/${selectedState}/admin`,
+    [selectedState],
+  );
 
   const selectedStateData = useMemo(
     () => states.find(state => state.slug === selectedState) || states[0],
@@ -400,9 +404,9 @@ export default function Navbar() {
 
             {session && isAdmin && (
               <Link
-                href="/admin"
+                href={adminPath}
                 className={`flex items-center space-x-2 px-4 py-2 rounded-2xl text-sm font-medium transition-all duration-200 ${
-                  pathname === "/admin"
+                  pathname?.startsWith(adminPath)
                     ? "bg-white/20 backdrop-blur-sm"
                     : "hover:bg-white/10 backdrop-blur-sm"
                 }`}
@@ -504,7 +508,7 @@ export default function Navbar() {
                   )}
                   {session && isAdmin && (
                     <Link
-                      href="/admin"
+                      href={adminPath}
                       onClick={() => setMenuOpen(false)}
                       className="flex items-center justify-center space-x-2 w-full py-3 bg-white/10 backdrop-blur-sm rounded-2xl hover:bg-white/20 transition-all duration-200 font-medium"
                     >
