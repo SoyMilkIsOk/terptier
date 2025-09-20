@@ -44,13 +44,18 @@ export default async function ProducerProfilePage({
     data: { session },
   } = await supabase.auth.getSession();
 
-  let currentUserId: string | null = null;
-  if (session?.user?.email) {
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-    });
-    currentUserId = user?.id ?? null;
-  }
+  const currentUser = session?.user?.email
+    ? await prisma.user.findUnique({
+        where: { email: session.user.email },
+        include: {
+          producerAdmins: { select: { producerId: true } },
+          stateAdmins: {
+            include: { state: { select: { id: true, slug: true } } },
+          },
+        },
+      })
+    : null;
+  const currentUserId = currentUser?.id ?? null;
 
   const producer = await prisma.producer.findFirst({
     where: {
@@ -83,16 +88,19 @@ export default async function ProducerProfilePage({
     );
   }
 
-  const isAdmin = currentUserId
-    ? !!(await prisma.producerAdmin.findUnique({
-        where: {
-          userId_producerId: {
-            userId: currentUserId,
-            producerId: producer.id,
-          },
-        },
-      }))
-    : false;
+  const normalizedStateSlug = stateSlug.toLowerCase();
+  const producerStateId = producer.stateId;
+  const isAdmin = Boolean(
+    currentUser &&
+      (currentUser.role === "ADMIN" ||
+        currentUser.producerAdmins.some(
+          (admin) => admin.producerId === producer.id,
+        ) ||
+        currentUser.stateAdmins.some((admin) => {
+          const slug = admin.state?.slug?.toLowerCase();
+          return admin.stateId === producerStateId || slug === normalizedStateSlug;
+        })),
+  );
 
   const totalScore = producer.votes.reduce((sum, vote) => sum + vote.value, 0);
   const averageRating =
