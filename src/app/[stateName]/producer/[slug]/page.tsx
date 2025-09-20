@@ -1,4 +1,4 @@
-// src/app/producer/[slug]/page.tsx
+// src/app/[stateName]/producer/[slug]/page.tsx
 import { prisma } from "@/lib/prismadb";
 import Image from "next/image";
 import Link from "next/link";
@@ -13,6 +13,8 @@ import { ExternalLink, ArrowRight } from "lucide-react";
 import { createSupabaseServerClient } from "@/lib/supabaseServer";
 import { ATTRIBUTE_OPTIONS } from "@/constants/attributes";
 import Tooltip from "@/components/Tooltip";
+import { getStateMetadata } from "@/lib/states";
+import { notFound } from "next/navigation";
 
 // Helper function to capitalize category
 const capitalize = (s: string) =>
@@ -20,6 +22,7 @@ const capitalize = (s: string) =>
 
 interface ProducerProfilePageProps {
   params: Promise<{
+    stateName: string;
     slug: string;
   }>;
 }
@@ -27,23 +30,37 @@ interface ProducerProfilePageProps {
 export default async function ProducerProfilePage({
   params,
 }: ProducerProfilePageProps) {
-  const { slug } = await params;
+  const { stateName, slug } = await params;
+  const state = await getStateMetadata(stateName);
+
+  if (!state) {
+    notFound();
+  }
+
+  const stateSlug = state.slug;
 
   const supabase = createSupabaseServerClient();
   const {
     data: { session },
   } = await supabase.auth.getSession();
 
-  let currentUserId: string | null = null;
-  if (session?.user?.email) {
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-    });
-    currentUserId = user?.id ?? null;
-  }
+  const currentUser = session?.user?.email
+    ? await prisma.user.findUnique({
+        where: { email: session.user.email },
+        include: {
+          producerAdmins: { select: { producerId: true } },
+          stateAdmins: {
+            include: { state: { select: { id: true, slug: true } } },
+          },
+        },
+      })
+    : null;
+  const currentUserId = currentUser?.id ?? null;
 
   const producer = await prisma.producer.findFirst({
-    where: { OR: [{ slug }, { id: slug }] },
+    where: {
+      AND: [{ OR: [{ slug }, { id: slug }] }, state.producerWhere ?? {}],
+    },
     include: {
       votes: true, // To calculate total score
       comments: false,
@@ -71,16 +88,19 @@ export default async function ProducerProfilePage({
     );
   }
 
-  const isAdmin = currentUserId
-    ? !!(await prisma.producerAdmin.findUnique({
-        where: {
-          userId_producerId: {
-            userId: currentUserId,
-            producerId: producer.id,
-          },
-        },
-      }))
-    : false;
+  const normalizedStateSlug = stateSlug.toLowerCase();
+  const producerStateId = producer.stateId;
+  const isAdmin = Boolean(
+    currentUser &&
+      (currentUser.role === "ADMIN" ||
+        currentUser.producerAdmins.some(
+          (admin) => admin.producerId === producer.id,
+        ) ||
+        currentUser.stateAdmins.some((admin) => {
+          const slug = admin.state?.slug?.toLowerCase();
+          return admin.stateId === producerStateId || slug === normalizedStateSlug;
+        })),
+  );
 
   const totalScore = producer.votes.reduce((sum, vote) => sum + vote.value, 0);
   const averageRating =
@@ -150,7 +170,10 @@ export default async function ProducerProfilePage({
   // Calculate rank
   let rank = 0;
   const allProducersOfCategory = await prisma.producer.findMany({
-    where: { category: producer.category },
+    where: {
+      ...(state.producerWhere ?? {}),
+      category: producer.category,
+    },
     include: { votes: true },
   });
 
@@ -208,7 +231,7 @@ export default async function ProducerProfilePage({
                 )}
                 {isAdmin && (
                   <Link
-                    href={`/admin/${producerSlug}`}
+                    href={`/${stateSlug}/admin/${producerSlug}`}
                     className="bg-green-700 hover:bg-green-800 text-white px-3 py-1 rounded"
                   >
                     Admin
@@ -289,7 +312,7 @@ export default async function ProducerProfilePage({
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl font-semibold">Strains ({totalStrains})</h3>
             <Link
-              href={`/producer/${producerSlug}/strains`}
+              href={`/${state.slug}/producer/${producerSlug}/strains`}
               className="text-green-700 hover:text-green-800 hover:underline flex items-center"
             >
               <span>See all strains</span>

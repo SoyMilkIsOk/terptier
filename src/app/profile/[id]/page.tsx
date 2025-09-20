@@ -11,6 +11,9 @@ import { prisma } from "@/lib/prismadb";
 import { cookies } from "next/headers";
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { Instagram, ExternalLink, Link as LinkIcon } from "lucide-react";
+import ProducerCard from "@/components/ProducerCard";
+import { StateProvider } from "@/components/StateProvider";
+import { DEFAULT_STATE_SLUG } from "@/lib/stateConstants";
 
 export const dynamic = "force-dynamic";
 
@@ -46,15 +49,23 @@ export default async function ProfilePage({
     include: {
       votes: {
         // producer.votes is needed for ProducerCard to calculate total score
-        include: { producer: { include: { votes: true, _count: { select: { comments: true } } } } },
+        include: {
+          producer: {
+            include: {
+              votes: true,
+              _count: { select: { comments: true } },
+              state: true,
+            },
+          },
+        },
       },
       comments: {
-        include: { producer: true, user: true },
+        include: { producer: { include: { state: true } }, user: true },
         orderBy: { updatedAt: "desc" },
       },
       StrainReview: {
         include: {
-          strain: { include: { producer: true } },
+          strain: { include: { producer: { include: { state: true } } } },
           user: {
             select: {
               id: true,
@@ -74,16 +85,24 @@ export default async function ProfilePage({
     user = await prisma.user.findUnique({
       where: { id },
       include: {
-        votes: {
-          include: { producer: { include: { votes: true, _count: { select: { comments: true } } } } },
+      votes: {
+        include: {
+          producer: {
+            include: {
+              votes: true,
+              _count: { select: { comments: true } },
+              state: true,
+            },
+          },
         },
-        comments: {
-          include: { producer: true, user: true },
-          orderBy: { updatedAt: "desc" },
-        },
-        StrainReview: {
-          include: {
-            strain: { include: { producer: true } },
+      },
+      comments: {
+        include: { producer: { include: { state: true } }, user: true },
+        orderBy: { updatedAt: "desc" },
+      },
+      StrainReview: {
+        include: {
+          strain: { include: { producer: { include: { state: true } } } },
             user: {
               select: {
                 id: true,
@@ -244,14 +263,18 @@ export default async function ProfilePage({
         <div className="space-y-8">
           {/* Comments Section */}
           <ExpandableSection title="Comments" count={user.comments.length} initialShowCount={5}>
-            {user.comments.map((c) => (
-              <CommentCard 
-                key={c.id} 
-                comment={c} 
-                currentUserId={currentViewerId} 
-                showRating={false} 
-              />
-            ))}
+            {user.comments.map((c) => {
+              const stateSlug = c.producer?.state?.slug ?? DEFAULT_STATE_SLUG;
+              return (
+                <StateProvider key={c.id} stateSlug={stateSlug}>
+                  <CommentCard
+                    comment={c}
+                    currentUserId={currentViewerId}
+                    showRating={false}
+                  />
+                </StateProvider>
+              );
+            })}
           </ExpandableSection>
 
           {/* Rated Producers Section
@@ -267,18 +290,20 @@ export default async function ProfilePage({
                 const j = rank % 10;
                 const k = rank % 100;
                 const suffix = j === 1 && k !== 11 ? "st" : j === 2 && k !== 12 ? "nd" : j === 3 && k !== 13 ? "rd" : "th";
+                const stateSlug = producer.state?.slug ?? DEFAULT_STATE_SLUG;
 
                 return (
-                  <ProducerCard
-                    key={producer.id}
-                    rank={rank}
-                    rankSuffix={suffix}
-                    producer={producer}
-                    userVoteValue={producer.userActualVote}
-                    color="none"
-                    useColors={false}
-                    showRank={false}
-                  />
+                  <StateProvider key={producer.id} stateSlug={stateSlug}>
+                    <ProducerCard
+                      rank={rank}
+                      rankSuffix={suffix}
+                      producer={producer}
+                      userVoteValue={producer.userActualVote}
+                      color="none"
+                      useColors={false}
+                      showRank={false}
+                    />
+                  </StateProvider>
                 );
               })}
             </div>
@@ -286,20 +311,30 @@ export default async function ProfilePage({
 
           {/* Strain Reviews Section */}
           <ExpandableSection title="Strain Reviews" count={user.StrainReview.length} initialShowCount={4}>
-            {user.StrainReview.map((review) => (
-              <div key={review.id} className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4 border border-green-100">
-                <Link
-                  href={`/producer/${review.strain.producer.slug}/${review.strain.strainSlug}`}
-                  className="inline-block text-xl font-semibold text-green-700 hover:text-green-800 transition-colors mb-3 hover:underline"
+            {user.StrainReview.map((review) => {
+              const stateSlug =
+                review.strain.producer.state?.slug ?? DEFAULT_STATE_SLUG;
+              const producerSlug =
+                review.strain.producer.slug ?? review.strain.producer.id;
+
+              return (
+                <div
+                  key={review.id}
+                  className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4 border border-green-100"
                 >
-                  {review.strain.name}
-                </Link>
+                  <Link
+                    href={`/${stateSlug}/producer/${producerSlug}/${review.strain.strainSlug}`}
+                    className="inline-block text-xl font-semibold text-green-700 hover:text-green-800 transition-colors mb-3 hover:underline"
+                  >
+                    {review.strain.name}
+                  </Link>
                 <StrainReviewCard
                   review={review}
                   currentUserId={currentViewerId}
                 />
-              </div>
-            ))}
+                </div>
+              );
+            })}
           </ExpandableSection>
         </div>
       </div>

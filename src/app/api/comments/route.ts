@@ -22,7 +22,17 @@ export async function GET(request: NextRequest) {
 
   const comments = await prisma.comment.findMany({
     where,
-    include: { user: true },
+    include: {
+      user: true,
+      producer: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          state: { select: { slug: true } },
+        },
+      },
+    },
     orderBy: { updatedAt: "desc" },
   });
 
@@ -82,6 +92,17 @@ export async function POST(request: NextRequest) {
     update: {
       text,
       imageUrls: images,
+    },
+    include: {
+      user: true,
+      producer: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          state: { select: { slug: true } },
+        },
+      },
     },
   });
 

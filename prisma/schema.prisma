@@ -12,11 +12,25 @@ enum Role {
   USER
   ADMIN
   PRODUCER_ADMIN
+  STATE_ADMIN
 }
 
 enum Category {
   FLOWER
   HASH
+}
+
+model State {
+  id    String @id @default(cuid())
+  code  String @unique
+  name  String
+  slug  String @unique
+
+  producers              Producer[]
+  strains                Strain[]
+  votes                  Vote[]
+  producerRatingSnapshots ProducerRatingSnapshot[]
+  stateAdmins            StateAdmin[]
 }
 
 model User {
@@ -33,6 +47,7 @@ model User {
   votes             Vote[]
   comments          Comment[]
   producerAdmins    ProducerAdmin[]
+  stateAdmins       StateAdmin[]
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
   Producer          Producer[]
@@ -43,12 +58,14 @@ model Producer {
   id                     String                   @id @default(cuid())
   name                   String
   category               Category
+  state                  State                    @relation(fields: [stateId], references: [id])
+  stateId                String
   logoUrl                String?
   profileImage           String?
   website                String?
   ingredients            String?
   attributes             String[]                 @default([])
-  slug                   String?                  @unique
+  slug                   String?
   createdAt              DateTime                 @default(now())
   createdBy              User?                    @relation(fields: [createdById], references: [id])
   createdById            String?
@@ -59,7 +76,9 @@ model Producer {
   strains                Strain[]
   StrainReview           StrainReview[]
 
-  @@unique([name, category])
+  @@unique([stateId, name, category])
+  @@unique([stateId, slug])
+  @@index([stateId])
 }
 
 model Vote {
@@ -68,11 +87,14 @@ model Vote {
   userId     String
   producer   Producer @relation(fields: [producerId], references: [id], onDelete: Cascade) // Added onDelete: Cascade
   producerId String
+  state      State    @relation(fields: [stateId], references: [id])
+  stateId    String
   value      Int // rating 1-5
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt // Added missing updatedAt
 
   @@unique([userId, producerId])
+  @@index([stateId])
 }
 
 model Comment {
@@ -93,11 +115,14 @@ model ProducerRatingSnapshot {
   id            String   @id @default(cuid())
   producer      Producer @relation(fields: [producerId], references: [id], onDelete: Cascade)
   producerId    String
+  state         State    @relation(fields: [stateId], references: [id])
+  stateId       String
   averageRating Float
   categoryRank  Int
   createdAt     DateTime @default(now())
 
   @@index([producerId, createdAt])
+  @@index([stateId, createdAt])
 }
 
 model ProducerAdmin {
@@ -109,6 +134,15 @@ model ProducerAdmin {
   @@id([userId, producerId])
 }
 
+model StateAdmin {
+  user    User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId  String
+  state   State @relation(fields: [stateId], references: [id], onDelete: Cascade)
+  stateId String
+
+  @@id([userId, stateId])
+}
+
 model Strain {
   id           String         @id @default(cuid())
   strainSlug   String         @unique @default(cuid())
@@ -118,11 +152,14 @@ model Strain {
   imageUrl     String?
   producer     Producer       @relation(fields: [producerId], references: [id], onDelete: Cascade)
   producerId   String
+  state        State          @relation(fields: [stateId], references: [id])
+  stateId      String
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
   StrainReview StrainReview[]
 
   @@unique([producerId, name])
+  @@index([stateId])
 }
 
 model StrainReview {

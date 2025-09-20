@@ -8,9 +8,10 @@ export const dynamic = "force-dynamic";
 export default async function ProducerAdminPage({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ stateName: string; slug: string }>;
 }) {
-  const { slug } = await params;
+  const { stateName, slug } = await params;
+  const normalizedState = stateName.toLowerCase();
 
   const supabase = createSupabaseServerClient();
   const {
@@ -23,12 +24,22 @@ export default async function ProducerAdminPage({
 
   const user = await prisma.user.findUnique({
     where: { email: session.user.email },
-    include: { producerAdmins: true },
+    include: {
+      producerAdmins: true,
+      stateAdmins: {
+        include: { state: { select: { id: true, slug: true } } },
+      },
+    },
   });
   if (!user) redirect("/login");
 
   const producer = await prisma.producer.findFirst({
-    where: { OR: [{ slug }, { id: slug }] },
+    where: {
+      AND: [
+        { OR: [{ slug }, { id: slug }] },
+        { state: { slug: normalizedState } },
+      ],
+    },
     include: {
       strains: {
         select: {
@@ -44,9 +55,16 @@ export default async function ProducerAdminPage({
   });
   if (!producer) return notFound();
 
+  const managesProducerByState = user.stateAdmins.some((assignment) => {
+    const assignmentSlug = assignment.state?.slug?.toLowerCase();
+    return assignment.stateId === producer.stateId || assignmentSlug === normalizedState;
+  });
+
   const isAdmin =
     user.role === "ADMIN" ||
-    user.producerAdmins.some((pa) => pa.producerId === producer.id);
+    user.producerAdmins.some((pa) => pa.producerId === producer.id) ||
+    managesProducerByState;
+
   if (!isAdmin) redirect("/");
 
   return (

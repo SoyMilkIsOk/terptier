@@ -5,6 +5,7 @@ import { Star } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import type { Session } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
+import { useStateSlug } from "./StateProvider";
 
 export default function VoteButton({
   producerId,
@@ -26,6 +27,7 @@ export default function VoteButton({
   compact?: boolean;
 }) {
   const router = useRouter();
+  const stateSlug = useStateSlug();
   const [session, setSession] = useState<Session | null>(null);
   const [rating, setRating] = useState(userRating ?? 0);
   const [showTooltip, setShowTooltip] = useState(false);
@@ -46,7 +48,7 @@ export default function VoteButton({
   const cast = async (val: number) => {
     if (readOnly) {
       if (navigateOnClick) {
-        router.push(`/producer/${linkSlug ?? producerId}`);
+        router.push(`/${stateSlug}/producer/${linkSlug ?? producerId}`);
       }
       return;
     }
@@ -60,7 +62,7 @@ export default function VoteButton({
     const res = await fetch("/api/vote", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ producerId, value: val }),
+      body: JSON.stringify({ producerId, value: val, stateSlug }),
     });
     if (res.ok) {
       setShowTooltip(true);

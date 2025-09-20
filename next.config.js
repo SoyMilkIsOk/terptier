@@ -9,8 +9,16 @@ const nextConfig = {
   },
   images: {
     remotePatterns: [
-      new URL('https://elnwy0xndspvgnal.public.blob.vercel-storage.com/**'),
-      new URL('https://placehold.co/**'),
+      {
+        protocol: 'https',
+        hostname: 'elnwy0xndspvgnal.public.blob.vercel-storage.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'placehold.co',
+        pathname: '/**',
+      },
     ],
   },
 };

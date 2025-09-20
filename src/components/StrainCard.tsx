@@ -6,6 +6,7 @@ import Link from "next/link";
 import { MessageCircle, Star } from "lucide-react";
 import type { Strain } from "@prisma/client";
 import type { ReactNode } from "react";
+import { useStateSlug } from "./StateProvider";
 
 interface StrainCardProps {
   strain: Pick<
@@ -21,14 +22,15 @@ export default function StrainCard({
   producerSlug,
   children,
 }: StrainCardProps) {
+  const stateSlug = useStateSlug();
   return (
     <Link
-      href={`/producer/${producerSlug}/${strain.strainSlug}`}
+      href={`/${stateSlug}/producer/${producerSlug}/${strain.strainSlug}`}
       className="flex items-center space-x-4 bg-white shadow rounded p-4 hover:bg-gray-50 transition"
     >
       <div className="relative w-16 h-16 flex-shrink-0">
         <Image
-          src={strain.imageUrl || "https://placehold.co/64"}
+          src={strain.imageUrl || "https://placehold.co/64/png"}
           alt={strain.name}
           fill
           className="object-cover rounded"

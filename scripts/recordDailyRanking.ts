@@ -2,29 +2,38 @@ import { prisma } from "@/lib/prismadb";
 import { Category } from "@prisma/client";
 
 export async function recordDailyRanking() {
-  for (const category of [Category.FLOWER, Category.HASH]) {
-    const producers = await prisma.producer.findMany({
-      where: { category },
-      include: { votes: true },
-    });
+  const states = await prisma.state.findMany();
 
-    const ranked = producers
-      .map((p) => ({
-        id: p.id,
-        avg: p.votes.length
-          ? p.votes.reduce((s, v) => s + v.value, 0) / p.votes.length
-          : 0,
-      }))
-      .sort((a, b) => b.avg - a.avg);
-
-    for (const [index, p] of ranked.entries()) {
-      await prisma.producerRatingSnapshot.create({
-        data: {
-          producerId: p.id,
-          averageRating: p.avg,
-          categoryRank: index + 1,
-        },
+  for (const state of states) {
+    for (const category of [Category.FLOWER, Category.HASH]) {
+      const producers = await prisma.producer.findMany({
+        where: { category, stateId: state.id },
+        include: { votes: { where: { stateId: state.id } } },
       });
+
+      if (!producers.length) {
+        continue;
+      }
+
+      const ranked = producers
+        .map((p) => ({
+          id: p.id,
+          avg: p.votes.length
+            ? p.votes.reduce((s, v) => s + v.value, 0) / p.votes.length
+            : 0,
+        }))
+        .sort((a, b) => b.avg - a.avg);
+
+      for (const [index, p] of ranked.entries()) {
+        await prisma.producerRatingSnapshot.create({
+          data: {
+            producerId: p.id,
+            stateId: state.id,
+            averageRating: p.avg,
+            categoryRank: index + 1,
+          },
+        });
+      }
     }
   }
 }

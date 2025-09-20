@@ -7,9 +7,11 @@ import StrainReviewCard from "@/components/StrainReviewCard";
 import { Star, Calendar, ChevronDown, ChevronUp } from "lucide-react";
 import { createSupabaseServerClient } from "@/lib/supabaseServer";
 import React from "react";
+import { getStateMetadata } from "@/lib/states";
+import { notFound } from "next/navigation";
 
 interface StrainPageProps {
-  params: Promise<{ slug: string; strainSlug: string }>;
+  params: Promise<{ stateName: string; slug: string; strainSlug: string }>;
 }
 
 // Client component for expandable reviews section
@@ -75,7 +77,12 @@ function ExpandableReviewSection({
 }
 
 export default async function StrainPage({ params }: StrainPageProps) {
-  const { slug: producerSlug, strainSlug } = await params;
+  const { stateName, slug: producerSlug, strainSlug } = await params;
+  const state = await getStateMetadata(stateName);
+
+  if (!state) {
+    notFound();
+  }
 
   const supabase = createSupabaseServerClient();
   const {
@@ -91,7 +98,18 @@ export default async function StrainPage({ params }: StrainPageProps) {
   }
 
   const strain = await prisma.strain.findFirst({
-    where: { strainSlug, producer: { slug: producerSlug } },
+    where: {
+      AND: [
+        { strainSlug },
+        state.strainWhere ?? {},
+        {
+          producer: {
+            ...(state.producerWhere ?? {}),
+            OR: [{ slug: producerSlug }, { id: producerSlug }],
+          },
+        },
+      ],
+    },
     include: {
       StrainReview: {
         include: { user: true },
@@ -146,7 +164,10 @@ export default async function StrainPage({ params }: StrainPageProps) {
               <div className="mb-6 lg:mb-0 lg:mr-8 flex-shrink-0">
                 <div className="relative w-32 h-32 lg:w-40 lg:h-40 rounded-3xl overflow-hidden bg-gradient-to-br from-green-100 to-emerald-100 ring-4 ring-green-200 shadow-xl">
                   <Image
-                    src={strain.imageUrl || "https://placehold.co/160x160/22c55e/ffffff?text=🌿"}
+                    src={
+                      strain.imageUrl ||
+                      "https://placehold.co/160x160/22c55e/ffffff.png?text=%F0%9F%8C%BF"
+                    }
                     alt={strain.name}
                     fill
                     className="object-cover"
@@ -164,7 +185,7 @@ export default async function StrainPage({ params }: StrainPageProps) {
                 <div className="mb-6">
                   <span className="text-gray-600 text-lg">by </span>
                   <Link
-                    href={`/producer/${strain.producer.slug ?? strain.producer.id}`}
+                    href={`/${state.slug}/producer/${strain.producer.slug ?? strain.producer.id}`}
                     className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 rounded-full hover:from-green-200 hover:to-emerald-200 transition-all duration-200 hover:scale-105 font-semibold"
                   >
                     {strain.producer.name}

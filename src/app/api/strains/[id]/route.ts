@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prismadb";
 import { authorize } from "@/lib/authorize";
-import { Role } from "@prisma/client";
+import {
+  evaluateAdminAccess,
+  getAdminScopedUserByEmail,
+} from "@/lib/adminAuthorization";
 
 interface UpdateStrainBody {
   name?: string;
@@ -9,30 +12,6 @@ interface UpdateStrainBody {
   imageUrl?: string | null;
   releaseDate?: string | null;
   strainSlug?: string;
-}
-
-async function canManageProducer(
-  producerId: string,
-  claims: any | null,
-  session: any,
-) {
-  if (claims?.role === "ADMIN") return true;
-  if (Array.isArray(claims?.producer_ids) && claims.producer_ids.includes(producerId)) {
-    return true;
-  }
-  if (session?.user?.email) {
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-      include: { producerAdmins: true },
-    });
-    if (user) {
-      return (
-        user.role === Role.ADMIN ||
-        user.producerAdmins.some((pa) => pa.producerId === producerId)
-      );
-    }
-  }
-  return false;
 }
 
 export async function GET(
@@ -60,8 +39,29 @@ export async function GET(
     }
 
     const { session, claims } = await authorize();
-    if (!session || !(await canManageProducer(strain.producerId, claims, session))) {
+    if (!session) {
       return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
+    }
+
+    const email = session.user.email;
+    if (!email) {
+      return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
+    }
+
+    const user = await getAdminScopedUserByEmail(email);
+    if (!user) {
+      return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
+    }
+
+    const access = await evaluateAdminAccess(
+      { user, claims },
+      { targetProducerId: strain.producerId },
+    );
+    if (!access.allowed) {
+      const status = access.reason === "producer_not_found" ? 404 : 403;
+      const message =
+        access.reason === "producer_not_found" ? "Producer not found" : "Forbidden";
+      return NextResponse.json({ success: false, error: message }, { status });
     }
 
     return NextResponse.json({ success: true, strain });
@@ -88,8 +88,23 @@ export async function PUT(
   if (!existing) {
     return NextResponse.json({ success: false, error: "Not found" }, { status: 404 });
   }
-  if (!(await canManageProducer(existing.producerId, claims, session))) {
+  const email = session.user.email;
+  if (!email) {
     return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
+  }
+  const user = await getAdminScopedUserByEmail(email);
+  if (!user) {
+    return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
+  }
+  const access = await evaluateAdminAccess(
+    { user, claims },
+    { targetProducerId: existing.producerId },
+  );
+  if (!access.allowed) {
+    const status = access.reason === "producer_not_found" ? 404 : 403;
+    const message =
+      access.reason === "producer_not_found" ? "Producer not found" : "Forbidden";
+    return NextResponse.json({ success: false, error: message }, { status });
   }
 
   const body = (await request.json()) as UpdateStrainBody;
@@ -139,8 +154,23 @@ export async function DELETE(
   if (!existing) {
     return NextResponse.json({ success: false, error: "Not found" }, { status: 404 });
   }
-  if (!(await canManageProducer(existing.producerId, claims, session))) {
+  const email = session.user.email;
+  if (!email) {
     return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
+  }
+  const user = await getAdminScopedUserByEmail(email);
+  if (!user) {
+    return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
+  }
+  const access = await evaluateAdminAccess(
+    { user, claims },
+    { targetProducerId: existing.producerId },
+  );
+  if (!access.allowed) {
+    const status = access.reason === "producer_not_found" ? 404 : 403;
+    const message =
+      access.reason === "producer_not_found" ? "Producer not found" : "Forbidden";
+    return NextResponse.json({ success: false, error: message }, { status });
   }
 
   try {

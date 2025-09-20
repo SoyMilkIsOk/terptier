@@ -3,6 +3,10 @@
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
+import { DEFAULT_STATE_SLUG } from "@/lib/stateConstants";
+
+const STATE_STORAGE_KEY = "terptier:selectedState";
+const STATE_COOKIE_NAME = "preferredState";
 
 function LoginForm() {
   const router = useRouter();
@@ -14,6 +18,34 @@ function LoginForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const getPreferredStateSlug = () => {
+    if (typeof window === "undefined") {
+      return DEFAULT_STATE_SLUG;
+    }
+
+    const cookieSlug = document.cookie
+      .split(";")
+      .map((cookie) => cookie.trim())
+      .find((cookie) => cookie.startsWith(`${STATE_COOKIE_NAME}=`));
+
+    if (cookieSlug) {
+      const value = cookieSlug.split("=")[1];
+      if (value) {
+        const decoded = decodeURIComponent(value);
+        if (decoded) {
+          return decoded;
+        }
+      }
+    }
+
+    const stored = window.localStorage.getItem(STATE_STORAGE_KEY);
+    if (stored) {
+      return stored;
+    }
+
+    return DEFAULT_STATE_SLUG;
+  };
 
   const finalizeAuth = async () => {
     const {
@@ -32,12 +64,28 @@ function LoginForm() {
         }),
       });
       const meRes = await fetch("/api/users/me");
-      const meData = await meRes.json();
+      const meData: {
+        success: boolean;
+        isGlobalAdmin?: boolean;
+        stateAdminAssignments?: { stateSlug?: string | null }[];
+      } = await meRes.json();
       if (meData.success) {
-        if (meData.role === "ADMIN") {
-          router.push("/admin");
+        const preferredState = getPreferredStateSlug();
+        const assignedStates = Array.isArray(meData.stateAdminAssignments)
+          ? meData.stateAdminAssignments
+              .map((assignment: { stateSlug?: string | null }) => assignment?.stateSlug)
+              .filter((slug): slug is string => Boolean(slug))
+          : [];
+
+        if (meData.isGlobalAdmin) {
+          router.push(`/${preferredState}/admin`);
+        } else if (assignedStates.length > 0) {
+          const targetState = assignedStates.includes(preferredState)
+            ? preferredState
+            : assignedStates[0];
+          router.push(`/${targetState}/admin`);
         } else {
-          router.push("/rankings");
+          router.push(`/${DEFAULT_STATE_SLUG}/rankings`);
         }
       } else {
         router.push("/");

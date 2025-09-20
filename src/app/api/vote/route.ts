@@ -48,9 +48,10 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
-    const { producerId, value } = parsedBody as {
+    const { producerId, value, stateSlug } = parsedBody as {
       producerId?: string;
       value?: number;
+      stateSlug?: string;
     };
     if (
       !producerId ||
@@ -74,6 +75,36 @@ export async function POST(request: Request) {
       );
     }
 
+    const producer = await prisma.producer.findUnique({
+      where: { id: producerId },
+      select: {
+        id: true,
+        stateId: true,
+        state: { select: { slug: true } },
+      },
+    });
+
+    if (!producer) {
+      return NextResponse.json(
+        { success: false, error: "Producer not found" },
+        { status: 404 },
+      );
+    }
+
+    const normalizedSlug = stateSlug?.toLowerCase();
+    if (normalizedSlug && producer.state?.slug && producer.state.slug !== normalizedSlug) {
+      console.warn(
+        "[/api/vote] State slug mismatch for producer",
+        producerId,
+        "expected",
+        producer.state.slug,
+        "received",
+        normalizedSlug,
+      );
+    }
+
+    const stateId = producer.stateId;
+
     // 4) Upsert the vote with the Prisma user’s id
     const vote = await prisma.vote.upsert({
       where: {
@@ -86,8 +117,9 @@ export async function POST(request: Request) {
         userId: prismaUser.id,
         producerId,
         value,
+        stateId,
       },
-      update: { value },
+      update: { value, stateId },
     });
 
     // 5) Return success with the vote record

@@ -13,10 +13,12 @@ if (!supabaseUrl || !supabaseKey) {
 export interface JwtClaims {
   role?: string;
   producer_ids?: string[];
+  state_ids?: string[];
+  state_slugs?: string[];
   [key: string]: any;
 }
 
-function decodeJwt(token: string): JwtClaims {
+export function decodeJwt(token: string): JwtClaims {
   try {
     const payload = token.split(".")[1];
     const decoded = Buffer.from(payload, "base64").toString();
