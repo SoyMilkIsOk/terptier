@@ -30,7 +30,7 @@ export default function StrainCard({
     >
       <div className="relative w-16 h-16 flex-shrink-0">
         <Image
-          src={strain.imageUrl || "https://placehold.co/64"}
+          src={strain.imageUrl || "https://placehold.co/64/png"}
           alt={strain.name}
           fill
           className="object-cover rounded"

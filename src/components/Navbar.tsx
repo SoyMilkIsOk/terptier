@@ -21,12 +21,28 @@ type StateOption = {
   abbreviation: string;
 };
 
+type CurrentUserResponse = {
+  success: boolean;
+  id: string;
+  role: string;
+  username?: string | null;
+  profilePicUrl?: string | null;
+  notificationOptIn: boolean;
+  adminStates?: { slug: string }[];
+  adminProducers?: string[];
+  isGlobalAdmin?: boolean;
+  isStateAdmin?: boolean;
+  isProducerAdmin?: boolean;
+};
+
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const [session, setSession] = useState<Session | null>(null);
   const [profileUsername, setProfileUsername] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isGlobalAdmin, setIsGlobalAdmin] = useState(false);
+  const [adminStateSlugs, setAdminStateSlugs] = useState<string[]>([]);
   const [menuOpen, setMenuOpen] = useState(false);
   const [showBar, setShowBar] = useState(true);
   const [notificationOptIn, setNotificationOptIn] = useState(true);
@@ -162,6 +178,39 @@ export default function Navbar() {
     }
   }, [pathname, slugSet, getStateSlugFromPath, persistSelectedState]);
 
+  const applyUserResponse = useCallback((data: CurrentUserResponse | null) => {
+    if (!data || !data.success) {
+      setProfileUsername(null);
+      setIsGlobalAdmin(false);
+      setAdminStateSlugs([]);
+      setNotificationOptIn(true);
+      setShowDropModal(false);
+      setIsAdmin(false);
+      return;
+    }
+
+    setProfileUsername(data.username || data.id);
+    setNotificationOptIn(data.notificationOptIn);
+    const adminSlugs = Array.isArray(data.adminStates)
+      ? data.adminStates
+          .map((state) => state?.slug)
+          .filter((slug): slug is string => Boolean(slug))
+      : [];
+    const nextIsGlobalAdmin = data.isGlobalAdmin ?? data.role === "ADMIN";
+    setIsGlobalAdmin(nextIsGlobalAdmin);
+    setAdminStateSlugs(adminSlugs);
+
+    if (
+      !data.notificationOptIn &&
+      typeof document !== "undefined" &&
+      !document.cookie.includes("dropOptInPrompt=")
+    ) {
+      setShowDropModal(true);
+    } else {
+      setShowDropModal(false);
+    }
+  }, []);
+
   useEffect(() => {
     // fetch initial session
     supabase.auth.getSession().then(async ({ data: { session } }) => {
@@ -170,22 +219,17 @@ export default function Navbar() {
         try {
           const res = await fetch("/api/users/me");
           if (res.ok) {
-            const data = await res.json();
-            if (data.success) {
-              setProfileUsername(data.username || data.id);
-              setIsAdmin(data.role === "ADMIN");
-              setNotificationOptIn(data.notificationOptIn);
-              if (
-                !data.notificationOptIn &&
-                !document.cookie.includes("dropOptInPrompt=")
-              ) {
-                setShowDropModal(true);
-              }
-            }
+            const data: CurrentUserResponse = await res.json();
+            applyUserResponse(data.success ? data : null);
+          } else {
+            applyUserResponse(null);
           }
         } catch (err) {
           console.error("Failed to fetch user", err);
+          applyUserResponse(null);
         }
+      } else {
+        applyUserResponse(null);
       }
     });
     // listen for changes (login/logout)
@@ -196,50 +240,28 @@ export default function Navbar() {
           try {
             const res = await fetch("/api/users/me");
             if (res.ok) {
-              const data = await res.json();
-              if (data.success) {
-                setProfileUsername(data.username || data.id);
-                setIsAdmin(data.role === "ADMIN");
-                setNotificationOptIn(data.notificationOptIn);
-                if (
-                  !data.notificationOptIn &&
-                  !document.cookie.includes("dropOptInPrompt=")
-                ) {
-                  setShowDropModal(true);
-                } else {
-                  setShowDropModal(false);
-                }
-              } else {
-                setProfileUsername(null);
-                setIsAdmin(false);
-                setNotificationOptIn(true);
-                setShowDropModal(false);
-              }
+              const data: CurrentUserResponse = await res.json();
+              applyUserResponse(data.success ? data : null);
             } else {
-              setProfileUsername(null);
-              setIsAdmin(false);
-              setNotificationOptIn(true);
-              setShowDropModal(false);
+              applyUserResponse(null);
             }
           } catch (err) {
             console.error("Failed to fetch user", err);
-            setProfileUsername(null);
-            setIsAdmin(false);
-            setNotificationOptIn(true);
-            setShowDropModal(false);
+            applyUserResponse(null);
           }
         } else {
-          setProfileUsername(null);
-          setIsAdmin(false);
-          setNotificationOptIn(true);
-          setShowDropModal(false);
+          applyUserResponse(null);
         }
       },
     );
     return () => {
       listener.subscription.unsubscribe();
     };
-  }, []);
+  }, [applyUserResponse]);
+
+  useEffect(() => {
+    setIsAdmin(isGlobalAdmin || adminStateSlugs.includes(selectedState));
+  }, [isGlobalAdmin, adminStateSlugs, selectedState]);
 
   useEffect(() => {
     const handleScroll = () => {
