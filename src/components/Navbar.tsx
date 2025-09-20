@@ -7,7 +7,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import Image from "next/image";
-import { LogIn, LogOut } from "lucide-react";
+import { LogIn, LogOut, UserPlus } from "lucide-react";
 import type { Session } from "@supabase/supabase-js";
 import DropOptInModal from "./DropOptInModal";
 import { DEFAULT_STATE, DEFAULT_STATE_SLUG } from "@/lib/stateConstants";
@@ -85,7 +85,7 @@ export default function Navbar() {
   const handleStateChange = (newState: string) => {
     setSelectedState(newState);
     persistSelectedState(newState);
-    router.push(`/${newState}/rankings`);
+    router.push("/");
   };
 
   useEffect(() => {
@@ -352,13 +352,22 @@ export default function Navbar() {
             )}
 
             {!session ? (
-              <Link
-                href="/login"
-                className="flex items-center space-x-1 bg-white text-green-700 px-3 py-1 rounded-full hover:bg-green-50"
-              >
-                <LogIn className="w-4 h-4" />
-                <span>Log In / Sign Up</span>
-              </Link>
+              <div className="flex items-center space-x-3">
+                <Link
+                  href="/login"
+                  className="flex items-center space-x-1 bg-white text-green-700 px-3 py-1 rounded-full hover:bg-green-50"
+                >
+                  <LogIn className="w-4 h-4" />
+                  <span>Log In</span>
+                </Link>
+                <Link
+                  href="/signup"
+                  className="flex items-center space-x-1 bg-white/10 text-white px-3 py-1 rounded-full border border-white/30 hover:bg-white/20"
+                >
+                  <UserPlus className="w-4 h-4" />
+                  <span>Sign Up</span>
+                </Link>
+              </div>
             ) : (
               <button
                 type="button"
@@ -438,14 +447,22 @@ export default function Navbar() {
                 </Link>
               )}
               {!session ? (
-                <Link
-                  href="/login"
-                  onClick={() => setMenuOpen(false)}
-                  className="text-center py-1 px-3 bg-white text-green-700 rounded-full flex items-center justify-center space-x-1"
-                >
-                  <LogIn className="w-4 h-4" />
-                  <span>Log In / Sign Up</span>
-                </Link>
+                <div className="w-full flex flex-col items-center space-y-3">
+                  <Link
+                    href="/login"
+                    onClick={() => setMenuOpen(false)}
+                    className="w-full text-center py-2 bg-white text-green-700 rounded-full"
+                  >
+                    Log In
+                  </Link>
+                  <Link
+                    href="/signup"
+                    onClick={() => setMenuOpen(false)}
+                    className="w-full text-center py-2 bg-white/10 border border-white/30 rounded-full"
+                  >
+                    Sign Up
+                  </Link>
+                </div>
               ) : (
                 <button
                   type="button"
