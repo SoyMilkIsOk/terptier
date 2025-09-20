@@ -7,6 +7,7 @@ import { MessageCircle } from "lucide-react";
 import type { ProducerWithVotes } from "./ProducerList";
 import { ATTRIBUTE_OPTIONS } from "@/constants/attributes";
 import Tooltip from "./Tooltip";
+import { useStateSlug } from "./StateProvider";
 
 export default function ProducerCard({
   rank,
@@ -27,6 +28,7 @@ export default function ProducerCard({
   showRank?: boolean;
   useColors?: boolean;
 }) {
+  const stateSlug = useStateSlug();
   const total = producer.votes.reduce((sum, v) => sum + v.value, 0);
   const average = producer.votes.length ? total / producer.votes.length : 0;
   const userVote = userVoteValue;
@@ -49,7 +51,7 @@ export default function ProducerCard({
       ? "glow-bronze"
       : "";
 
-  const link = `/producer/${producer.slug ?? producer.id}`;
+  const link = `/${stateSlug}/producer/${producer.slug ?? producer.id}`;
 
   const badgeClasses = `flex items-center justify-center ${colorClasses[useColors ? color : "none"]} rounded-full w-10 h-10 font-bold`;
 

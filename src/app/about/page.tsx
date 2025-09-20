@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { DEFAULT_STATE_SLUG } from "@/lib/states";
 
 export default function AboutPage() {
   return (
@@ -322,13 +323,13 @@ export default function AboutPage() {
 
             {/* Navigation Buttons */}
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center mb-6 sm:mb-8">
-              <Link href="/rankings" className="w-full sm:w-auto">
+              <Link href={`/${DEFAULT_STATE_SLUG}/rankings`} className="w-full sm:w-auto">
                 <button className="group w-full sm:w-auto inline-flex cursor-pointer items-center justify-center px-6 sm:px-8 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105">
                   <span>Explore Brands</span>
                   <ChevronRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                 </button>
               </Link>
-              <Link href="/drops" className="w-full sm:w-auto">
+              <Link href={`/${DEFAULT_STATE_SLUG}/drops`} className="w-full sm:w-auto">
                 <button className="group w-full sm:w-auto inline-flex cursor-pointer items-center justify-center px-6 sm:px-8 py-3 bg-purple-600 text-white font-semibold rounded-lg hover:bg-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105">
                   <Calendar className="w-5 h-5 mr-2" />
                   <span>Upcoming Drops</span>

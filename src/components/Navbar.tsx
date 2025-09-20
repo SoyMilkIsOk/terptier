@@ -1,18 +1,38 @@
 // src/components/Navbar.tsx
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import Image from "next/image";
 import { LogIn, LogOut } from "lucide-react";
 import type { Session } from "@supabase/supabase-js";
 import DropOptInModal from "./DropOptInModal";
+import { DEFAULT_STATE_SLUG, STATES } from "@/lib/states";
+
+const STATE_STORAGE_KEY = "terptier:selectedState";
+
+const stateSlugSet = new Set(STATES.map((state) => state.slug));
+
+const getStateSlugFromPath = (pathname: string | null): string | null => {
+  if (!pathname) {
+    return null;
+  }
+
+  const match = pathname.match(/^\/([^/]+)(?:\/|$)/);
+  if (!match) {
+    return null;
+  }
+
+  const slug = match[1];
+  return stateSlugSet.has(slug) ? slug : null;
+};
 
 export default function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
   const [session, setSession] = useState<Session | null>(null);
   const [profileUsername, setProfileUsername] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -20,7 +40,58 @@ export default function Navbar() {
   const [showBar, setShowBar] = useState(true);
   const [notificationOptIn, setNotificationOptIn] = useState(true);
   const [showDropModal, setShowDropModal] = useState(false);
+  const [selectedState, setSelectedState] = useState(DEFAULT_STATE_SLUG);
   const lastScrollY = useRef(0);
+
+  const dropsPath = useMemo(
+    () => `/${selectedState}/drops`,
+    [selectedState],
+  );
+  const rankingsPath = useMemo(
+    () => `/${selectedState}/rankings`,
+    [selectedState],
+  );
+
+  const handleStateChange = (newState: string) => {
+    setSelectedState(newState);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(STATE_STORAGE_KEY, newState);
+    }
+
+    const activeSlug = getStateSlugFromPath(pathname);
+    if (activeSlug) {
+      const remainder = pathname?.slice(activeSlug.length + 1) ?? "";
+      const normalizedRemainder = remainder
+        ? remainder.startsWith("/")
+          ? remainder
+          : `/${remainder}`
+        : "/rankings";
+      const nextPath = `/${newState}${normalizedRemainder}`;
+      router.push(nextPath);
+    } else {
+      router.push(`/${newState}/rankings`);
+    }
+  };
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const slugFromPath = getStateSlugFromPath(pathname);
+    if (slugFromPath) {
+      setSelectedState(slugFromPath);
+      window.localStorage.setItem(STATE_STORAGE_KEY, slugFromPath);
+      return;
+    }
+
+    const stored = window.localStorage.getItem(STATE_STORAGE_KEY);
+    if (stored && stateSlugSet.has(stored)) {
+      setSelectedState(stored);
+    } else {
+      setSelectedState(DEFAULT_STATE_SLUG);
+    }
+  }, [pathname]);
 
   useEffect(() => {
     // fetch initial session
@@ -160,18 +231,39 @@ export default function Navbar() {
           </div>
           <div className="absolute right-8 top-1/2 -translate-y-1/2 md:hidden"></div>
           <div className="hidden md:flex items-center space-x-6">
+            <div className="flex items-center space-x-2">
+              <label htmlFor="state-select" className="text-sm text-green-100">
+                State
+              </label>
+              <select
+                id="state-select"
+                className="bg-white text-green-700 text-sm rounded-full px-3 py-1 focus:outline-none focus:ring-2 focus:ring-green-300"
+                value={selectedState}
+                onChange={(event) => handleStateChange(event.target.value)}
+              >
+                {STATES.map((state) => (
+                  <option key={state.slug} value={state.slug}>
+                    {state.name}
+                  </option>
+                ))}
+              </select>
+            </div>
             <Link
-              href="/drops"
+              href={dropsPath}
               className={`${
-                pathname === "/drops" ? "underline" : "hover:underline"
+                pathname?.startsWith(dropsPath)
+                  ? "underline"
+                  : "hover:underline"
               }`}
             >
               Drops
             </Link>
             <Link
-              href="/rankings"
+              href={rankingsPath}
               className={`${
-                pathname === "/rankings" ? "underline" : "hover:underline"
+                pathname?.startsWith(rankingsPath)
+                  ? "underline"
+                  : "hover:underline"
               }`}
             >
               Rankings
@@ -235,15 +327,35 @@ export default function Navbar() {
               transition={{ duration: 0.45, ease: "easeInOut" }}
               className="md:hidden overflow-hidden bg-green-800 border-t border-b border-green-900 pt-4 pb-6 space-y-4 flex flex-col items-center text-white"
             >
+              <div className="w-full px-6">
+                <label htmlFor="mobile-state-select" className="block text-xs uppercase tracking-wide text-green-200 mb-1">
+                  State
+                </label>
+                <select
+                  id="mobile-state-select"
+                  className="w-full bg-white text-green-700 text-sm rounded-full px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-300"
+                  value={selectedState}
+                  onChange={(event) => {
+                    handleStateChange(event.target.value);
+                    setMenuOpen(false);
+                  }}
+                >
+                  {STATES.map((state) => (
+                    <option key={state.slug} value={state.slug}>
+                      {state.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
               <Link
-                href="/drops"
+                href={dropsPath}
                 onClick={() => setMenuOpen(false)}
                 className="w-full text-center py-1"
               >
                 Drops
               </Link>
               <Link
-                href="/rankings"
+                href={rankingsPath}
                 onClick={() => setMenuOpen(false)}
                 className="w-full text-center py-1"
               >

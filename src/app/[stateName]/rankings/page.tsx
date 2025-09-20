@@ -1,4 +1,4 @@
-// src/app/rankings/page.tsx
+// src/app/[stateName]/rankings/page.tsx
 import { cookies } from "next/headers";
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import AgeGate from "@/components/AgeGate";
@@ -6,9 +6,10 @@ import ProducerList, { ProducerWithVotes } from "@/components/ProducerList";
 import Link from "next/link";
 import { prisma } from "@/lib/prismadb";
 import { Category } from "@prisma/client";
+import { getStateMetadata } from "@/lib/states";
+import { notFound } from "next/navigation";
 import {
   Crown,
-  TrendingUp,
   Users,
   Star,
   Flower2,
@@ -16,10 +17,19 @@ import {
 } from "lucide-react";
 
 export default async function RankingsPage({
+  params,
   searchParams,
 }: {
+  params: Promise<{ stateName: string }>;
   searchParams: Promise<{ view?: string }>;
 }) {
+  const { stateName } = await params;
+  const state = getStateMetadata(stateName);
+
+  if (!state) {
+    notFound();
+  }
+
   // Age gate
   const cookieStore = await cookies();
   const is21 = cookieStore.get("ageVerify")?.value === "true";
@@ -52,12 +62,18 @@ export default async function RankingsPage({
 
   // Load producers + votes
   const flowerRaw = (await prisma.producer.findMany({
-    where: { category: Category.FLOWER },
+    where: {
+      ...(state.producerWhere ?? {}),
+      category: Category.FLOWER,
+    },
     include: { votes: true, _count: { select: { comments: true } } },
   })) as ProducerWithVotes[];
 
   const hashRaw = (await prisma.producer.findMany({
-    where: { category: Category.HASH },
+    where: {
+      ...(state.producerWhere ?? {}),
+      category: Category.HASH,
+    },
     include: { votes: true, _count: { select: { comments: true } } },
   })) as ProducerWithVotes[];
 
@@ -76,14 +92,12 @@ export default async function RankingsPage({
   const { view } = await searchParams;
   const initialViewParam = view === "hash" ? "hash" : "flower";
 
-  // Hero metrics
   const totalProducers = flower.length + hash.length;
   const totalVotes =
     [...flower, ...hash].reduce((acc, p) => acc + p.votes.length, 0) || 0;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50">
-      {/* Hero Section — modeled after /drops */}
       <div className="relative overflow-hidden bg-gradient-to-r from-green-600 to-emerald-600 text-white">
         <div className="absolute inset-0 bg-black/10"></div>
         <div className="relative container mx-auto px-4 py-16">
@@ -94,20 +108,19 @@ export default async function RankingsPage({
             </div>
 
             <h1 className="text-5xl md:text-6xl font-bold mb-4 py-4 bg-gradient-to-r from-white to-green-100 bg-clip-text text-transparent">
-              Colorado Producer Rankings
+              {state.name} Producer Rankings
             </h1>
 
             <p className="text-lg md:text-xl text-green-100 mb-8 max-w-2xl mx-auto">
-              Vote for your favorite producers and see who&apos;s in the lead! Scores are
-              community-driven and update as votes roll in.
+              {state.tagline ??
+                "Vote for your favorite producers and see who\'s in the lead! Scores are community-driven and update as votes roll in."}
             </p>
 
-            {/* Quick metrics */}
             <div className="flex flex-wrap items-center justify-center gap-6 text-green-100">
               <div className="flex items-center gap-2">
                 <Users className="w-5 h-5" />
                 <span className="text-sm font-medium">
-                  {totalProducers} Producers
+                  {totalProducers} Producer{totalProducers === 1 ? "" : "s"}
                 </span>
               </div>
               <div className="w-px h-4 bg-green-300"></div>
@@ -121,28 +134,27 @@ export default async function RankingsPage({
               <div className="flex items-center gap-2">
                 <Flower2 className="w-5 h-5" />
                 <span className="text-sm font-medium">
-                  {flower.length} Growers
+                  {flower.length} Grower{flower.length === 1 ? "" : "s"}
                 </span>
               </div>
               <div className="w-px h-4 bg-green-300"></div>
               <div className="flex items-center gap-2">
                 <FlaskConical className="w-5 h-5" />
-                <span className="text-sm font-medium">{hash.length} Hashers</span>
+                <span className="text-sm font-medium">
+                  {hash.length} Hasher{hash.length === 1 ? "" : "s"}
+                </span>
               </div>
             </div>
-
-            {/* View toggles (links keep SSR simple and reflect state in URL) */}
           </div>
         </div>
       </div>
 
-      {/* Content */}
       <div className="container mx-auto px-2 md:px-4 py-10 md:py-12">
-          <ProducerList
-            initialData={{ flower, hash }}
-            userVotes={userVotes}
-            initialView={initialViewParam}
-          />
+        <ProducerList
+          initialData={{ flower, hash }}
+          userVotes={userVotes}
+          initialView={initialViewParam}
+        />
 
         <div className="text-center mt-8">
           <Link

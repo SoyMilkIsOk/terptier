@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { motion, useAnimation, useScroll, useTransform } from "framer-motion";
 import { ChevronRight, Star, Users, TrendingUp, Cannabis } from "lucide-react";
 import Link from "next/link";
+import { DEFAULT_STATE_SLUG } from "@/lib/states";
 import Image from "next/image";
 
 export default function HeroHome() {
@@ -175,7 +176,7 @@ export default function HeroHome() {
           variants={itemVariants}
           className="flex flex-col sm:flex-row gap-4 mb-12"
         >
-          <Link href="/rankings">
+          <Link href={`/${DEFAULT_STATE_SLUG}/rankings`}>
             <motion.button
               whileHover={{
                 scale: 1.05,
@@ -194,7 +195,7 @@ export default function HeroHome() {
               </div>
             </motion.button>
           </Link>
-          <Link href="/drops">
+          <Link href={`/${DEFAULT_STATE_SLUG}/drops`}>
             <motion.button
               whileHover={{
                 scale: 1.05,

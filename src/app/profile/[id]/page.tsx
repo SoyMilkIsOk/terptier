@@ -11,6 +11,9 @@ import { prisma } from "@/lib/prismadb";
 import { cookies } from "next/headers";
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { Instagram, ExternalLink, Link as LinkIcon } from "lucide-react";
+import ProducerCard from "@/components/ProducerCard";
+import { getStateFromAttributes } from "@/lib/states";
+import { StateProvider } from "@/components/StateProvider";
 
 export const dynamic = "force-dynamic";
 
@@ -267,18 +270,20 @@ export default async function ProfilePage({
                 const j = rank % 10;
                 const k = rank % 100;
                 const suffix = j === 1 && k !== 11 ? "st" : j === 2 && k !== 12 ? "nd" : j === 3 && k !== 13 ? "rd" : "th";
+                const producerState = getStateFromAttributes(producer.attributes);
 
                 return (
-                  <ProducerCard
-                    key={producer.id}
-                    rank={rank}
-                    rankSuffix={suffix}
-                    producer={producer}
-                    userVoteValue={producer.userActualVote}
-                    color="none"
-                    useColors={false}
-                    showRank={false}
-                  />
+                  <StateProvider key={producer.id} stateSlug={producerState.slug}>
+                    <ProducerCard
+                      rank={rank}
+                      rankSuffix={suffix}
+                      producer={producer}
+                      userVoteValue={producer.userActualVote}
+                      color="none"
+                      useColors={false}
+                      showRank={false}
+                    />
+                  </StateProvider>
                 );
               })}
             </div>
@@ -286,20 +291,31 @@ export default async function ProfilePage({
 
           {/* Strain Reviews Section */}
           <ExpandableSection title="Strain Reviews" count={user.StrainReview.length} initialShowCount={4}>
-            {user.StrainReview.map((review) => (
-              <div key={review.id} className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4 border border-green-100">
-                <Link
-                  href={`/producer/${review.strain.producer.slug}/${review.strain.strainSlug}`}
-                  className="inline-block text-xl font-semibold text-green-700 hover:text-green-800 transition-colors mb-3 hover:underline"
+            {user.StrainReview.map((review) => {
+              const producerState = getStateFromAttributes(
+                review.strain.producer.attributes
+              );
+              const producerSlug =
+                review.strain.producer.slug ?? review.strain.producer.id;
+
+              return (
+                <div
+                  key={review.id}
+                  className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4 border border-green-100"
                 >
-                  {review.strain.name}
-                </Link>
+                  <Link
+                    href={`/${producerState.slug}/producer/${producerSlug}/${review.strain.strainSlug}`}
+                    className="inline-block text-xl font-semibold text-green-700 hover:text-green-800 transition-colors mb-3 hover:underline"
+                  >
+                    {review.strain.name}
+                  </Link>
                 <StrainReviewCard
                   review={review}
                   currentUserId={currentViewerId}
                 />
-              </div>
-            ))}
+                </div>
+              );
+            })}
           </ExpandableSection>
         </div>
       </div>
