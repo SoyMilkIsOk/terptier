@@ -33,9 +33,9 @@ export default function AboutPage() {
               About TerpTier
             </h1>
             <p className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed px-2">
-              Colorado's premier community-driven platform where cannabis
-              enthusiasts discover, rank, and celebrate the state's finest
-              producers through authentic peer recommendations.
+              A premier community-driven platform where cannabis enthusiasts
+              discover, rank, and celebrate the nation's finest producers
+              through authentic peer recommendations.
             </p>
           </div>
         </div>
@@ -54,9 +54,9 @@ export default function AboutPage() {
               </h2>
               <p className="text-base sm:text-lg text-gray-600 mb-4 sm:mb-6 leading-relaxed">
                 At TerpTier, we believe the cannabis community knows best. Our
-                platform harnesses the collective wisdom of Colorado's most
-                passionate enthusiasts to surface exceptional producers and help
-                you discover your next favorite strain.
+                platform harnesses the collective wisdom of passionate
+                enthusiasts across the country to surface exceptional producers
+                and help you discover your next favorite strain.
               </p>
               <p className="text-base sm:text-lg text-gray-600 leading-relaxed">
                 Every day, our community votes to create dynamic rankings that
@@ -92,7 +92,7 @@ export default function AboutPage() {
             </h2>
             <p className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto px-2">
               Simple, transparent, and community-driven. Here's how we're
-              revolutionizing cannabis discovery in Colorado.
+              revolutionizing cannabis discovery nationwide.
             </p>
           </div>
 
@@ -151,8 +151,8 @@ export default function AboutPage() {
                 Weekly Hearts
               </h3>
               <p className="text-gray-600 text-sm leading-relaxed">
-                Every Sunday at midnight (MST), receive your Heart token. Vote
-                for your favorite producer and enter community giveaways.
+                Every Sunday at midnight, receive your Heart token. Vote for
+                your favorite producer and enter community giveaways.
               </p>
             </div>
           </div>
@@ -313,12 +313,12 @@ export default function AboutPage() {
               <Users className="w-6 h-6 sm:w-8 sm:h-8 text-green-600" />
             </div>
             <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">
-              Ready to Discover Colorado's Best?
+              Ready to Discover the Nation's Best?
             </h2>
             <p className="text-base sm:text-lg text-gray-600 mb-6 sm:mb-8 leading-relaxed">
               Join our community of cannabis connoisseurs and start exploring
-              Colorado's top-tier producers. Vote for your favorites, discover
-              new strains, and connect with fellow enthusiasts.
+              top-tier producers from coast to coast. Vote for your favorites,
+              discover new strains, and connect with fellow enthusiasts.
             </p>
 
             {/* Navigation Buttons */}
