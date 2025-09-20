@@ -13,6 +13,7 @@ import DropOptInModal from "./DropOptInModal";
 import { DEFAULT_STATE, DEFAULT_STATE_SLUG } from "@/lib/stateConstants";
 
 const STATE_STORAGE_KEY = "terptier:selectedState";
+const STATE_COOKIE_NAME = "preferredState";
 
 type StateOption = {
   slug: string;
@@ -60,6 +61,18 @@ export default function Navbar() {
     [slugSet],
   );
 
+  const persistSelectedState = useCallback((slug: string) => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    window.localStorage.setItem(STATE_STORAGE_KEY, slug);
+
+    const expires = new Date();
+    expires.setFullYear(expires.getFullYear() + 1);
+    document.cookie = `${STATE_COOKIE_NAME}=${slug};expires=${expires.toUTCString()};path=/;SameSite=Lax`;
+  }, []);
+
   const dropsPath = useMemo(
     () => `/${selectedState}/drops`,
     [selectedState],
@@ -71,23 +84,8 @@ export default function Navbar() {
 
   const handleStateChange = (newState: string) => {
     setSelectedState(newState);
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem(STATE_STORAGE_KEY, newState);
-    }
-
-    const activeSlug = getStateSlugFromPath(pathname);
-    if (activeSlug) {
-      const remainder = pathname?.slice(activeSlug.length + 1) ?? "";
-      const normalizedRemainder = remainder
-        ? remainder.startsWith("/")
-          ? remainder
-          : `/${remainder}`
-        : "/rankings";
-      const nextPath = `/${newState}${normalizedRemainder}`;
-      router.push(nextPath);
-    } else {
-      router.push(`/${newState}/rankings`);
-    }
+    persistSelectedState(newState);
+    router.push(`/${newState}/rankings`);
   };
 
   useEffect(() => {
@@ -123,7 +121,25 @@ export default function Navbar() {
     const slugFromPath = getStateSlugFromPath(pathname);
     if (slugFromPath) {
       setSelectedState(slugFromPath);
-      window.localStorage.setItem(STATE_STORAGE_KEY, slugFromPath);
+      persistSelectedState(slugFromPath);
+      return;
+    }
+
+    const getCookieValue = (name: string) => {
+      const cookies = document.cookie ? document.cookie.split(";") : [];
+      for (const cookie of cookies) {
+        const [key, ...rest] = cookie.trim().split("=");
+        if (key === name) {
+          return decodeURIComponent(rest.join("="));
+        }
+      }
+      return null;
+    };
+
+    const cookieState = getCookieValue(STATE_COOKIE_NAME);
+    if (cookieState && (!slugSet.size || slugSet.has(cookieState))) {
+      setSelectedState(cookieState);
+      persistSelectedState(cookieState);
       return;
     }
 
@@ -133,7 +149,7 @@ export default function Navbar() {
     } else {
       setSelectedState(DEFAULT_STATE_SLUG);
     }
-  }, [pathname, slugSet, getStateSlugFromPath]);
+  }, [pathname, slugSet, getStateSlugFromPath, persistSelectedState]);
 
   useEffect(() => {
     // fetch initial session
