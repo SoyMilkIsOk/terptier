@@ -91,13 +91,18 @@ export default function StateAdminPage() {
           role?: string;
           isGlobalAdmin?: boolean;
           adminStates?: { slug: string }[];
+          stateAdminAssignments?: { stateId: string; stateSlug: string }[];
         };
 
-        const adminStateSlugs = Array.isArray(meData.adminStates)
-          ? meData.adminStates
-              .map((state) => state?.slug)
+        const adminStateSlugs = Array.isArray(meData.stateAdminAssignments)
+          ? meData.stateAdminAssignments
+              .map((assignment) => assignment?.stateSlug)
               .filter((slug): slug is string => Boolean(slug))
-          : [];
+          : Array.isArray(meData.adminStates)
+            ? meData.adminStates
+                .map((state) => state?.slug)
+                .filter((slug): slug is string => Boolean(slug))
+            : [];
 
         const isGlobalAdmin = Boolean(meData.isGlobalAdmin || meData.role === "ADMIN");
         const canManageState = isGlobalAdmin || adminStateSlugs.includes(stateSlug);
