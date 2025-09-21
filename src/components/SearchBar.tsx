@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { Search } from "lucide-react";
 import type { SearchTheme } from "@/lib/market-theme";
 import AttributesFilter from "./AttributesFilter";
 
@@ -72,20 +73,7 @@ export default function SearchBar({
           className="absolute left-4 top-1/2 -translate-y-1/2 transform pointer-events-none"
           aria-hidden="true"
         >
-          <svg
-            className={`w-5 h-5 ${theme.icon}`}
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M21 21L16.514 16.506M19 10.5C19 15.194 15.194 19 10.5 19S2 15.194 2 10.5 5.806 2 10.5 2 19 5.806 19 10.5Z"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+          <Search className={`w-5 h-5 ${theme.icon}`} strokeWidth={2} />
         </span>
 
         {/* Input field */}

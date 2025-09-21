@@ -102,14 +102,14 @@ export default async function RankingsPage({
 
   const marketDescriptor =
     selectedMarket === "WHITE"
-      ? "recreational"
+      ? "Recreational"
       : selectedMarket === "BLACK"
-        ? "underground"
+        ? "Underground"
         : "";
 
   const heroTitle = marketDescriptor
-    ? `Discover ${state.name}'s best ${marketDescriptor} producers...`
-    : `Discover ${state.name}'s best producers...`;
+    ? `${state.name}'s Top ${marketDescriptor} Producers`
+    : `${state.name}'s Top Producers`;
 
   return (
     <div
@@ -140,13 +140,6 @@ export default async function RankingsPage({
             >
               {heroTitle}
             </h1>
-
-            <p
-              className={`text-lg md:text-xl mb-8 max-w-2xl mx-auto transition-colors duration-500 ${theme.hero.subtitle}`}
-            >
-              {state.tagline ??
-                "Vote for your favorite producers and see who's in the lead! Scores are community-driven and update as votes roll in."}
-            </p>
 
             <div
               className={`flex flex-wrap items-center justify-center gap-6 transition-colors duration-500 ${theme.hero.statText}`}

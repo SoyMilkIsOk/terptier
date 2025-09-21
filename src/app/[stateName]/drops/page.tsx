@@ -38,6 +38,17 @@ export default async function DropsPage({
   const themeAttribute = market.toLowerCase();
   const theme = getMarketTheme(market).drops;
 
+  const marketDescriptor =
+    market === "WHITE"
+      ? "Recreational"
+      : market === "BLACK"
+        ? "Underground"
+        : "";
+
+  const heroTitle = marketDescriptor
+    ? `${state.name}'s Top ${marketDescriptor} Producers`
+    : `${state.name}'s Top Producers`;
+
   const now = new Date();
   const mstParts = new Intl.DateTimeFormat("en-US", {
     timeZone: "America/Denver",
@@ -183,13 +194,8 @@ export default async function DropsPage({
             <h1
               className={`text-4xl sm:text-5xl lg:text-6xl font-bold mb-3 sm:mb-4 py-2 sm:py-4 bg-clip-text text-transparent transition-colors duration-500 ${theme.hero.title}`}
             >
-              {state.name} Recent & Upcoming Drops
+              {heroTitle}
             </h1>
-            <p
-              className={`text-lg sm:text-xl mb-6 sm:mb-8 max-w-2xl mx-auto px-2 transition-colors duration-500 ${theme.hero.subtitle}`}
-            >
-              Discover premium strains from the last week and the upcoming week from top-tier producers.
-            </p>
             <div
               className={`flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 transition-colors duration-500 ${theme.hero.statText}`}
             >

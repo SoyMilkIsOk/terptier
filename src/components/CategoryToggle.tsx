@@ -17,7 +17,7 @@ const defaultTheme: ToggleTheme = {
     base:
       "absolute left-1.5 top-1.5 bottom-1.5 rounded-full transform transition-all duration-300 ease-out shadow-lg",
     flower: "bg-gradient-to-r from-green-600 to-green-700 translate-x-0 w-24",
-    hash: "bg-gradient-to-r from-amber-500 to-amber-600 translate-x-24 w-24",
+    hash: "bg-gradient-to-r from-green-500 to-green-600 translate-x-24 w-24",
   },
   label: {
     base: "font-semibold text-sm transition-all duration-300 ease-out",
