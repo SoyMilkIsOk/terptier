@@ -45,9 +45,9 @@ export default async function DropsPage({
         ? "underground"
         : "";
 
-  const heroTitle = `Discover ${state.name}'s best ${
+  const heroTitle = `Coming Soon to the ${
     marketDescriptor ? `${marketDescriptor} ` : ""
-  }producers...`;
+  }Market`;
 
   const now = new Date();
   const mstParts = new Intl.DateTimeFormat("en-US", {

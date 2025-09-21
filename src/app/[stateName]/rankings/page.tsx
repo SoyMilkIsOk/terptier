@@ -107,9 +107,9 @@ export default async function RankingsPage({
         ? "underground"
         : "";
 
-  const heroTitle = `Discover ${state.name}'s best ${
+  const heroTitle = `${state.name}'s Best ${
     marketDescriptor ? `${marketDescriptor} ` : ""
-  }producers...`;
+  }Producers`;
 
   return (
     <div
