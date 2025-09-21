@@ -36,16 +36,14 @@ export default function ProducerCard({
   const userVote = userVoteValue;
 
   const colorClasses: Record<string, string> = {
-    gold: "bg-gradient-to-br from-yellow-300 to-yellow-600 text-yellow-100",
-    silver: "bg-gradient-to-br from-gray-300 to-gray-500 text-gray-100",
-    bronze: "bg-gradient-to-br from-orange-300 to-orange-700 text-orange-100",
-    gray: "bg-gray-400 text-white",
+    gold: "bg-gradient-to-br from-yellow-300 to-yellow-600 text-yellow-50",
+    silver: "bg-gradient-to-br from-gray-300 to-gray-500 text-gray-50",
+    bronze: "bg-gradient-to-br from-orange-300 to-orange-700 text-orange-50",
+    gray: "bg-gray-500 text-white",
     green: "bg-green-600 text-white",
     none: "bg-gray-200 text-gray-700",
   };
 
-  // Accent ring + outer shadow (no foreground overlays)
-  // Keeps the "highlight" outside the card so it won't look like a wash over the surface in gray/dark modes.
   const topRank = useColors && rank <= 3;
   const accentRing =
     color === "gold"
@@ -58,7 +56,6 @@ export default function ProducerCard({
       ? "ring-emerald-400/30 shadow-[0_0_24px_rgba(16,185,129,0.20)]"
       : "ring-transparent shadow-none";
 
-  // Appearance palettes
   const appearanceStyles: Record<
     "light" | "gray" | "dark",
     {
@@ -68,9 +65,10 @@ export default function ProducerCard({
       text: string;
       comment: string;
       commentIcon: string;
-      attributeTag: string;
       attributeIcon: string;
-      baseRing: string; // subtle base ring so borders still feel crisp
+      baseRing: string;
+      borderColor: string;
+      fadeFrom: string; // for gradient fade edges
     }
   > = {
     light: {
@@ -80,9 +78,10 @@ export default function ProducerCard({
       text: "text-slate-900",
       comment: "text-green-700",
       commentIcon: "text-green-600",
-      attributeTag: "bg-green-200/30 text-green-700",
-      attributeIcon: "text-green-400",
-      baseRing: "ring-0", // no extra ring in pure light
+      attributeIcon: "text-green-500",
+      baseRing: "ring-0",
+      borderColor: "border-green-100/80",
+      fadeFrom: "from-white",
     },
     gray: {
       container:
@@ -93,9 +92,10 @@ export default function ProducerCard({
       text: "text-slate-900",
       comment: "text-green-700",
       commentIcon: "text-green-600",
-      attributeTag: "bg-green-200/30 text-green-700",
-      attributeIcon: "text-green-500",
-      baseRing: "ring-1 ring-black/5", // subtle edge to avoid the washed look
+      attributeIcon: "text-green-600",
+      baseRing: "ring-1 ring-black/5",
+      borderColor: "border-green-200/60",
+      fadeFrom: "from-white/85",
     },
     dark: {
       container: "bg-green-950/60 border border-green-800",
@@ -104,9 +104,10 @@ export default function ProducerCard({
       text: "text-green-50",
       comment: "text-green-200",
       commentIcon: "text-green-300",
-      attributeTag: "bg-emerald-400/10 text-emerald-100",
       attributeIcon: "text-emerald-200",
-      baseRing: "ring-1 ring-white/5", // crisp edge in dark
+      baseRing: "ring-1 ring-white/5",
+      borderColor: "border-green-800",
+      fadeFrom: "from-green-950/60",
     },
   };
 
@@ -116,83 +117,163 @@ export default function ProducerCard({
 
   const link = `/${stateSlug}/producer/${producer.slug ?? producer.id}`;
 
-  const badgeClasses = `flex items-center justify-center ${
-    colorClasses[useColors ? color : "none"]
-  } rounded-full w-10 h-10 font-bold`;
+  // Triangle size (matches rounded card edge visually)
+  const TRI_SIZE_REM = 4.5; // ~72px; tweak as needed
 
   return (
     <Link
       href={link}
       className={[
-        // layout + stacking
         "relative isolate overflow-hidden",
-        // base appearance
         containerBase,
         activeAppearance.hover,
         activeAppearance.text,
-        // spacing
-        "p-4 rounded shadow flex items-center space-x-4 transition-colors duration-300",
-        // replace previous overlay glow with ring + outer shadow
+        "p-5 rounded-2xl shadow transition-colors duration-300",
+        "flex items-center gap-4",
         topRank ? `ring-2 ${accentRing}` : activeAppearance.baseRing,
       ].join(" ")}
     >
+      {/* Top-left triangle rank medallion */}
       {showRank && (
-        <div className={badgeClasses}>
-          {rank}
-          {rankSuffix && (
-            <sup className="text-[0.5rem] ml-0.25 align-super">{rankSuffix}</sup>
-          )}
+        <div
+          className={[
+            "absolute top-0 left-0",
+            useColors ? colorClasses[color] : colorClasses["none"],
+            "border-t",
+            "border-l",
+            activeAppearance.borderColor,
+          ].join(" ")}
+          style={{
+            width: `${TRI_SIZE_REM}rem`,
+            height: `${TRI_SIZE_REM}rem`,
+            clipPath: "polygon(0 0, 100% 0, 0 100%)",
+            zIndex: 1,
+          }}
+        >
+          {/* Rank text aligned along the hypotenuse (nudged left & down) */}
+          <div
+            className="absolute origin-top-left"
+            style={{
+              transform: "translate(0.0rem, 1.3rem) rotate(-45deg)",
+            }}
+          >
+            <span className="flex items-baseline gap-1 font-extrabold leading-none tracking-tight">
+              <span className="text-2xl">{rank}</span>
+              {rankSuffix ? (
+                <sup className="text-xs align-super">{rankSuffix}</sup>
+              ) : null}
+            </span>
+          </div>
         </div>
       )}
 
+      {/* Big image */}
       {producer.profileImage || producer.logoUrl ? (
         <img
           src={producer.profileImage || producer.logoUrl!}
           alt={producer.name}
-          className="h-10 w-10 rounded-full object-cover"
+          className="h-20 w-20 sm:h-24 sm:w-24 rounded-xl object-cover flex-shrink-0"
+          style={{ zIndex: 0 }}
         />
-      ) : null}
+      ) : (
+        <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-xl bg-gray-200/50 flex items-center justify-center text-xs uppercase tracking-wide text-gray-500">
+          No Image
+        </div>
+      )}
 
-      <div className="flex-1">
-        <h2 className="text-lg font-semibold">{producer.name}</h2>
-        <VoteButton
-          producerId={producer.id}
-          initialAverage={average}
-          userRating={userVote}
-          readOnly
-          compact
-          navigateOnClick
-          linkSlug={producer.slug ?? producer.id}
-        />
+      {/* Content */}
+      <div className="min-w-0 flex-1">
+        {/* Header row: Title + Stars on left, Comments on right */}
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h2 className="text-xl sm:text-2xl font-semibold leading-tight line-clamp-1">
+              {producer.name}
+            </h2>
+            <div className="mt-1 origin-left scale-[1.15]">
+              <VoteButton
+                producerId={producer.id}
+                initialAverage={average}
+                userRating={userVote}
+                readOnly
+                compact
+                navigateOnClick
+                linkSlug={producer.slug ?? producer.id}
+              />
+            </div>
+          </div>
 
+          {/* Comments bubble (right side of the header group) */}
+          <div
+            className={`flex flex-none items-center text-base ${activeAppearance.comment}`}
+            title="Comments"
+          >
+            <MessageCircle
+              className={`w-5 h-5 mr-1.5 ${activeAppearance.commentIcon}`}
+            />
+            {producer._count?.comments ?? 0}
+          </div>
+        </div>
+
+        {/* Attributes row: single line, horizontal scroll with gradient fades */}
         {producer.attributes && producer.attributes.length > 0 && (
-          <div className="flex flex-wrap w-[80%] gap-1 mt-2">
-            {producer.attributes.map((a) => {
-              const opt = ATTRIBUTE_OPTIONS[producer.category].find(
-                (o) => o.key === a
-              );
-              return (
-                <Tooltip key={a} content={opt?.tooltip}>
-                  <span
-                    className={`text-xs rounded-full px-2 py-0.5 flex items-center gap-1 ${activeAppearance.attributeTag}`}
-                  >
-                    <span className={activeAppearance.attributeIcon}>
-                      {opt?.icon}
+          <div className="relative mt-3">
+            {/* Left fade */}
+            <div
+              className={[
+                "pointer-events-none absolute inset-y-0 left-0 w-6 z-10",
+                "bg-gradient-to-r",
+                activeAppearance.fadeFrom,
+                "to-transparent",
+                "rounded-l-xl",
+              ].join(" ")}
+            />
+            {/* Right fade */}
+            <div
+              className={[
+                "pointer-events-none absolute inset-y-0 right-0 w-6 z-10",
+                "bg-gradient-to-l",
+                activeAppearance.fadeFrom,
+                "to-transparent",
+                "rounded-r-xl",
+              ].join(" ")}
+            />
+            <div
+              className={[
+                "flex items-center gap-3 pr-4 pl-2",
+                "overflow-x-auto whitespace-nowrap",
+                // hide scrollbars cross-browser
+                "[scrollbar-width:none]",
+                "[&::-webkit-scrollbar]:hidden",
+              ].join(" ")}
+            >
+              {producer.attributes.map((a) => {
+                const opt = ATTRIBUTE_OPTIONS[producer.category].find(
+                  (o) => o.key === a
+                );
+                return (
+                  <Tooltip key={a} content={opt?.tooltip}>
+                    <span
+                      className={[
+                        "flex-none inline-flex items-center justify-center",
+                        "h-8 w-8 rounded-lg",
+                        activeAppearance.attributeIcon,
+                        // slightly tinted chip background for structure without labels
+                        appearance === "dark"
+                          ? "bg-emerald-400/10"
+                          : "bg-emerald-50",
+                      ].join(" ")}
+                      aria-label={opt?.tooltip ?? a}
+                      title={opt?.tooltip ?? a}
+                    >
+                      {/* Icon itself; assumes ReactNode icon in config */}
+                      <span className="text-xl leading-none">{opt?.icon}</span>
                     </span>
-                    {/* Optionally show label if desired: <span>{opt?.label ?? a}</span> */}
-                  </span>
-                </Tooltip>
-              );
-            })}
+                  </Tooltip>
+                );
+              })}
+            </div>
           </div>
         )}
-      </div>
-
-      <div className={`flex items-center text-sm ${activeAppearance.comment}`}>
-        <MessageCircle
-          className={`w-4 h-4 mr-1 ${activeAppearance.commentIcon}`}
-        />
-        {producer._count?.comments ?? 0}
       </div>
     </Link>
   );
