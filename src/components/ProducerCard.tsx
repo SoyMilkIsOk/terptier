@@ -58,7 +58,7 @@ export default function ProducerCard({
   return (
     <Link
       href={link}
-      className={`${isTopTen === false ? "bg-gray-100" : "bg-white"} ${glowClass} p-4 rounded shadow flex items-center space-x-4 hover:bg-gray-50 transition`}
+      className={`producer-card ${isTopTen === false ? "bg-gray-100" : "bg-white"} ${glowClass} p-4 rounded shadow flex items-center space-x-4 hover:bg-gray-50 transition`}
     >
       {showRank && (
         <div className={badgeClasses}>
@@ -76,7 +76,7 @@ export default function ProducerCard({
         />
       ) : null}
       <div className="flex-1">
-        <h2 className="text-lg font-semibold">{producer.name}</h2>
+        <h2 className="producer-card-title text-lg font-semibold">{producer.name}</h2>
         <VoteButton
           producerId={producer.id}
           initialAverage={average}
@@ -103,7 +103,7 @@ export default function ProducerCard({
           </div>
         )}
       </div>
-      <div className="flex items-center text-sm text-gray-600">
+      <div className="producer-card-muted flex items-center text-sm">
         <MessageCircle className="w-4 h-4 mr-1" />
         {producer._count?.comments ?? 0}
       </div>

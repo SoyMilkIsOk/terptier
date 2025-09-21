@@ -34,6 +34,7 @@ export default async function DropsPage({
 
   const market = normalizeMarketParam(marketParam);
   const marketFilters = buildMarketFilters(market);
+  const themeAttribute = market.toLowerCase();
 
   const now = new Date();
   const mstParts = new Intl.DateTimeFormat("en-US", {
@@ -155,36 +156,36 @@ export default async function DropsPage({
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50">
+    <div data-market-theme={themeAttribute} className="min-h-screen market-page">
       <MarketModeToggle
         className="fixed bottom-6 left-6 z-50"
         value={market}
       />
-      <div className="relative overflow-hidden bg-gradient-to-r from-green-600 to-emerald-600 text-white">
-        <div className="absolute inset-0 bg-black/10"></div>
+      <div className="relative overflow-hidden market-hero">
+        <div className="absolute inset-0 market-hero-overlay"></div>
         <div className="relative px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
           <div className="max-w-4xl mx-auto text-center">
-            <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-3 sm:px-4 py-2 mb-4 sm:mb-6">
+            <div className="market-hero-chip inline-flex items-center gap-2 backdrop-blur-sm rounded-full px-3 sm:px-4 py-2 mb-4 sm:mb-6">
               <TrendingUp className="w-4 h-4" />
               <span className="text-sm font-medium">Weekly Drops</span>
             </div>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-3 sm:mb-4 py-2 sm:py-4 bg-gradient-to-r from-white to-green-100 bg-clip-text text-transparent">
+            <h1 className="market-hero-title text-4xl sm:text-5xl lg:text-6xl font-bold mb-3 sm:mb-4 py-2 sm:py-4 bg-clip-text text-transparent">
               {state.name} Recent & Upcoming Drops
             </h1>
-            <p className="text-lg sm:text-xl text-green-100 mb-6 sm:mb-8 max-w-2xl mx-auto px-2">
+            <p className="market-hero-subtitle text-lg sm:text-xl mb-6 sm:mb-8 max-w-2xl mx-auto px-2">
               Discover premium strains from the last week and the upcoming week from top-tier producers.
             </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 text-green-100">
-              <div className="flex items-center gap-2">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 market-hero-stat-group">
+              <div className="market-hero-stat-text flex items-center gap-2">
                 <Calendar className="w-5 h-5" />
                 <span className="text-sm font-medium">Last 7 & Next 7 Days</span>
               </div>
-              <div className="hidden sm:block w-px h-4 bg-green-300"></div>
-              <div className="flex items-center gap-2">
+              <div className="market-hero-divider hidden sm:block w-px h-4"></div>
+              <div className="market-hero-stat-text flex items-center gap-2">
                 <span className="text-sm font-medium">{producerGroups.length} Producer{producerGroups.length === 1 ? "" : "s"}</span>
               </div>
-              <div className="hidden sm:block w-px h-4 bg-green-300"></div>
-              <div className="flex items-center gap-2">
+              <div className="market-hero-divider hidden sm:block w-px h-4"></div>
+              <div className="market-hero-stat-text flex items-center gap-2">
                 <span className="text-sm font-medium">{totalStrainCount} Strain{totalStrainCount === 1 ? "" : "s"}</span>
               </div>
             </div>
@@ -192,14 +193,14 @@ export default async function DropsPage({
         </div>
       </div>
 
-      <div className="px-4 sm:px-6 lg:px-8 py-8 sm:py-12 max-w-7xl mx-auto">
+      <div className="market-content px-4 sm:px-6 lg:px-8 py-8 sm:py-12 max-w-7xl mx-auto">
         {producerGroups.length === 0 ? (
-          <div className="text-center py-12 sm:py-16">
-            <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
-              <Calendar className="w-10 h-10 sm:w-12 sm:h-12 text-gray-400" />
+          <div className="market-empty text-center py-12 sm:py-16">
+            <div className="market-empty-icon w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
+              <Calendar className="w-10 h-10 sm:w-12 sm:h-12" />
             </div>
-            <h3 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-2">No Drops This Week</h3>
-            <p className="text-gray-600 max-w-md mx-auto px-4">
+            <h3 className="market-empty-heading text-xl sm:text-2xl font-semibold mb-2">No Drops This Week</h3>
+            <p className="market-empty-text max-w-md mx-auto px-4">
               Check back soon for the latest strain releases from your favorite producers.
             </p>
           </div>
@@ -208,13 +209,13 @@ export default async function DropsPage({
             {producerGroups.map(({ producer, strains }) => (
               <div key={producer.id} className="group">
                 {/* Producer Header Card */}
-                <div className="bg-white rounded-xl sm:rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300">
+                <div className="market-card rounded-xl sm:rounded-2xl overflow-hidden transition-all duration-300">
                   {/* Header with gradient background */}
-                  <div className="relative h-24 sm:h-28 lg:h-32 bg-gradient-to-r from-green-500 to-emerald-600">
-                    <div className="absolute inset-0 bg-black/20"></div>
+                  <div className="relative h-24 sm:h-28 lg:h-32 market-card-header">
+                    <div className="absolute inset-0 market-card-header-overlay"></div>
                     <div className="absolute bottom-3 sm:bottom-4 left-4 sm:left-6 right-4 sm:right-6">
                       <div className="flex items-end justify-between gap-3">
-                        
+
                         {/* Producer Info - Clickable */}
                         <Link
                           href={`/${state.slug}/producer/${producer.slug ?? producer.id}`}
@@ -222,7 +223,7 @@ export default async function DropsPage({
                         >
                           {/* Producer Avatar */}
                           <div className="relative flex-shrink-0">
-                            <div className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-white rounded-full p-0.5 sm:p-1 shadow-lg group-hover/producer:shadow-xl transition-shadow">
+                            <div className="market-card-avatar w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 rounded-full p-0.5 sm:p-1 shadow-lg group-hover/producer:shadow-xl transition-shadow">
                               {producer.profileImage ? (
                                 <Image
                                   src={producer.profileImage}
@@ -232,25 +233,25 @@ export default async function DropsPage({
                                   className="w-full h-full rounded-full object-cover"
                                 />
                               ) : (
-                                <div className="w-full h-full rounded-full bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center">
-                                  <span className="text-white font-bold text-sm sm:text-lg lg:text-xl">
+                                <div className="w-full h-full rounded-full market-card-avatar-fallback flex items-center justify-center">
+                                  <span className="font-bold text-sm sm:text-lg lg:text-xl">
                                     {producer.name.charAt(0)}
                                   </span>
                                 </div>
                               )}
                             </div>
                           </div>
-                          
-                          <div className="text-white min-w-0 flex-1">
-                            <h2 className="text-lg sm:text-xl lg:text-2xl font-bold mb-0.5 sm:mb-1 truncate group-hover/producer:underline">
+
+                          <div className="market-card-header-text min-w-0 flex-1">
+                            <h2 className="market-card-title text-lg sm:text-xl lg:text-2xl font-bold mb-0.5 sm:mb-1 truncate group-hover/producer:underline">
                               {producer.name}
                             </h2>
                             <div className="flex items-center gap-1 mb-0.5 sm:mb-1">
-                              <span className="text-xs sm:text-sm capitalize text-green-200">
+                              <span className="market-card-header-pill text-xs sm:text-sm capitalize">
                                 {producer.category.toLowerCase()}
                               </span>
                             </div>
-                            <div className="text-green-100">
+                            <div className="market-card-header-muted">
                               <span className="text-xs sm:text-sm font-medium">
                                 {strains.length} strain{strains.length !== 1 ? 's' : ''} dropping
                               </span>
@@ -262,20 +263,20 @@ export default async function DropsPage({
                         <div className="flex-shrink-0 self-end mb-1">
                           <Link
                             href={`/${state.slug}/producer/${producer.slug ?? producer.id}/strains`}
-                            className="group/btn bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 border border-white/20 flex items-center gap-1"
+                            className="market-card-cta group/btn px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 flex items-center gap-1"
                           >
                             <span className="hidden sm:inline">All Strains</span>
                             <span className="sm:hidden">View All</span>
                             <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 group-hover/btn:translate-x-0.5 transition-transform" />
                           </Link>
                         </div>
-                        
+
                       </div>
                     </div>
                   </div>
 
                   {/* Strains Grid */}
-                  <div className="p-4 sm:p-6 bg-gray-50/30">
+                  <div className="market-card-body p-4 sm:p-6">
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                       {strains
                         .slice(0, 3)
@@ -348,7 +349,7 @@ export default async function DropsPage({
                       <div className="mt-4 sm:mt-6 text-center">
                         <Link
                           href={`/${state.slug}/drops/${producer.slug ?? producer.id}`}
-                          className="group inline-flex items-center justify-center gap-2 text-green-600 hover:text-green-700 font-semibold text-sm sm:text-base bg-white hover:bg-gray-50 px-4 py-2 rounded-lg border border-green-200 hover:border-green-300 transition-all duration-200 shadow-sm hover:shadow"
+                          className="market-card-footer-link group inline-flex items-center justify-center gap-2 font-semibold text-sm sm:text-base px-4 py-2 rounded-lg border transition-all duration-200"
                         >
                           <span>See upcoming drops</span>
                           <TrendingUp className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
