@@ -142,12 +142,12 @@ export default async function RankingsPage({
             </h1>
 
             <div
-              className={`flex flex-wrap items-center justify-center gap-6 transition-colors duration-500 ${theme.hero.statText}`}
+              className={`flex flex-wrap sm:w-full w-[80%] mx-auto items-center justify-center py-2 sm:gap-6 gap-8 transition-colors duration-500 ${theme.hero.statText}`}
             >
               <div className="flex items-center gap-2">
                 <Users className="w-5 h-5" />
                 <span className="text-sm font-medium">
-                  {totalProducers} Producer{totalProducers === 1 ? "" : "s"}
+                  {totalProducers} Brand{totalProducers === 1 ? "" : "s"}
                 </span>
               </div>
               <div
@@ -174,7 +174,7 @@ export default async function RankingsPage({
               <div className="flex items-center gap-2">
                 <FlaskConical className="w-5 h-5" />
                 <span className="text-sm font-medium">
-                  {hash.length} Hasher{hash.length === 1 ? "" : "s"}
+                  {hash.length} Hash Maker{hash.length === 1 ? "" : "s"}
                 </span>
               </div>
             </div>
