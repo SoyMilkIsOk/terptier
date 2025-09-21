@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useId, useState } from "react";
 import ImageUpload from "./ImageUpload";
 import type { Market, Producer } from "@prisma/client";
 
@@ -38,6 +38,7 @@ export default function AddProducerForm({
     producer?.profileImage ?? null,
   );
   const [market, setMarket] = useState<Market>(producer?.market ?? "BOTH");
+  const marketFieldName = useId();
 
   const displayStateName = producer?.state?.name ?? state.name;
 
@@ -146,18 +147,26 @@ export default function AddProducerForm({
             { label: "White", value: "WHITE" },
             { label: "Both", value: "BOTH" },
             { label: "Black", value: "BLACK" },
-          ].map((option) => (
-            <label key={option.value} className="flex items-center space-x-1 text-sm">
-              <input
-                type="radio"
-                name="market"
-                value={option.value}
-                checked={market === option.value}
-                onChange={() => setMarket(option.value as Market)}
-              />
-              <span>{option.label}</span>
-            </label>
-          ))}
+          ].map((option) => {
+            const inputId = `${marketFieldName}-${option.value.toLowerCase()}`;
+            return (
+              <label
+                key={option.value}
+                htmlFor={inputId}
+                className="flex items-center space-x-1 text-sm"
+              >
+                <input
+                  id={inputId}
+                  type="radio"
+                  name={marketFieldName}
+                  value={option.value}
+                  checked={market === option.value}
+                  onChange={() => setMarket(option.value as Market)}
+                />
+                <span>{option.label}</span>
+              </label>
+            );
+          })}
         </div>
       </fieldset>
       <select
