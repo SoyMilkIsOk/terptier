@@ -186,6 +186,7 @@ export default async function RankingsPage({
           userVotes={userVotes}
           initialView={initialViewParam}
           cardAppearance={theme.producerCardAppearance}
+          searchTheme={theme.search}
         />
 
         <div className="text-center mt-8">

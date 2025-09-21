@@ -61,28 +61,42 @@ export default function ProducerCard({
       hover: string;
       text: string;
       comment: string;
+      commentIcon: string;
+      attributeTag: string;
+      attributeIcon: string;
     }
   > = {
     light: {
-      container: "bg-white",
-      secondary: "bg-gray-100",
-      hover: "hover:bg-gray-50",
-      text: "text-gray-900",
-      comment: "text-gray-600",
+      container: "bg-white border border-emerald-100/80",
+      secondary: "bg-white border border-emerald-50",
+      hover: "hover:bg-emerald-50/60",
+      text: "text-slate-900",
+      comment: "text-emerald-700",
+      commentIcon: "text-emerald-600",
+      attributeTag: "bg-emerald-50 text-emerald-700",
+      attributeIcon: "text-emerald-500",
     },
     gray: {
-      container: "bg-white/80 border border-slate-200/70 backdrop-blur",
-      secondary: "bg-white/60 border border-slate-200/50 backdrop-blur",
-      hover: "hover:bg-white/90",
+      container:
+        "bg-white/85 border border-emerald-200/60 backdrop-blur shadow-sm",
+      secondary:
+        "bg-white/75 border border-emerald-200/40 backdrop-blur shadow-sm",
+      hover: "hover:bg-emerald-50/40",
       text: "text-slate-900",
-      comment: "text-slate-600",
+      comment: "text-emerald-700",
+      commentIcon: "text-emerald-600",
+      attributeTag: "bg-emerald-50/80 text-emerald-700",
+      attributeIcon: "text-emerald-500",
     },
     dark: {
-      container: "bg-slate-900/80 border border-slate-700",
-      secondary: "bg-slate-900/60 border border-slate-700/70",
-      hover: "hover:bg-slate-800/80",
-      text: "text-slate-100",
-      comment: "text-slate-300",
+      container: "bg-emerald-950/60 border border-emerald-800",
+      secondary: "bg-emerald-950/40 border border-emerald-900/60",
+      hover: "hover:bg-emerald-900/40",
+      text: "text-emerald-50",
+      comment: "text-emerald-200",
+      commentIcon: "text-emerald-300",
+      attributeTag: "bg-emerald-900/60 text-emerald-200",
+      attributeIcon: "text-emerald-200",
     },
   };
 
@@ -133,8 +147,12 @@ export default function ProducerCard({
               );
               return (
                 <Tooltip key={a} content={opt?.tooltip}>
-                  <span className="text-xs bg-gray-200 rounded-full px-2 py-0.5 flex items-center">
-                    <span>{opt?.icon}</span>
+                  <span
+                    className={`text-xs rounded-full px-2 py-0.5 flex items-center gap-1 ${activeAppearance.attributeTag}`}
+                  >
+                    <span className={activeAppearance.attributeIcon}>
+                      {opt?.icon}
+                    </span>
                   </span>
                 </Tooltip>
               );
@@ -143,7 +161,9 @@ export default function ProducerCard({
         )}
       </div>
       <div className={`flex items-center text-sm ${activeAppearance.comment}`}>
-        <MessageCircle className="w-4 h-4 mr-1" />
+        <MessageCircle
+          className={`w-4 h-4 mr-1 ${activeAppearance.commentIcon}`}
+        />
         {producer._count?.comments ?? 0}
       </div>
     </Link>
