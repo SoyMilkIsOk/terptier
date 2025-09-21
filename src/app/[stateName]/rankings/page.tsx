@@ -100,6 +100,17 @@ export default async function RankingsPage({
   const totalVotes =
     [...flower, ...hash].reduce((acc, p) => acc + p.votes.length, 0) || 0;
 
+  const marketDescriptor =
+    selectedMarket === "WHITE"
+      ? "recreational"
+      : selectedMarket === "BLACK"
+        ? "underground"
+        : "";
+
+  const heroTitle = marketDescriptor
+    ? `Discover ${state.name}'s best ${marketDescriptor} producers...`
+    : `Discover ${state.name}'s best producers...`;
+
   return (
     <div
       data-market-theme={themeAttribute}
@@ -127,7 +138,7 @@ export default async function RankingsPage({
             <h1
               className={`text-5xl md:text-6xl font-bold mb-4 py-4 bg-clip-text text-transparent transition-colors duration-500 ${theme.hero.title}`}
             >
-              {state.name} Producer Rankings
+              {heroTitle}
             </h1>
 
             <p
@@ -187,6 +198,7 @@ export default async function RankingsPage({
           initialView={initialViewParam}
           cardAppearance={theme.producerCardAppearance}
           searchTheme={theme.search}
+          toggleTheme={theme.toggle}
         />
 
         <div className="text-center mt-8">

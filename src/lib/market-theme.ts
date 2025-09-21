@@ -16,6 +16,21 @@ export type SearchTheme = {
   attributeText: string;
 };
 
+export type ToggleTheme = {
+  container: string;
+  indicator: {
+    base: string;
+    flower: string;
+    hash: string;
+  };
+  label: {
+    base: string;
+    active: string;
+    inactive: string;
+  };
+  focusRing: string;
+};
+
 type DropsTheme = {
   page: string;
   hero: {
@@ -53,6 +68,7 @@ type DropsTheme = {
     meta: string;
   };
   button: string;
+  toggle: ToggleTheme;
   search: SearchTheme;
 };
 
@@ -63,6 +79,7 @@ type RankingsTheme = {
   button: string;
   producerCardAppearance: "light" | "gray" | "dark";
   search: SearchTheme;
+  toggle: ToggleTheme;
 };
 
 type MarketTheme = {
@@ -123,6 +140,22 @@ const WHITE_THEME = {
     meta: "text-gray-600",
   },
   button: "bg-green-600 hover:bg-green-500 text-white border border-green-500/40 shadow-md hover:shadow-lg",
+  toggle: {
+    container:
+      "bg-white/70 backdrop-blur-xl border border-green-100/60 shadow-inner shadow-green-100/20",
+    indicator: {
+      base:
+        "absolute left-1.5 top-1.5 bottom-1.5 rounded-full transform transition-all duration-300 ease-out shadow-lg",
+      flower: "bg-gradient-to-r from-green-500 to-green-600 translate-x-0 w-24",
+      hash: "bg-gradient-to-r from-amber-400 to-amber-500 translate-x-24 w-24",
+    },
+    label: {
+      base: "font-semibold text-sm transition-all duration-300 ease-out",
+      active: "text-white drop-shadow-sm",
+      inactive: "text-green-700/80 hover:text-green-900",
+    },
+    focusRing: "ring-green-300/30 ring-opacity-0 focus-within:ring-opacity-80",
+  },
 };
 
 // Gray mode theme for BOTH market
@@ -178,6 +211,22 @@ const BOTH_THEME = {
     meta: "text-gray-600",
   },
   button: "bg-green-600 hover:bg-green-500 text-white border border-green-500/40 shadow-md hover:shadow-lg",
+  toggle: {
+    container:
+      "bg-white/60 backdrop-blur-xl border border-gray-200/60 shadow-inner shadow-gray-200/30",
+    indicator: {
+      base:
+        "absolute left-1.5 top-1.5 bottom-1.5 rounded-full transform transition-all duration-300 ease-out shadow-lg",
+      flower: "bg-gradient-to-r from-green-500 to-green-600 translate-x-0 w-24",
+      hash: "bg-gradient-to-r from-amber-500 to-amber-600 translate-x-24 w-24",
+    },
+    label: {
+      base: "font-semibold text-sm transition-all duration-300 ease-out",
+      active: "text-white drop-shadow-sm",
+      inactive: "text-gray-600 hover:text-gray-900",
+    },
+    focusRing: "ring-green-400/30 ring-opacity-0 focus-within:ring-opacity-80",
+  },
 };
 
 // Dark mode theme for BLACK market
@@ -233,6 +282,22 @@ const BLACK_THEME = {
     meta: "text-gray-200",
   },
   button: "bg-green-600 hover:bg-green-500 text-white border border-green-500/60 shadow-lg hover:shadow-xl",
+  toggle: {
+    container:
+      "bg-zinc-900/80 backdrop-blur-sm border border-zinc-700/70 shadow-inner shadow-black/40",
+    indicator: {
+      base:
+        "absolute left-1.5 top-1.5 bottom-1.5 rounded-full transform transition-all duration-300 ease-out shadow-lg",
+      flower: "bg-gradient-to-r from-green-500 to-green-700 translate-x-0 w-24",
+      hash: "bg-gradient-to-r from-amber-500 to-amber-700 translate-x-24 w-24",
+    },
+    label: {
+      base: "font-semibold text-sm transition-all duration-300 ease-out",
+      active: "text-white drop-shadow-sm",
+      inactive: "text-gray-300 hover:text-white",
+    },
+    focusRing: "ring-green-500/30 ring-opacity-0 focus-within:ring-opacity-80",
+  },
 };
 
 const MARKET_THEME: Record<Market, MarketTheme> = {
