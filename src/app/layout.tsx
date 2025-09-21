@@ -1,4 +1,5 @@
 import "../styles/globals.css"; // your tailwind imports
+import { Suspense } from "react";
 import Navbar from "@/components/Navbar";
 import MainContainer from "@/components/MainContainer";
 import Footer from "@/components/Footer";
@@ -20,7 +21,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="min-h-screen bg-gray-50 flex flex-col pt-20">
-        <Navbar />
+        <Suspense fallback={null}>
+          <Navbar />
+        </Suspense>
         <MainContainer>{children}</MainContainer>
         <Footer />
         <Analytics />

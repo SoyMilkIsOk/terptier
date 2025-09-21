@@ -6,7 +6,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { Market } from "@prisma/client";
 import type { KeyboardEvent } from "react";
 import type { LucideIcon } from "lucide-react";
-import { Moon, Sun, CircleDot } from "lucide-react";
+import { Moon, Sun /*, CircleDot */ } from "lucide-react";
 
 const STORAGE_KEY = "terptier:market";
 
@@ -16,7 +16,7 @@ const MARKET_OPTIONS: {
   icon: LucideIcon;
 }[] = [
   { value: "WHITE", label: "White market", icon: Sun },
-  { value: "BOTH", label: "Both markets", icon: CircleDot },
+  // { value: "BOTH", label: "Both markets", icon: CircleDot },
   { value: "BLACK", label: "Black market", icon: Moon },
 ];
 

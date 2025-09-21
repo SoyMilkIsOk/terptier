@@ -1,4 +1,5 @@
 // src/app/[stateName]/drops/page.tsx
+import { Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import StrainCard from "@/components/StrainCard";
@@ -177,10 +178,12 @@ export default async function DropsPage({
       data-market-theme={themeAttribute}
       className={`min-h-screen transition-colors duration-500 ${theme.page}`}
     >
-      <MarketModeToggle
-        className="fixed bottom-6 left-6 z-50"
-        value={market}
-      />
+      <Suspense fallback={null}>
+        <MarketModeToggle
+          className="fixed bottom-6 left-6 z-50"
+          value={market}
+        />
+      </Suspense>
       <div
         className={`relative overflow-hidden bg-gradient-to-r transition-colors duration-500 ${theme.hero.wrapper}`}
       >

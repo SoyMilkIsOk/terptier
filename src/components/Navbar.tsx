@@ -4,7 +4,7 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import Image from "next/image";
 import { LogIn, LogOut, UserPlus, ChevronDown, User, Shield, Calendar, Crown } from "lucide-react";
@@ -39,6 +39,7 @@ type CurrentUserResponse = {
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [session, setSession] = useState<Session | null>(null);
   const [profileUsername, setProfileUsername] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -53,6 +54,30 @@ export default function Navbar() {
   const [stateDropdownOpen, setStateDropdownOpen] = useState(false);
   const lastScrollY = useRef(0);
   const adminDefaultApplied = useRef(false);
+
+  const marketSelection = searchParams.get("market");
+  const viewSelection = searchParams.get("view");
+
+  const preservedQueryString = useMemo(() => {
+    const params = new URLSearchParams();
+
+    if (marketSelection === "BLACK") {
+      params.set("market", "BLACK");
+    }
+
+    if (viewSelection === "hash") {
+      params.set("view", "hash");
+    }
+
+    const query = params.toString();
+    return query ? `?${query}` : "";
+  }, [marketSelection, viewSelection]);
+
+  const applyPreservedQuery = useCallback(
+    (targetPath: string) =>
+      preservedQueryString ? `${targetPath}${preservedQueryString}` : targetPath,
+    [preservedQueryString],
+  );
 
   const slugSet = useMemo(
     () => new Set(states.map((state) => state.slug)),
@@ -105,6 +130,19 @@ export default function Navbar() {
     [selectedState],
   );
 
+  const dropsHref = useMemo(
+    () => applyPreservedQuery(dropsPath),
+    [applyPreservedQuery, dropsPath],
+  );
+  const rankingsHref = useMemo(
+    () => applyPreservedQuery(rankingsPath),
+    [applyPreservedQuery, rankingsPath],
+  );
+  const adminHref = useMemo(
+    () => applyPreservedQuery(adminPath),
+    [applyPreservedQuery, adminPath],
+  );
+
   const selectedStateData = useMemo(
     () => states.find(state => state.slug === selectedState) || states[0],
     [states, selectedState]
@@ -120,7 +158,7 @@ export default function Navbar() {
     const knownSections = new Set(["drops", "rankings", "admin"]);
 
     if (segments.length === 0) {
-            router.refresh(); // <-- ensures server components re-read cookie/localStorage and refetch
+      router.refresh(); // <-- ensures server components re-read cookie/localStorage and refetch
       return;
     }
 
@@ -131,21 +169,21 @@ export default function Navbar() {
       const [section, ...tail] = rest;
       if (section && knownSections.has(section)) {
         const suffix = tail.length ? `/${tail.join("/")}` : "";
-        router.push(`/${newState}/${section}${suffix}`);
+        router.push(applyPreservedQuery(`/${newState}/${section}${suffix}`));
         return;
       }
 
-      router.push(`/${newState}`);
+      router.push(applyPreservedQuery(`/${newState}`));
       return;
     }
 
     if (knownSections.has(first)) {
       const suffix = rest.length ? `/${rest.join("/")}` : "";
-      router.push(`/${newState}/${first}${suffix}`);
+      router.push(applyPreservedQuery(`/${newState}/${first}${suffix}`));
       return;
     }
 
-    router.push(`/${newState}`);
+    router.push(applyPreservedQuery(`/${newState}`));
   };
 
   useEffect(() => {
@@ -463,7 +501,7 @@ export default function Navbar() {
 
             {/* Navigation Links */}
             <Link
-              href={dropsPath}
+              href={dropsHref}
               className={`flex items-center space-x-2 px-4 py-2 rounded-2xl text-sm font-medium transition-all duration-200 ${
                 pathname?.startsWith(dropsPath)
                   ? "bg-white/20 backdrop-blur-sm"
@@ -474,7 +512,7 @@ export default function Navbar() {
               <span>Drops</span>
             </Link>
             <Link
-              href={rankingsPath}
+              href={rankingsHref}
               className={`flex items-center space-x-2 px-4 py-2 rounded-2xl text-sm font-medium transition-all duration-200 ${
                 pathname?.startsWith(rankingsPath)
                   ? "bg-white/20 backdrop-blur-sm"
@@ -501,7 +539,7 @@ export default function Navbar() {
 
             {session && isAdmin && (
               <Link
-                href={adminPath}
+                href={adminHref}
                 className={`flex items-center space-x-2 px-4 py-2 rounded-2xl text-sm font-medium transition-all duration-200 ${
                   pathname?.startsWith(adminPath)
                     ? "bg-white/20 backdrop-blur-sm"
@@ -578,7 +616,7 @@ export default function Navbar() {
                 {/* Mobile Navigation Links */}
                 <div className="space-y-2 pt-4">
                   <Link
-                    href={dropsPath}
+                    href={dropsHref}
                     onClick={() => setMenuOpen(false)}
                     className="flex items-center justify-center space-x-2 w-full py-3 bg-white/10 backdrop-blur-sm rounded-2xl hover:bg-white/20 transition-all duration-200 font-medium"
                   >
@@ -586,7 +624,7 @@ export default function Navbar() {
                     <span>Drops</span>
                   </Link>
                   <Link
-                    href={rankingsPath}
+                    href={rankingsHref}
                     onClick={() => setMenuOpen(false)}
                     className="flex items-center justify-center space-x-2 w-full py-3 bg-white/10 backdrop-blur-sm rounded-2xl hover:bg-white/20 transition-all duration-200 font-medium"
                   >
@@ -605,7 +643,7 @@ export default function Navbar() {
                   )}
                   {session && isAdmin && (
                     <Link
-                      href={adminPath}
+                      href={adminHref}
                       onClick={() => setMenuOpen(false)}
                       className="flex items-center justify-center space-x-2 w-full py-3 bg-white/10 backdrop-blur-sm rounded-2xl hover:bg-white/20 transition-all duration-200 font-medium"
                     >
