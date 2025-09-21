@@ -18,6 +18,7 @@ export default function ProducerCard({
   rankSuffix = "",
   showRank = true,
   useColors = true,
+  appearance = "light",
 }: {
   rank: number;
   producer: ProducerWithVotes;
@@ -27,6 +28,7 @@ export default function ProducerCard({
   rankSuffix?: string;
   showRank?: boolean;
   useColors?: boolean;
+  appearance?: "light" | "gray" | "dark";
 }) {
   const stateSlug = useStateSlug();
   const total = producer.votes.reduce((sum, v) => sum + v.value, 0);
@@ -51,6 +53,57 @@ export default function ProducerCard({
       ? "glow-bronze"
       : "";
 
+  const appearanceStyles: Record<
+    "light" | "gray" | "dark",
+    {
+      container: string;
+      secondary: string;
+      hover: string;
+      text: string;
+      comment: string;
+      commentIcon: string;
+      attributeTag: string;
+      attributeIcon: string;
+    }
+  > = {
+    light: {
+      container: "bg-white border border-green-100/80",
+      secondary: "bg-white border border-green-50",
+      hover: "hover:bg-green-50/60",
+      text: "text-slate-900",
+      comment: "text-green-700",
+      commentIcon: "text-green-600",
+      attributeTag: "bg-green-200/30 text-green-700",
+      attributeIcon: "text-green-400",
+    },
+    gray: {
+      container:
+        "bg-white/85 border border-green-200/60 backdrop-blur shadow-sm",
+      secondary:
+        "bg-white/75 border border-green-200/40 backdrop-blur shadow-sm",
+      hover: "hover:bg-green-50/40",
+      text: "text-slate-900",
+      comment: "text-green-700",
+      commentIcon: "text-green-600",
+      attributeTag: "bg-green-200/30 text-green-700",
+      attributeIcon: "text-green-500",
+    },
+    dark: {
+      container: "bg-green-950/60 border border-green-800",
+      secondary: "bg-green-950/40 border border-green-900/60",
+      hover: "hover:bg-green-900/40",
+      text: "text-green-50",
+      comment: "text-green-200",
+      commentIcon: "text-green-300",
+      attributeTag: "bg-green-200/30 text-green-200",
+      attributeIcon: "text-green-200",
+    },
+  };
+
+  const activeAppearance = appearanceStyles[appearance];
+  const containerClass =
+    isTopTen === false ? activeAppearance.secondary : activeAppearance.container;
+
   const link = `/${stateSlug}/producer/${producer.slug ?? producer.id}`;
 
   const badgeClasses = `flex items-center justify-center ${colorClasses[useColors ? color : "none"]} rounded-full w-10 h-10 font-bold`;
@@ -58,7 +111,7 @@ export default function ProducerCard({
   return (
     <Link
       href={link}
-      className={`${isTopTen === false ? "bg-gray-100" : "bg-white"} ${glowClass} p-4 rounded shadow flex items-center space-x-4 hover:bg-gray-50 transition`}
+      className={`${containerClass} ${activeAppearance.hover} ${glowClass} ${activeAppearance.text} p-4 rounded shadow flex items-center space-x-4 transition-colors duration-300`}
     >
       {showRank && (
         <div className={badgeClasses}>
@@ -94,8 +147,12 @@ export default function ProducerCard({
               );
               return (
                 <Tooltip key={a} content={opt?.tooltip}>
-                  <span className="text-xs bg-gray-200 rounded-full px-2 py-0.5 flex items-center">
-                    <span>{opt?.icon}</span>
+                  <span
+                    className={`text-xs rounded-full px-2 py-0.5 flex items-center gap-1 ${activeAppearance.attributeTag}`}
+                  >
+                    <span className={activeAppearance.attributeIcon}>
+                      {opt?.icon}
+                    </span>
                   </span>
                 </Tooltip>
               );
@@ -103,8 +160,10 @@ export default function ProducerCard({
           </div>
         )}
       </div>
-      <div className="flex items-center text-sm text-gray-600">
-        <MessageCircle className="w-4 h-4 mr-1" />
+      <div className={`flex items-center text-sm ${activeAppearance.comment}`}>
+        <MessageCircle
+          className={`w-4 h-4 mr-1 ${activeAppearance.commentIcon}`}
+        />
         {producer._count?.comments ?? 0}
       </div>
     </Link>

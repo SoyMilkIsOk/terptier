@@ -15,18 +15,41 @@ interface StrainCardProps {
   > & { _count?: { StrainReview: number }; avgRating?: number | null };
   producerSlug: string;
   children?: ReactNode;
+  className?: string;
+  titleClassName?: string;
+  metaClassName?: string;
 }
 
 export default function StrainCard({
   strain,
   producerSlug,
   children,
+  className,
+  titleClassName,
+  metaClassName,
 }: StrainCardProps) {
   const stateSlug = useStateSlug();
+  const baseClass =
+    "flex items-center space-x-4 rounded p-4 shadow transition-colors duration-300";
+  const containerClass = [
+    baseClass,
+    className ?? "bg-white text-gray-900 hover:bg-gray-50",
+  ]
+    .filter(Boolean)
+    .join(" ");
+  const titleClass = ["text-lg font-semibold", titleClassName]
+    .filter(Boolean)
+    .join(" ");
+  const metaClass = [
+    "flex flex-col items-end text-sm",
+    metaClassName ?? "text-gray-600",
+  ]
+    .filter(Boolean)
+    .join(" ");
   return (
     <Link
       href={`/${stateSlug}/producer/${producerSlug}/${strain.strainSlug}`}
-      className="flex items-center space-x-4 bg-white shadow rounded p-4 hover:bg-gray-50 transition"
+      className={containerClass}
     >
       <div className="relative w-16 h-16 flex-shrink-0">
         <Image
@@ -37,10 +60,10 @@ export default function StrainCard({
         />
       </div>
       <div className="flex-1">
-        <h3 className="text-lg font-semibold">{strain.name}</h3>
+        <h3 className={titleClass}>{strain.name}</h3>
         {children}
       </div>
-      <div className="flex flex-col items-end text-sm text-gray-600">
+      <div className={metaClass}>
         {typeof strain.avgRating === "number" && (
           <div className="flex items-center mb-1 text-yellow-500">
             <Star className="w-4 h-4 mr-1" fill="currentColor" />
