@@ -142,6 +142,31 @@ export async function PUT(
       ...rest
     } = data;
 
+    const MARKET_VALUES = ["WHITE", "BOTH", "BLACK"] as const;
+    type MarketValue = (typeof MARKET_VALUES)[number];
+    const allowedMarkets = new Set<MarketValue>(MARKET_VALUES);
+    const { market: rawMarket, ...otherUpdates } = rest as {
+      market?: unknown;
+      [key: string]: unknown;
+    };
+
+    if (rawMarket !== undefined) {
+      if (typeof rawMarket !== "string") {
+        return NextResponse.json(
+          { success: false, error: "Invalid market" },
+          { status: 400 },
+        );
+      }
+      const normalizedMarket = rawMarket.toUpperCase();
+      if (!allowedMarkets.has(normalizedMarket as MarketValue)) {
+        return NextResponse.json(
+          { success: false, error: "Invalid market" },
+          { status: 400 },
+        );
+      }
+      (otherUpdates as { market: MarketValue }).market = normalizedMarket as MarketValue;
+    }
+
     const email = session.user.email;
     if (!email) {
       return NextResponse.json(
@@ -176,7 +201,7 @@ export async function PUT(
 
     await prisma.producer.update({
       where: { id },
-      data: rest,
+      data: otherUpdates,
     });
 
     return NextResponse.json({ success: true });
