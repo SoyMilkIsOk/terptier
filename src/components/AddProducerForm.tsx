@@ -1,7 +1,7 @@
 "use client";
-import { useState } from "react";
+import { useId, useState } from "react";
 import ImageUpload from "./ImageUpload";
-import type { Producer } from "@prisma/client";
+import type { Market, Producer } from "@prisma/client";
 
 type ProducerWithAttrs = Producer & {
   attributes: string[];
@@ -37,6 +37,8 @@ export default function AddProducerForm({
   const [profileImage, setProfileImage] = useState<string | null>(
     producer?.profileImage ?? null,
   );
+  const [market, setMarket] = useState<Market>(producer?.market ?? "BOTH");
+  const marketFieldName = useId();
 
   const displayStateName = producer?.state?.name ?? state.name;
 
@@ -49,6 +51,7 @@ export default function AddProducerForm({
       slug,
       profileImage,
       attributes,
+      market,
       stateCode: state.abbreviation,
       stateSlug: state.slug,
     };
@@ -73,6 +76,7 @@ export default function AddProducerForm({
     setSlug("");
     setProfileImage(null);
     setAttributes([]);
+    setMarket("BOTH");
     // ideally revalidate or refresh the page:
     if (onSaved) onSaved();
     else window.location.reload();
@@ -134,6 +138,37 @@ export default function AddProducerForm({
           </label>
         ))}
       </div>
+      <fieldset className="space-y-1">
+        <legend className="block text-xs font-semibold text-gray-500">
+          Market
+        </legend>
+        <div className="flex gap-4">
+          {[
+            { label: "White", value: "WHITE" },
+            { label: "Both", value: "BOTH" },
+            { label: "Black", value: "BLACK" },
+          ].map((option) => {
+            const inputId = `${marketFieldName}-${option.value.toLowerCase()}`;
+            return (
+              <label
+                key={option.value}
+                htmlFor={inputId}
+                className="flex items-center space-x-1 text-sm"
+              >
+                <input
+                  id={inputId}
+                  type="radio"
+                  name={marketFieldName}
+                  value={option.value}
+                  checked={market === option.value}
+                  onChange={() => setMarket(option.value as Market)}
+                />
+                <span>{option.label}</span>
+              </label>
+            );
+          })}
+        </div>
+      </fieldset>
       <select
         value={category}
         onChange={(e) => setCategory(e.target.value as any)}
