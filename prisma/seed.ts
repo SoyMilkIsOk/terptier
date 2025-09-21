@@ -1,4 +1,4 @@
-import { PrismaClient, Category, Role } from "@prisma/client";
+import { PrismaClient, Category, Market, Role } from "@prisma/client";
 import bcrypt from "bcrypt";
 
 const prisma = new PrismaClient({
@@ -73,7 +73,12 @@ async function main() {
         },
       },
       update: {},
-      create: { name, category: Category.FLOWER, stateId: colorado.id },
+      create: {
+        name,
+        category: Category.FLOWER,
+        stateId: colorado.id,
+        market: Market.BOTH,
+      },
     });
   }
 
@@ -101,7 +106,12 @@ async function main() {
         },
       },
       update: {},
-      create: { name, category: Category.HASH, stateId: colorado.id },
+      create: {
+        name,
+        category: Category.HASH,
+        stateId: colorado.id,
+        market: Market.BOTH,
+      },
     });
   }
 

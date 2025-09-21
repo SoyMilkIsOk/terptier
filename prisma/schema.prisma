@@ -20,6 +20,12 @@ enum Category {
   HASH
 }
 
+enum Market {
+  WHITE
+  BLACK
+  BOTH
+}
+
 model State {
   id    String @id @default(cuid())
   code  String @unique
@@ -58,6 +64,7 @@ model Producer {
   id                     String                   @id @default(cuid())
   name                   String
   category               Category
+  market                 Market                   @default(BOTH)
   state                  State                    @relation(fields: [stateId], references: [id])
   stateId                String
   logoUrl                String?

@@ -38,6 +38,7 @@ export async function POST(request: Request) {
     attributes,
     slug,
     profileImage,
+    market,
     stateCode,
     stateSlug,
   } = await request.json();
@@ -52,6 +53,20 @@ export async function POST(request: Request) {
       { error: "State slug or code is required" },
       { status: 400 },
     );
+  }
+
+  const MARKET_VALUES = ["WHITE", "BOTH", "BLACK"] as const;
+  type MarketValue = (typeof MARKET_VALUES)[number];
+  const allowedMarkets = new Set<MarketValue>(MARKET_VALUES);
+  let normalizedMarket: MarketValue = "BOTH";
+  if (typeof market === "string") {
+    const candidate = market.toUpperCase();
+    if (!allowedMarkets.has(candidate as MarketValue)) {
+      return NextResponse.json({ error: "Invalid market" }, { status: 400 });
+    }
+    normalizedMarket = candidate as MarketValue;
+  } else if (market !== undefined && market !== null) {
+    return NextResponse.json({ error: "Invalid market" }, { status: 400 });
   }
 
   let state = null;
@@ -94,6 +109,7 @@ export async function POST(request: Request) {
       attributes,
       slug,
       profileImage,
+      market: normalizedMarket,
       createdById: user.id,
       stateId: state.id,
     },

@@ -7,16 +7,24 @@ import { Calendar, ChevronRight, TrendingUp } from "lucide-react";
 import { unstable_noStore as noStore } from "next/cache";
 import { getStateMetadata } from "@/lib/states";
 import { notFound } from "next/navigation";
+import MarketModeToggle from "@/components/MarketModeToggle";
+import { buildMarketFilters, normalizeMarketParam } from "@/lib/market";
+import { getMarketTheme } from "@/lib/market-theme";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function DropsPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ stateName: string }>;
+  searchParams: Promise<{ market?: string }>;
 }) {
-  const { stateName } = await params;
+  const [{ stateName }, { market: marketParam }] = await Promise.all([
+    params,
+    searchParams,
+  ]);
   const state = await getStateMetadata(stateName);
 
   if (!state) {
@@ -24,6 +32,26 @@ export default async function DropsPage({
   }
 
   noStore();
+
+  const market = normalizeMarketParam(marketParam);
+  const marketFilters = buildMarketFilters(market);
+  const themeAttribute = market.toLowerCase();
+  const theme = getMarketTheme(market).drops;
+
+  const marketDescriptor =
+    market === "WHITE"
+      ? "Recreational"
+      : market === "BLACK"
+        ? "Underground"
+      : market === "BOTH"
+        ? ""
+        : null;
+
+  const heroTitle = `New to the 
+  ${state.name ? state.name : ""}
+  ${ 
+    marketDescriptor ? `${marketDescriptor} ` : ""
+  }Market`;
 
   const now = new Date();
   const mstParts = new Intl.DateTimeFormat("en-US", {
@@ -44,6 +72,9 @@ export default async function DropsPage({
     where: {
       releaseDate: { gte: start, lt: end },
       ...(state.strainWhere ?? {}),
+      producer: {
+        market: { in: marketFilters },
+      },
     },
     select: {
       id: true,
@@ -86,7 +117,7 @@ export default async function DropsPage({
       if (!acc[producerId]) {
         acc[producerId] = {
           producer: strain.producer,
-          strains: []
+          strains: [],
         };
       }
       acc[producerId].strains.push(strain);
@@ -142,47 +173,81 @@ export default async function DropsPage({
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50">
-      <div className="relative overflow-hidden bg-gradient-to-r from-green-600 to-emerald-600 text-white">
-        <div className="absolute inset-0 bg-black/10"></div>
+    <div
+      data-market-theme={themeAttribute}
+      className={`min-h-screen transition-colors duration-500 ${theme.page}`}
+    >
+      <MarketModeToggle
+        className="fixed bottom-6 left-6 z-50"
+        value={market}
+      />
+      <div
+        className={`relative overflow-hidden bg-gradient-to-r transition-colors duration-500 ${theme.hero.wrapper}`}
+      >
+        <div
+          className={`absolute inset-0 transition-colors duration-500 ${theme.hero.overlay}`}
+        ></div>
         <div className="relative px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
           <div className="max-w-4xl mx-auto text-center">
-            <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-3 sm:px-4 py-2 mb-4 sm:mb-6">
+            <div
+              className={`inline-flex items-center gap-2 backdrop-blur-sm rounded-full px-3 sm:px-4 py-2 mb-4 sm:mb-6 transition-colors duration-500 ${theme.hero.chip}`}
+            >
               <TrendingUp className="w-4 h-4" />
               <span className="text-sm font-medium">Weekly Drops</span>
             </div>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-3 sm:mb-4 py-2 sm:py-4 bg-gradient-to-r from-white to-green-100 bg-clip-text text-transparent">
-              {state.name} Recent & Upcoming Drops
+            <h1
+              className={`text-4xl sm:text-5xl lg:text-6xl font-bold mb-3 sm:mb-4 py-2 sm:py-4 bg-clip-text text-transparent transition-colors duration-500 ${theme.hero.title}`}
+            >
+              {heroTitle}
             </h1>
-            <p className="text-lg sm:text-xl text-green-100 mb-6 sm:mb-8 max-w-2xl mx-auto px-2">
-              Discover premium strains from the last week and the upcoming week from top-tier producers.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 text-green-100">
+            <div
+              className={`flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 transition-colors duration-500 ${theme.hero.statText}`}
+            >
               <div className="flex items-center gap-2">
                 <Calendar className="w-5 h-5" />
                 <span className="text-sm font-medium">Last 7 & Next 7 Days</span>
               </div>
-              <div className="hidden sm:block w-px h-4 bg-green-300"></div>
+              <div
+                className={`hidden sm:block w-px h-4 transition-colors duration-500 ${theme.hero.divider}`}
+              ></div>
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium">{producerGroups.length} Producer{producerGroups.length === 1 ? "" : "s"}</span>
+                <span className="text-sm font-medium">
+                  {producerGroups.length} Producer
+                  {producerGroups.length === 1 ? "" : "s"}
+                </span>
               </div>
-              <div className="hidden sm:block w-px h-4 bg-green-300"></div>
+              <div
+                className={`hidden sm:block w-px h-4 transition-colors duration-500 ${theme.hero.divider}`}
+              ></div>
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium">{totalStrainCount} Strain{totalStrainCount === 1 ? "" : "s"}</span>
+                <span className="text-sm font-medium">
+                  {totalStrainCount} Strain
+                  {totalStrainCount === 1 ? "" : "s"}
+                </span>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="px-4 sm:px-6 lg:px-8 py-8 sm:py-12 max-w-7xl mx-auto">
+      <div
+        className={`px-4 sm:px-6 lg:px-8 py-8 sm:py-12 max-w-7xl mx-auto transition-colors duration-500 ${theme.content}`}
+      >
         {producerGroups.length === 0 ? (
           <div className="text-center py-12 sm:py-16">
-            <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
-              <Calendar className="w-10 h-10 sm:w-12 sm:h-12 text-gray-400" />
+            <div
+              className={`w-20 h-20 sm:w-24 sm:h-24 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 transition-colors duration-500 ${theme.empty.icon}`}
+            >
+              <Calendar className="w-10 h-10 sm:w-12 sm:h-12" />
             </div>
-            <h3 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-2">No Drops This Week</h3>
-            <p className="text-gray-600 max-w-md mx-auto px-4">
+            <h3
+              className={`text-xl sm:text-2xl font-semibold mb-2 transition-colors duration-500 ${theme.empty.heading}`}
+            >
+              No Drops This Week
+            </h3>
+            <p
+              className={`max-w-md mx-auto px-4 transition-colors duration-500 ${theme.empty.text}`}
+            >
               Check back soon for the latest strain releases from your favorite producers.
             </p>
           </div>
@@ -190,22 +255,25 @@ export default async function DropsPage({
           <div className="space-y-6 sm:space-y-8">
             {producerGroups.map(({ producer, strains }) => (
               <div key={producer.id} className="group">
-                {/* Producer Header Card */}
-                <div className="bg-white rounded-xl sm:rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300">
-                  {/* Header with gradient background */}
-                  <div className="relative h-24 sm:h-28 lg:h-32 bg-gradient-to-r from-green-500 to-emerald-600">
-                    <div className="absolute inset-0 bg-black/20"></div>
+                <div
+                  className={`rounded-xl sm:rounded-2xl overflow-hidden hover:shadow-lg transition-all duration-300 ${theme.card.container}`}
+                >
+                  <div
+                    className={`relative h-24 sm:h-28 lg:h-32 bg-gradient-to-r transition-colors duration-500 ${theme.card.header}`}
+                  >
+                    <div
+                      className={`absolute inset-0 transition-colors duration-500 ${theme.card.headerOverlay}`}
+                    ></div>
                     <div className="absolute bottom-3 sm:bottom-4 left-4 sm:left-6 right-4 sm:right-6">
                       <div className="flex items-end justify-between gap-3">
-                        
-                        {/* Producer Info - Clickable */}
                         <Link
                           href={`/${state.slug}/producer/${producer.slug ?? producer.id}`}
-                          className="flex items-center gap-3 group/producer hover:opacity-90 transition-opacity flex-1 min-w-0"
+                          className={`flex items-center gap-3 group/producer hover:opacity-90 transition-opacity flex-1 min-w-0 ${theme.card.infoText}`}
                         >
-                          {/* Producer Avatar */}
                           <div className="relative flex-shrink-0">
-                            <div className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-white rounded-full p-0.5 sm:p-1 shadow-lg group-hover/producer:shadow-xl transition-shadow">
+                            <div
+                              className={`w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 rounded-full p-0.5 sm:p-1 shadow-lg group-hover/producer:shadow-xl transition-shadow ${theme.card.avatar}`}
+                            >
                               {producer.profileImage ? (
                                 <Image
                                   src={producer.profileImage}
@@ -215,50 +283,54 @@ export default async function DropsPage({
                                   className="w-full h-full rounded-full object-cover"
                                 />
                               ) : (
-                                <div className="w-full h-full rounded-full bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center">
-                                  <span className="text-white font-bold text-sm sm:text-lg lg:text-xl">
+                                <div
+                                  className={`w-full h-full rounded-full flex items-center justify-center ${theme.card.avatarFallback}`}
+                                >
+                                  <span className="font-bold text-sm sm:text-lg lg:text-xl">
                                     {producer.name.charAt(0)}
                                   </span>
                                 </div>
                               )}
                             </div>
                           </div>
-                          
-                          <div className="text-white min-w-0 flex-1">
+
+                          <div className="min-w-0 flex-1">
                             <h2 className="text-lg sm:text-xl lg:text-2xl font-bold mb-0.5 sm:mb-1 truncate group-hover/producer:underline">
                               {producer.name}
                             </h2>
                             <div className="flex items-center gap-1 mb-0.5 sm:mb-1">
-                              <span className="text-xs sm:text-sm capitalize text-green-200">
+                              <span
+                                className={`text-xs sm:text-sm capitalize ${theme.card.category}`}
+                              >
                                 {producer.category.toLowerCase()}
                               </span>
                             </div>
-                            <div className="text-green-100">
+                            <div className={theme.card.meta}>
                               <span className="text-xs sm:text-sm font-medium">
-                                {strains.length} strain{strains.length !== 1 ? 's' : ''} dropping
+                                {strains.length} strain
+                                {strains.length !== 1 ? "s" : ""} dropping
                               </span>
                             </div>
                           </div>
                         </Link>
 
-                        {/* Action Button */}
                         <div className="flex-shrink-0 self-end mb-1">
                           <Link
                             href={`/${state.slug}/producer/${producer.slug ?? producer.id}/strains`}
-                            className="group/btn bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 border border-white/20 flex items-center gap-1"
+                            className={`group/btn px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 flex items-center gap-1 ${theme.card.action}`}
                           >
                             <span className="hidden sm:inline">All Strains</span>
                             <span className="sm:hidden">View All</span>
                             <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 group-hover/btn:translate-x-0.5 transition-transform" />
                           </Link>
                         </div>
-                        
                       </div>
                     </div>
                   </div>
 
-                  {/* Strains Grid */}
-                  <div className="p-4 sm:p-6 bg-gray-50/30">
+                  <div
+                    className={`p-4 sm:p-6 transition-colors duration-500 ${theme.card.body}`}
+                  >
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                       {strains
                         .slice(0, 3)
@@ -268,30 +340,26 @@ export default async function DropsPage({
                           return (
                             <div
                               key={strain.id}
-                              className={`group/strain relative overflow-hidden transition-all duration-500 ease-out
-                                ${daysUntil === 0
-                                  ? "animate-pulse"
-                                  : ""
-                                }
-                                hover:-translate-y-1 hover:shadow-xl hover:shadow-green-100/50
-                              `}
+                              className={`group/strain relative overflow-hidden transition-all duration-500 ease-out ${
+                                daysUntil === 0 ? "animate-pulse" : ""
+                              } hover:-translate-y-1 hover:shadow-xl hover:shadow-green-100/50`}
                               style={{
                                 opacity: 0,
-                                transform: 'translateY(30px)',
+                                transform: "translateY(30px)",
                                 animation: `fadeInUp 0.6s ease-out forwards`,
                                 animationDelay: `${index * 150}ms`,
                               }}
                             >
-                              {/* Glow effect for urgent drops */}
                               {daysUntil <= 1 && daysUntil >= 0 && (
                                 <div className="absolute -inset-0.5 bg-gradient-to-r from-orange-400 to-red-400 rounded-lg blur opacity-20 group-hover/strain:opacity-30 transition-opacity duration-300"></div>
                               )}
 
-                              {/* Card wrapper with enhanced hover effects */}
-                              <div className="relative bg-white rounded-lg overflow-hidden border border-gray-100 group-hover/strain:border-green-200 transition-all duration-300">
+                              <div className="relative rounded-lg overflow-hidden border border-transparent transition-all duration-300">
                                 <StrainCard
                                   strain={strain}
                                   producerSlug={producer.slug ?? producer.id}
+                                  className={theme.strainCard.container}
+                                  metaClassName={theme.strainCard.meta}
                                 >
                                   <div className="mt-2 sm:mt-3">
                                     <div
@@ -317,8 +385,7 @@ export default async function DropsPage({
                                     </div>
                                   </div>
                                 </StrainCard>
-                                
-                                {/* Shimmer effect overlay */}
+
                                 <div className="absolute inset-0 -translate-x-full group-hover/strain:translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-1000 pointer-events-none"></div>
                               </div>
                             </div>
@@ -326,12 +393,12 @@ export default async function DropsPage({
                         })
                         .filter(Boolean)}
                     </div>
-                    
+
                     {strains.length > 0 && (
                       <div className="mt-4 sm:mt-6 text-center">
                         <Link
                           href={`/${state.slug}/drops/${producer.slug ?? producer.id}`}
-                          className="group inline-flex items-center justify-center gap-2 text-green-600 hover:text-green-700 font-semibold text-sm sm:text-base bg-white hover:bg-gray-50 px-4 py-2 rounded-lg border border-green-200 hover:border-green-300 transition-all duration-200 shadow-sm hover:shadow"
+                          className={`group inline-flex items-center justify-center gap-2 font-semibold text-sm sm:text-base px-4 py-2 rounded-lg transition-all duration-200 ${theme.card.footer} ${theme.card.footerHover}`}
                         >
                           <span>See upcoming drops</span>
                           <TrendingUp className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
@@ -346,9 +413,9 @@ export default async function DropsPage({
         )}
       </div>
 
-      {/* Inline CSS for animations */}
-      <style dangerouslySetInnerHTML={{
-        __html: `
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
           @keyframes fadeInUp {
             from {
               opacity: 0;
@@ -359,7 +426,7 @@ export default async function DropsPage({
               transform: translateY(0);
             }
           }
-          
+
           @media (prefers-reduced-motion: reduce) {
             * {
               animation-duration: 0.01ms !important;
@@ -367,8 +434,9 @@ export default async function DropsPage({
               transition-duration: 0.01ms !important;
             }
           }
-        `
-      }} />
+        `,
+        }}
+      />
     </div>
   );
 }

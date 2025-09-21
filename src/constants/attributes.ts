@@ -50,7 +50,7 @@ export const FLOWER_ATTRIBUTES: AttributeOption[] = [
   },
   {
     key: 'hand trimmed',
-    label: 'Hand Trimmed',
+    label: 'Hand Trim',
     icon: '✌️',
     tooltip: 'Produced with hand-trimmed leaves',
   },
@@ -77,13 +77,13 @@ export const HASH_ATTRIBUTES: AttributeOption[] = [
   },
   {
     key: 'single source',
-    label: 'Single Source',
+    label: 'Single Src',
     icon: '🎯',
     tooltip: "Made from flower from one grower/strain",
   },
   {
     key: 'stainless bags',
-    label: 'Stainless Bags',
+    label: 'SS Bags',
     icon: '🔩',
     tooltip: 'Uses stainless steel mesh bags for washing',
   },

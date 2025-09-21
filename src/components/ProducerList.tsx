@@ -7,6 +7,7 @@ import SearchBar from "./SearchBar";
 import ProducerCard from "./ProducerCard";
 import CategoryToggle from "./CategoryToggle";
 import type { Producer, Vote } from "@prisma/client";
+import type { SearchTheme, ToggleTheme } from "@/lib/market-theme";
 
 // merge the generated Prisma Producer with its votes
 export type ProducerWithVotes = Producer & {
@@ -24,6 +25,9 @@ interface Props {
   userVotes?: Record<string, number>; // Added userVotes to Props
   initialView?: "flower" | "hash";
   useColors?: boolean;
+  cardAppearance?: "light" | "gray" | "dark";
+  searchTheme?: SearchTheme;
+  toggleTheme?: ToggleTheme;
 }
 
 export default function ProducerList({
@@ -31,6 +35,9 @@ export default function ProducerList({
   userVotes,
   initialView,
   useColors = true,
+  cardAppearance = "light",
+  searchTheme,
+  toggleTheme,
 }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -103,13 +110,18 @@ export default function ProducerList({
   return (
     <>
       <div className="flex justify-center mb-4">
-        <CategoryToggle view={view} setView={updateView} />
+        <CategoryToggle
+          view={view}
+          setView={updateView}
+          appearance={toggleTheme}
+        />
       </div>
       <SearchBar
         onSearch={setSearchTerm}
         selectedAttributes={selectedAttributes}
         onAttributesChange={setSelectedAttributes}
         category={view === "flower" ? "FLOWER" : "HASH"}
+        appearance={searchTheme}
       />
       <div className="grid md:grid-cols-2 gap-4 mx-2 mb-4">
         {filteredList.map((producer, i) => {
@@ -134,6 +146,7 @@ export default function ProducerList({
               isTopTen={i < 10}
               color={finalColor}
               useColors={useColors}
+              appearance={cardAppearance}
             />
           );
         })}
