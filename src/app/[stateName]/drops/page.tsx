@@ -7,16 +7,23 @@ import { Calendar, ChevronRight, TrendingUp } from "lucide-react";
 import { unstable_noStore as noStore } from "next/cache";
 import { getStateMetadata } from "@/lib/states";
 import { notFound } from "next/navigation";
+import MarketModeToggle from "@/components/MarketModeToggle";
+import type { Market } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function DropsPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ stateName: string }>;
+  searchParams: Promise<{ market?: string }>;
 }) {
-  const { stateName } = await params;
+  const [{ stateName }, { market: marketParam }] = await Promise.all([
+    params,
+    searchParams,
+  ]);
   const state = await getStateMetadata(stateName);
 
   if (!state) {
@@ -24,6 +31,18 @@ export default async function DropsPage({
   }
 
   noStore();
+
+  const normalizedMarket = (marketParam ?? "").toUpperCase();
+  const market: Market = ["WHITE", "BLACK", "BOTH"].includes(normalizedMarket)
+    ? (normalizedMarket as Market)
+    : "BOTH";
+
+  const marketFilters: Market[] =
+    market === "WHITE"
+      ? ["WHITE", "BOTH"]
+      : market === "BLACK"
+      ? ["BLACK", "BOTH"]
+      : ["WHITE", "BLACK", "BOTH"];
 
   const now = new Date();
   const mstParts = new Intl.DateTimeFormat("en-US", {
@@ -44,6 +63,9 @@ export default async function DropsPage({
     where: {
       releaseDate: { gte: start, lt: end },
       ...(state.strainWhere ?? {}),
+      producer: {
+        market: { in: marketFilters },
+      },
     },
     select: {
       id: true,
@@ -143,6 +165,11 @@ export default async function DropsPage({
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50">
+      <MarketModeToggle
+        className="fixed bottom-6 left-6 z-50"
+        value={market}
+        onChange={() => {}}
+      />
       <div className="relative overflow-hidden bg-gradient-to-r from-green-600 to-emerald-600 text-white">
         <div className="absolute inset-0 bg-black/10"></div>
         <div className="relative px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
