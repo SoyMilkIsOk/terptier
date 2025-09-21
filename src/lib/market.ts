@@ -6,7 +6,7 @@ export function normalizeMarketParam(marketParam?: string | null): Market {
   const normalized = (marketParam ?? "").toUpperCase();
   return VALID_MARKETS.includes(normalized as Market)
     ? (normalized as Market)
-    : "BOTH";
+    : "WHITE";
 }
 
 export function buildMarketFilters(market: Market): Market[] {

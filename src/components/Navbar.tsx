@@ -4,7 +4,7 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import Image from "next/image";
 import { LogIn, LogOut, UserPlus, ChevronDown, User, Shield, Calendar, Crown } from "lucide-react";
@@ -39,6 +39,7 @@ type CurrentUserResponse = {
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [session, setSession] = useState<Session | null>(null);
   const [profileUsername, setProfileUsername] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -116,6 +117,10 @@ export default function Navbar() {
     setStateDropdownOpen(false);
 
     const currentPath = pathname ?? "/";
+    const marketSelection = searchParams.get("market");
+    const queryString = marketSelection === "BLACK" ? "market=BLACK" : "";
+    const withMarketQuery = (targetPath: string) =>
+      queryString ? `${targetPath}?${queryString}` : targetPath;
     const segments = currentPath.split("/").filter(Boolean);
     const knownSections = new Set(["drops", "rankings", "admin"]);
 
@@ -131,21 +136,21 @@ export default function Navbar() {
       const [section, ...tail] = rest;
       if (section && knownSections.has(section)) {
         const suffix = tail.length ? `/${tail.join("/")}` : "";
-        router.push(`/${newState}/${section}${suffix}`);
+        router.push(withMarketQuery(`/${newState}/${section}${suffix}`));
         return;
       }
 
-      router.push(`/${newState}`);
+      router.push(withMarketQuery(`/${newState}`));
       return;
     }
 
     if (knownSections.has(first)) {
       const suffix = rest.length ? `/${rest.join("/")}` : "";
-      router.push(`/${newState}/${first}${suffix}`);
+      router.push(withMarketQuery(`/${newState}/${first}${suffix}`));
       return;
     }
 
-    router.push(`/${newState}`);
+    router.push(withMarketQuery(`/${newState}`));
   };
 
   useEffect(() => {
