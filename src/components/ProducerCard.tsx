@@ -6,7 +6,6 @@ import VoteButton from "./VoteButton";
 import { MessageCircle } from "lucide-react";
 import type { ProducerWithVotes } from "./ProducerList";
 import { ATTRIBUTE_OPTIONS } from "@/constants/attributes";
-import Tooltip from "./Tooltip";
 import { useStateSlug } from "./StateProvider";
 
 export default function ProducerCard({
@@ -40,7 +39,7 @@ export default function ProducerCard({
     silver: "bg-gradient-to-br from-gray-300 to-gray-500 text-gray-50",
     bronze: "bg-gradient-to-br from-orange-300 to-orange-700 text-orange-50",
     gray: "bg-gray-500 text-white",
-    green: "bg-green-600 text-white",
+    green: "bg-emerald-600 text-white",
     none: "bg-gray-200 text-gray-700",
   };
 
@@ -68,7 +67,7 @@ export default function ProducerCard({
       attributeIcon: string;
       baseRing: string;
       borderColor: string;
-      fadeFrom: string; // for gradient fade edges
+      fadeFrom: string;
     }
   > = {
     light: {
@@ -150,11 +149,11 @@ export default function ProducerCard({
             zIndex: 1,
           }}
         >
-          {/* Rank text aligned along the hypotenuse (nudged left & down) */}
+          {/* Rank text aligned along the hypotenuse (nudged) */}
           <div
             className="absolute origin-top-left"
             style={{
-              transform: "translate(0.0rem, 1.3rem) rotate(-45deg)",
+              transform: "translate(0rem, 1.3rem) rotate(-45deg)",
             }}
           >
             <span className="flex items-baseline gap-1 font-extrabold leading-none tracking-tight">
@@ -202,7 +201,7 @@ export default function ProducerCard({
             </div>
           </div>
 
-          {/* Comments bubble (right side of the header group) */}
+          {/* Comments bubble */}
           <div
             className={`flex flex-none items-center text-base ${activeAppearance.comment}`}
             title="Comments"
@@ -214,7 +213,7 @@ export default function ProducerCard({
           </div>
         </div>
 
-        {/* Attributes row: single line, horizontal scroll with gradient fades */}
+        {/* Attributes row: single line, horizontal scroll with gradient fades (no tooltips) */}
         {producer.attributes && producer.attributes.length > 0 && (
           <div className="relative mt-3">
             {/* Left fade */}
@@ -241,6 +240,8 @@ export default function ProducerCard({
               className={[
                 "flex items-center gap-3 pr-4 pl-2",
                 "overflow-x-auto whitespace-nowrap",
+                // let icons be vertically unclipped if needed
+                "overflow-y-visible",
                 // hide scrollbars cross-browser
                 "[scrollbar-width:none]",
                 "[&::-webkit-scrollbar]:hidden",
@@ -248,27 +249,24 @@ export default function ProducerCard({
             >
               {producer.attributes.map((a) => {
                 const opt = ATTRIBUTE_OPTIONS[producer.category].find(
-                  (o) => o.key === a
+                  (o) => o.key === a,
                 );
                 return (
-                  <Tooltip key={a} content={opt?.tooltip}>
-                    <span
-                      className={[
-                        "flex-none inline-flex items-center justify-center",
-                        "h-8 w-8 rounded-lg",
-                        activeAppearance.attributeIcon,
-                        // slightly tinted chip background for structure without labels
-                        appearance === "dark"
-                          ? "bg-emerald-400/10"
-                          : "bg-emerald-50",
-                      ].join(" ")}
-                      aria-label={opt?.tooltip ?? a}
-                      title={opt?.tooltip ?? a}
-                    >
-                      {/* Icon itself; assumes ReactNode icon in config */}
-                      <span className="text-xl leading-none">{opt?.icon}</span>
-                    </span>
-                  </Tooltip>
+                  <span
+                    key={a}
+                    className={[
+                      "flex-none inline-flex items-center justify-center",
+                      "h-8 w-8 rounded-lg",
+                      activeAppearance.attributeIcon,
+                      appearance === "dark"
+                        ? "bg-emerald-400/10"
+                        : "bg-emerald-50",
+                    ].join(" ")}
+                    aria-label={opt?.tooltip ?? a}
+                    title={opt?.tooltip ?? a}
+                  >
+                    <span className="text-xl leading-none">{opt?.icon}</span>
+                  </span>
                 );
               })}
             </div>
