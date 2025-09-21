@@ -25,7 +25,7 @@ const MARKET_OPTIONS: {
 
 type MarketModeToggleProps = {
   value: Market;
-  onChange: (market: Market) => void;
+  onChange?: (market: Market) => void;
   className?: string;
   /**
    * Persist the last selected market in localStorage so it can be restored later.
@@ -69,7 +69,7 @@ export default function MarketModeToggle({
     (nextValue: Market) => {
       if (nextValue === value) return;
 
-      onChange(nextValue);
+      onChange?.(nextValue);
       updateQueryParam(nextValue);
 
       if (persistSelection && typeof window !== "undefined") {

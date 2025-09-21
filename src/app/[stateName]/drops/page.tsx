@@ -168,7 +168,6 @@ export default async function DropsPage({
       <MarketModeToggle
         className="fixed bottom-6 left-6 z-50"
         value={market}
-        onChange={() => {}}
       />
       <div className="relative overflow-hidden bg-gradient-to-r from-green-600 to-emerald-600 text-white">
         <div className="absolute inset-0 bg-black/10"></div>
