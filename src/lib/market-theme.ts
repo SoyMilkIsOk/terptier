@@ -70,252 +70,203 @@ type MarketTheme = {
   rankings: RankingsTheme;
 };
 
-const WHITE_SEARCH_THEME: SearchTheme = {
-  icon: "text-emerald-500",
-  input:
-    "bg-white/90 border border-emerald-200 text-slate-900 placeholder-emerald-300/80 hover:border-emerald-300",
-  inputFocus: "bg-white shadow-lg shadow-emerald-100/70 border-emerald-400",
-  filterButton: "text-emerald-600 hover:text-emerald-700",
-  filterButtonActive: "text-emerald-700",
-  clearButton: "text-emerald-400 hover:text-emerald-600",
-  focusRing: "ring-emerald-300",
-  panel:
-    "bg-white/95 border border-emerald-100 shadow-lg shadow-emerald-100/60 backdrop-blur",
-  attributeTag: "bg-emerald-50/80 border border-emerald-100 text-emerald-700",
-  attributeTagSelected: "bg-emerald-100 border-emerald-300 text-emerald-800",
-  attributeCheckbox: "text-emerald-600",
-  attributeIcon: "text-emerald-500",
-  attributeText: "text-emerald-800",
+// Light mode theme for WHITE market
+const WHITE_THEME = {
+  search: {
+    icon: "text-green-600",
+    input: "bg-white/60 backdrop-blur-xl border border-gray-200/40 text-gray-900 placeholder-gray-400/60 hover:border-green-300/60",
+    inputFocus: "bg-white/70 shadow-2xl shadow-green-100/30 border-green-500/50 backdrop-blur-xl",
+    filterButton: "text-green-700 hover:text-green-800",
+    filterButtonActive: "text-green-800",
+    clearButton: "text-green-500 hover:text-green-700",
+    focusRing: "ring-green-400/30",
+    panel: "bg-white/70 border border-green-100/50 shadow-2xl shadow-green-100/20 backdrop-blur-xl",
+    attributeTag: "bg-green-50/60 backdrop-blur-sm border border-green-200/40 text-green-800",
+    attributeTagSelected: "bg-green-100/70 backdrop-blur-sm border-green-400/50 text-green-900",
+    attributeCheckbox: "text-green-600",
+    attributeIcon: "text-green-600",
+    attributeText: "text-green-900",
+  },
+  page: "bg-gradient-to-br from-white via-green-50/30 to-gray-50/60 text-gray-900",
+  hero: {
+    wrapper: "bg-green-800",
+    overlay: "bg-green-950/5",
+    chip: "bg-white/20 backdrop-blur-xl border border-white/20 text-white",
+    title: "bg-gradient-to-r from-white via-green-50 to-green-100",
+    subtitle: "text-white",
+    statText: "text-white",
+    divider: "bg-white/30",
+  },
+  content: "bg-transparent",
+  empty: {
+    icon: "bg-green-50/60 backdrop-blur-sm text-green-400",
+    heading: "text-gray-900",
+    text: "text-gray-600",
+  },
+  card: {
+    container: "bg-white/60 backdrop-blur-xl border border-gray-200/30 shadow-xl hover:shadow-2xl hover:bg-white/70 text-gray-900",
+    header: "bg-green-800",
+    headerOverlay: "bg-green-950/5",
+    avatar: "bg-white/80 backdrop-blur-sm shadow-sm",
+    avatarFallback: "bg-gray-500 text-white",
+    infoText: "text-white",
+    category: "text-white/80",
+    meta: "text-white/90",
+    action: "bg-white/15 backdrop-blur-xl text-white border border-white/20 hover:bg-white/25",
+    actionHover: "hover:bg-white/25",
+    body: "bg-gray-50/20 backdrop-blur-sm",
+    footer: "text-gray-700 border-t border-gray-200/30",
+    footerHover: "hover:bg-gray-50/30 backdrop-blur-sm",
+  },
+  strainCard: {
+    container: "bg-white/70 backdrop-blur-xl text-gray-900 hover:bg-gray-50/40 border border-gray-200/30",
+    meta: "text-gray-600",
+  },
+  button: "bg-green-600 hover:bg-green-500 text-white border border-green-500/40 shadow-md hover:shadow-lg",
 };
 
-const BOTH_SEARCH_THEME: SearchTheme = {
-  icon: "text-emerald-500",
-  input:
-    "bg-white/85 border border-emerald-200/70 text-slate-900 placeholder-emerald-300/70 hover:border-emerald-300",
-  inputFocus: "bg-white shadow-lg shadow-emerald-200/50 border-emerald-400",
-  filterButton: "text-emerald-600 hover:text-emerald-700",
-  filterButtonActive: "text-emerald-700",
-  clearButton: "text-emerald-400 hover:text-emerald-600",
-  focusRing: "ring-emerald-400",
-  panel:
-    "bg-white/90 border border-emerald-200/70 shadow-lg shadow-emerald-200/40 backdrop-blur",
-  attributeTag: "bg-emerald-50/80 border border-emerald-100 text-emerald-700",
-  attributeTagSelected: "bg-emerald-100 border-emerald-300 text-emerald-800",
-  attributeCheckbox: "text-emerald-600",
-  attributeIcon: "text-emerald-500",
-  attributeText: "text-emerald-800",
+// Gray mode theme for BOTH market
+const BOTH_THEME = {
+  search: {
+    icon: "text-green-600",
+    input: "bg-white/50 backdrop-blur-xl border border-gray-300/40 text-gray-900 placeholder-gray-500/60 hover:border-green-400/50",
+    inputFocus: "bg-white/60 shadow-2xl shadow-gray-200/30 border-green-500/50 backdrop-blur-xl",
+    filterButton: "text-gray-700 hover:text-green-700",
+    filterButtonActive: "text-green-700",
+    clearButton: "text-gray-500 hover:text-green-600",
+    focusRing: "ring-green-400/30",
+    panel: "bg-white/60 backdrop-blur-xl border border-gray-200/50 shadow-2xl shadow-gray-200/20",
+    attributeTag: "bg-gray-50/60 backdrop-blur-sm border border-gray-300/40 text-gray-800",
+    attributeTagSelected: "bg-green-100/70 backdrop-blur-sm border-green-400/50 text-green-900",
+    attributeCheckbox: "text-green-600",
+    attributeIcon: "text-gray-600",
+    attributeText: "text-gray-900",
+  },
+  page: "bg-gradient-to-br from-gray-200 via-gray-200/80 to-green-50/40 text-gray-900",
+  hero: {
+    wrapper: "bg-green-900",
+    overlay: "bg-green-950/5",
+    chip: "bg-white/20 backdrop-blur-xl border border-white/20 text-white",
+    title: "bg-gradient-to-r from-white via-gray-100 to-green-100",
+    subtitle: "text-white",
+    statText: "text-white",
+    divider: "bg-white/30",
+  },
+  content: "bg-transparent",
+  empty: {
+    icon: "bg-gray-100/60 backdrop-blur-sm text-gray-400",
+    heading: "text-gray-900",
+    text: "text-gray-600",
+  },
+  card: {
+    container: "bg-white/50 backdrop-blur-xl border border-gray-200/40 shadow-xl hover:shadow-2xl hover:bg-white/60 text-gray-900",
+    header: "bg-green-900",
+    headerOverlay: "bg-green-950/5",
+    avatar: "bg-white/80 backdrop-blur-sm shadow-sm",
+    avatarFallback: "bg-gray-500 text-white",
+    infoText: "text-white",
+    category: "text-white/80",
+    meta: "text-white/90",
+    action: "bg-white/15 backdrop-blur-xl text-white border border-white/20 hover:bg-white/25",
+    actionHover: "hover:bg-white/25",
+    body: "bg-gray-50/15 backdrop-blur-sm",
+    footer: "text-gray-700 border-t border-gray-300/30",
+    footerHover: "hover:bg-gray-50/30 backdrop-blur-sm",
+  },
+  strainCard: {
+    container: "bg-white/60 backdrop-blur-xl text-gray-900 hover:bg-gray-50/30 border border-gray-200/30",
+    meta: "text-gray-600",
+  },
+  button: "bg-green-600 hover:bg-green-500 text-white border border-green-500/40 shadow-md hover:shadow-lg",
 };
 
-const BLACK_SEARCH_THEME: SearchTheme = {
-  icon: "text-emerald-300",
-  input:
-    "bg-emerald-950/70 border border-emerald-900 text-emerald-100 placeholder-emerald-300/70 hover:border-emerald-600/70",
-  inputFocus:
-    "bg-emerald-950/80 border-emerald-500 shadow-lg shadow-emerald-900/50",
-  filterButton: "text-emerald-300 hover:text-emerald-200",
-  filterButtonActive: "text-emerald-200",
-  clearButton: "text-emerald-400 hover:text-emerald-200",
-  focusRing: "ring-emerald-500",
-  panel:
-    "bg-emerald-950/90 border border-emerald-900 shadow-lg shadow-emerald-900/30 backdrop-blur",
-  attributeTag: "bg-emerald-950/60 border border-emerald-800 text-emerald-200",
-  attributeTagSelected: "bg-emerald-900/70 border-emerald-600 text-emerald-100",
-  attributeCheckbox: "text-emerald-400",
-  attributeIcon: "text-emerald-300",
-  attributeText: "text-emerald-100",
+// Dark mode theme for BLACK market
+const BLACK_THEME = {
+  search: {
+    icon: "text-green-600",
+    input: "bg-zinc-900/80 backdrop-blur-sm border border-zinc-700/60 text-zinc-100 placeholder-gray-400/60 hover:border-green-600/50",
+    inputFocus: "bg-zinc-900/90 shadow-xl shadow-green-900/30 border-green-500/60",
+    filterButton: "text-green-800 hover:text-green-300",
+    filterButtonActive: "text-green-200",
+    clearButton: "text-gray-400 hover:text-green-300",
+    focusRing: "ring-green-500/50",
+    panel: "bg-zinc-900/95 backdrop-blur-sm border border-zinc-700/80 shadow-2xl shadow-gray-900/40",
+    attributeTag: "bg-zinc-800/90 border border-zinc-600/60 text-gray-200",
+    attributeTagSelected: "bg-green-900/70 border-green-600/60 text-green-100",
+    attributeCheckbox: "text-green-400",
+    attributeIcon: "text-gray-400",
+    attributeText: "text-gray-100",
+  },
+  page: "bg-gradient-to-br from-zinc-950 to-green-950 text-gray-50",
+  hero: {
+    wrapper: "bg-green-950",
+    overlay: "bg-black/10",
+    chip: "bg-white/25 backdrop-blur-sm border border-white/20 text-white",
+    title: "bg-gradient-to-r from-gray-100 via-gray-200 to-gray-50",
+    subtitle: "text-white",
+    statText: "text-white",
+    divider: "bg-white/30",
+  },
+  content: "bg-transparent",
+  empty: {
+    icon: "bg-gray-800/80 text-green-400",
+    heading: "text-gray-100",
+    text: "text-gray-300",
+  },
+  card: {
+    container: "bg-gray-900/70 backdrop-blur-sm border border-gray-700/40 shadow-xl hover:shadow-2xl text-gray-100",
+    header: "bg-green-950",
+    headerOverlay: "bg-black/10",
+    avatar: "bg-gray-800/80 shadow-md",
+    avatarFallback: "bg-gray-600 text-white",
+    infoText: "text-white",
+    category: "text-white/80",
+    meta: "text-white/90",
+    action: "bg-white/20 backdrop-blur-sm text-white border border-white/30 hover:bg-white/30",
+    actionHover: "hover:bg-white/30",
+    body: "bg-gray-800/30",
+    footer: "text-gray-200 border-t border-gray-600/40",
+    footerHover: "hover:bg-gray-800/60",
+  },
+  strainCard: {
+    container: "bg-gray-900/80 backdrop-blur-sm text-gray-100 hover:bg-gray-800/60 border border-gray-700/30",
+    meta: "text-gray-200",
+  },
+  button: "bg-green-600 hover:bg-green-500 text-white border border-green-500/60 shadow-lg hover:shadow-xl",
 };
 
 const MARKET_THEME: Record<Market, MarketTheme> = {
   WHITE: {
     drops: {
-      page:
-        "bg-gradient-to-br from-white via-emerald-50 to-white text-slate-900",
-      hero: {
-        wrapper: "from-emerald-600 via-emerald-600 to-emerald-700 text-white",
-        overlay: "bg-emerald-900/10",
-        chip: "bg-white/20 text-white",
-        title: "bg-gradient-to-r from-white to-emerald-100",
-        subtitle: "text-emerald-100",
-        statText: "text-emerald-100",
-        divider: "bg-emerald-200/80",
-      },
-      content: "",
-      empty: {
-        icon: "bg-emerald-50 text-emerald-300",
-        heading: "text-emerald-900",
-        text: "text-emerald-600",
-      },
-      card: {
-        container:
-          "bg-white text-slate-900 border border-emerald-100 shadow-sm",
-        header: "from-emerald-500 via-emerald-600 to-emerald-700 text-white",
-        headerOverlay: "bg-black/10",
-        avatar: "bg-white",
-        avatarFallback:
-          "bg-gradient-to-br from-emerald-400 to-emerald-500 text-white",
-        infoText: "text-white",
-        category: "text-emerald-100",
-        meta: "text-emerald-100",
-        action:
-          "bg-white/20 text-white border border-white/20 hover:bg-white/30",
-        actionHover: "hover:bg-white/30",
-        body: "bg-emerald-50/40",
-        footer: "text-emerald-700 border border-emerald-200",
-        footerHover: "hover:bg-emerald-50/60",
-      },
-      strainCard: {
-        container: "bg-white text-slate-900 hover:bg-emerald-50/80",
-        meta: "text-emerald-600",
-      },
-      button:
-        "bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-500/60",
-      search: WHITE_SEARCH_THEME,
+      ...WHITE_THEME,
+      search: WHITE_THEME.search,
     },
     rankings: {
-      page:
-        "bg-gradient-to-br from-white via-emerald-50 to-white text-slate-900",
-      hero: {
-        wrapper: "from-emerald-600 via-emerald-600 to-emerald-700 text-white",
-        overlay: "bg-emerald-900/10",
-        chip: "bg-white/20 text-white",
-        title: "bg-gradient-to-r from-white to-emerald-100",
-        subtitle: "text-emerald-100",
-        statText: "text-emerald-100",
-        divider: "bg-emerald-200/80",
-      },
-      content: "",
-      button:
-        "bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-500/60",
+      ...WHITE_THEME,
       producerCardAppearance: "light",
-      search: WHITE_SEARCH_THEME,
+      search: WHITE_THEME.search,
     },
   },
   BOTH: {
     drops: {
-      page:
-        "bg-gradient-to-br from-emerald-50 via-slate-50 to-emerald-100 text-slate-900",
-      hero: {
-        wrapper: "from-emerald-600 via-emerald-700 to-emerald-800 text-white",
-        overlay: "bg-emerald-950/10",
-        chip: "bg-emerald-900/20 text-emerald-50",
-        title: "bg-gradient-to-r from-white to-emerald-200",
-        subtitle: "text-emerald-100",
-        statText: "text-emerald-100",
-        divider: "bg-emerald-200/80",
-      },
-      content: "",
-      empty: {
-        icon: "bg-emerald-100 text-emerald-300",
-        heading: "text-emerald-900",
-        text: "text-emerald-700",
-      },
-      card: {
-        container:
-          "bg-white/90 text-slate-900 border border-emerald-200/60 shadow-sm backdrop-blur",
-        header: "from-emerald-600 via-emerald-700 to-emerald-800 text-white",
-        headerOverlay: "bg-black/15",
-        avatar: "bg-white/90",
-        avatarFallback:
-          "bg-gradient-to-br from-emerald-500 to-emerald-700 text-white",
-        infoText: "text-white",
-        category: "text-emerald-100",
-        meta: "text-emerald-100",
-        action:
-          "bg-white/20 text-white border border-white/20 hover:bg-white/25",
-        actionHover: "hover:bg-white/25",
-        body: "bg-emerald-50/40",
-        footer: "text-emerald-700 border border-emerald-300/70",
-        footerHover: "hover:bg-emerald-50/60",
-      },
-      strainCard: {
-        container: "bg-white/85 text-slate-900 hover:bg-emerald-50/70",
-        meta: "text-emerald-700",
-      },
-      button:
-        "bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-500/60",
-      search: BOTH_SEARCH_THEME,
+      ...BOTH_THEME,
+      search: BOTH_THEME.search,
     },
     rankings: {
-      page:
-        "bg-gradient-to-br from-emerald-50 via-slate-50 to-emerald-100 text-slate-900",
-      hero: {
-        wrapper: "from-emerald-600 via-emerald-700 to-emerald-800 text-white",
-        overlay: "bg-emerald-950/10",
-        chip: "bg-emerald-900/20 text-emerald-50",
-        title: "bg-gradient-to-r from-white to-emerald-200",
-        subtitle: "text-emerald-100",
-        statText: "text-emerald-100",
-        divider: "bg-emerald-200/80",
-      },
-      content: "",
-      button:
-        "bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-500/60",
+      ...BOTH_THEME,
       producerCardAppearance: "gray",
-      search: BOTH_SEARCH_THEME,
+      search: BOTH_THEME.search,
     },
   },
   BLACK: {
     drops: {
-      page:
-        "bg-gradient-to-br from-slate-900 via-emerald-950 to-slate-950 text-emerald-50",
-      hero: {
-        wrapper: "from-emerald-700 via-emerald-800 to-emerald-900 text-white",
-        overlay: "bg-black/40",
-        chip: "bg-emerald-900/40 text-emerald-100",
-        title: "bg-gradient-to-r from-emerald-100 via-emerald-200 to-emerald-400",
-        subtitle: "text-emerald-100",
-        statText: "text-emerald-100",
-        divider: "bg-emerald-500/40",
-      },
-      content: "",
-      empty: {
-        icon: "bg-emerald-950/70 text-emerald-300",
-        heading: "text-emerald-50",
-        text: "text-emerald-200",
-      },
-      card: {
-        container:
-          "bg-slate-900/70 text-emerald-50 border border-emerald-900/40 backdrop-blur",
-        header: "from-emerald-700 via-emerald-800 to-emerald-900 text-emerald-50",
-        headerOverlay: "bg-black/40",
-        avatar: "bg-emerald-950",
-        avatarFallback:
-          "bg-gradient-to-br from-emerald-700 to-emerald-900 text-emerald-100",
-        infoText: "text-emerald-50",
-        category: "text-emerald-200",
-        meta: "text-emerald-200",
-        action:
-          "bg-emerald-500/20 text-emerald-100 border border-emerald-500/30 hover:bg-emerald-500/30",
-        actionHover: "hover:bg-emerald-500/30",
-        body: "bg-emerald-950/40",
-        footer: "text-emerald-200 border border-emerald-600/40",
-        footerHover: "hover:bg-emerald-900/50",
-      },
-      strainCard: {
-        container: "bg-slate-900/80 text-emerald-50 hover:bg-emerald-900/40",
-        meta: "text-emerald-200",
-      },
-      button:
-        "bg-emerald-500 hover:bg-emerald-400 text-emerald-950 border border-emerald-400",
-      search: BLACK_SEARCH_THEME,
+      ...BLACK_THEME,
+      search: BLACK_THEME.search,
     },
     rankings: {
-      page:
-        "bg-gradient-to-br from-slate-900 via-emerald-950 to-slate-950 text-emerald-50",
-      hero: {
-        wrapper: "from-emerald-700 via-emerald-800 to-emerald-900 text-white",
-        overlay: "bg-black/40",
-        chip: "bg-emerald-900/40 text-emerald-100",
-        title: "bg-gradient-to-r from-emerald-100 via-emerald-200 to-emerald-400",
-        subtitle: "text-emerald-100",
-        statText: "text-emerald-100",
-        divider: "bg-emerald-500/40",
-      },
-      content: "",
-      button:
-        "bg-emerald-500 hover:bg-emerald-400 text-emerald-950 border border-emerald-400",
+      ...BLACK_THEME,
       producerCardAppearance: "dark",
-      search: BLACK_SEARCH_THEME,
+      search: BLACK_THEME.search,
     },
   },
 };

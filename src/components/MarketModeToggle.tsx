@@ -107,35 +107,35 @@ export default function MarketModeToggle({
     switch (value) {
       case "WHITE":
         return {
-          track: "bg-gradient-to-b from-gray-50/90 to-gray-100/95",
-          trackBorder: "border-gray-200/40",
+          track: "bg-gradient-to-b from-zinc-50/90 to-zinc-100/95",
+          trackBorder: "border-zinc-200/40",
           sliderBg: "linear-gradient(145deg, rgba(34, 197, 94, 0.85), rgba(22, 163, 74, 0.9))",
           sliderShadow: "0 2px 6px rgba(34, 197, 94, 0.25), 0 1px 2px rgba(0,0,0,0.08)",
-          innerTrack: "bg-gradient-to-b from-white/60 to-gray-50/40",
+          innerTrack: "bg-gradient-to-b from-white/60 to-zinc-50/40",
         };
       case "BOTH":
         return {
-          track: "bg-gradient-to-b from-gray-200/80 to-gray-300/90",
-          trackBorder: "border-gray-400/30",
+          track: "bg-gradient-to-b from-zinc-200/80 to-zinc-300/90",
+          trackBorder: "border-zinc-400/30",
           sliderBg: "linear-gradient(145deg, rgba(34, 197, 94, 0.85), rgba(22, 163, 74, 0.9))",
           sliderShadow: "0 2px 6px rgba(34, 197, 94, 0.25), 0 1px 2px rgba(0,0,0,0.12)",
-          innerTrack: "bg-gradient-to-b from-gray-100/50 to-gray-200/40",
+          innerTrack: "bg-gradient-to-b from-zinc-100/50 to-zinc-200/40",
         };
       case "BLACK":
         return {
-          track: "bg-gradient-to-b from-gray-700/90 to-gray-800/95",
-          trackBorder: "border-gray-600/40",
+          track: "bg-gradient-to-b from-zinc-700/90 to-zinc-800/95",
+          trackBorder: "border-zinc-600/40",
           sliderBg: "linear-gradient(145deg, rgba(34, 197, 94, 0.9), rgba(22, 163, 74, 0.95))",
           sliderShadow: "0 2px 8px rgba(34, 197, 94, 0.4), 0 1px 2px rgba(0,0,0,0.2)",
-          innerTrack: "bg-gradient-to-b from-gray-600/40 to-gray-700/30",
+          innerTrack: "bg-gradient-to-b from-zinc-600/40 to-zinc-700/30",
         };
       default:
         return {
-          track: "bg-gradient-to-b from-gray-100/80 to-gray-200/90",
-          trackBorder: "border-gray-300/30",
+          track: "bg-gradient-to-b from-zinc-100/80 to-zinc-200/90",
+          trackBorder: "border-zinc-300/30",
           sliderBg: "linear-gradient(145deg, rgba(34, 197, 94, 0.85), rgba(22, 163, 74, 0.9))",
           sliderShadow: "0 2px 6px rgba(34, 197, 94, 0.25), 0 1px 2px rgba(0,0,0,0.1)",
-          innerTrack: "bg-gradient-to-b from-gray-50/50 to-white/30",
+          innerTrack: "bg-gradient-to-b from-zinc-50/50 to-white/30",
         };
     }
   };
@@ -208,7 +208,7 @@ export default function MarketModeToggle({
               className={`relative z-30 flex items-center justify-center w-12 h-12 rounded-full text-sm font-medium transition-all duration-200 ease-out group ${
                 isActive
                   ? "text-white drop-shadow-sm"
-                  : "text-gray-600 hover:text-gray-800"
+                  : "text-zinc-600 hover:text-zinc-800"
               } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-green-500 focus-visible:ring-offset-transparent`}
             >
               <Icon 
