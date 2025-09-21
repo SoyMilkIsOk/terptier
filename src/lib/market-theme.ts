@@ -1,7 +1,7 @@
 import type { Market } from "@prisma/client";
 
 export type SearchTheme = {
-  icon: string;
+  searchIcon: string;
   input: string;
   inputFocus: string;
   filterButton: string;
@@ -14,6 +14,25 @@ export type SearchTheme = {
   attributeCheckbox: string;
   attributeIcon: string;
   attributeText: string;
+};
+
+export type ToggleTheme = {
+  container: string;
+  indicator: {
+    base: string;
+    flower: string;
+    hash: string;
+  };
+  label: {
+    base: string;
+    active: string;
+    inactive: string;
+  };
+  labelWrapper: {
+    flower: string;
+    hash: string;
+  };
+  focusRing: string;
 };
 
 type DropsTheme = {
@@ -53,6 +72,7 @@ type DropsTheme = {
     meta: string;
   };
   button: string;
+  toggle: ToggleTheme;
   search: SearchTheme;
 };
 
@@ -63,6 +83,7 @@ type RankingsTheme = {
   button: string;
   producerCardAppearance: "light" | "gray" | "dark";
   search: SearchTheme;
+  toggle: ToggleTheme;
 };
 
 type MarketTheme = {
@@ -73,7 +94,7 @@ type MarketTheme = {
 // Light mode theme for WHITE market
 const WHITE_THEME = {
   search: {
-    icon: "text-green-600",
+    searchIcon: "text-green-600",
     input: "bg-white/60 backdrop-blur-xl border border-gray-200/40 text-gray-900 placeholder-gray-400/60 hover:border-green-300/60",
     inputFocus: "bg-white/70 shadow-2xl shadow-green-100/30 border-green-500/50 backdrop-blur-xl",
     filterButton: "text-green-700 hover:text-green-800",
@@ -104,7 +125,7 @@ const WHITE_THEME = {
     text: "text-gray-600",
   },
   card: {
-    container: "bg-white/60 backdrop-blur-xl border border-gray-200/30 shadow-xl hover:shadow-2xl hover:bg-white/70 text-gray-900",
+    container: "bg-white/60 backdrop-blur-xl border border-gray-200 shadow-xl hover:shadow-2xl hover:bg-white/70 text-gray-900",
     header: "bg-green-800",
     headerOverlay: "bg-green-950/5",
     avatar: "bg-white/80 backdrop-blur-sm shadow-sm",
@@ -112,23 +133,43 @@ const WHITE_THEME = {
     infoText: "text-white",
     category: "text-white/80",
     meta: "text-white/90",
-    action: "bg-white/15 backdrop-blur-xl text-white border border-white/20 hover:bg-white/25",
+    action: "bg-white/15 backdrop-blur-xl text-white border border-gray-200 hover:bg-white/25",
     actionHover: "hover:bg-white/25",
     body: "bg-gray-50/20 backdrop-blur-sm",
-    footer: "text-gray-700 border-t border-gray-200/30",
+    footer: "text-gray-700 border border-gray-200",
     footerHover: "hover:bg-gray-50/30 backdrop-blur-sm",
   },
   strainCard: {
-    container: "bg-white/70 backdrop-blur-xl text-gray-900 hover:bg-gray-50/40 border border-gray-200/30",
+    container: "bg-white/70 backdrop-blur-xl text-gray-900 hover:bg-gray-50/40 border border-gray-200",
     meta: "text-gray-600",
   },
   button: "bg-green-600 hover:bg-green-500 text-white border border-green-500/40 shadow-md hover:shadow-lg",
+  toggle: {
+    container:
+      "bg-white/70 backdrop-blur-xl border border-green-100/60 shadow-inner shadow-green-100/20",
+    indicator: {
+      base:
+        "absolute left-1.5 top-1.5 bottom-1.5 rounded-full transform transition-all duration-300 ease-out shadow-lg",
+      flower: "bg-gradient-to-r from-green-500 to-green-600 translate-x-0 w-24",
+      hash: "bg-gradient-to-r from-green-500 to-green-600 translate-x-24 w-22",
+    },
+    label: {
+      base: "font-semibold text-sm transition-all duration-300 ease-out",
+      active: "text-white drop-shadow-sm",
+      inactive: "text-green-700/80 hover:text-green-900",
+    },
+    labelWrapper: {
+      flower: "w-24",
+      hash: "w-22",
+    },
+    focusRing: "ring-green-300/30 ring-opacity-0 focus-within:ring-opacity-80",
+  },
 };
 
 // Gray mode theme for BOTH market
 const BOTH_THEME = {
   search: {
-    icon: "text-green-600",
+    searchIcon: "text-green-600",
     input: "bg-white/50 backdrop-blur-xl border border-gray-300/40 text-gray-900 placeholder-gray-500/60 hover:border-green-400/50",
     inputFocus: "bg-white/60 shadow-2xl shadow-gray-200/30 border-green-500/50 backdrop-blur-xl",
     filterButton: "text-gray-700 hover:text-green-700",
@@ -159,7 +200,7 @@ const BOTH_THEME = {
     text: "text-gray-600",
   },
   card: {
-    container: "bg-white/50 backdrop-blur-xl border border-gray-200/40 shadow-xl hover:shadow-2xl hover:bg-white/60 text-gray-900",
+    container: "bg-white/50 backdrop-blur-xl border border-gray-200 shadow-xl hover:shadow-2xl hover:bg-white/60 text-gray-900",
     header: "bg-green-900",
     headerOverlay: "bg-green-950/5",
     avatar: "bg-white/80 backdrop-blur-sm shadow-sm",
@@ -167,23 +208,43 @@ const BOTH_THEME = {
     infoText: "text-white",
     category: "text-white/80",
     meta: "text-white/90",
-    action: "bg-white/15 backdrop-blur-xl text-white border border-white/20 hover:bg-white/25",
+    action: "bg-white/15 backdrop-blur-xl text-white border border-gray-200 hover:bg-white/25",
     actionHover: "hover:bg-white/25",
     body: "bg-gray-50/15 backdrop-blur-sm",
-    footer: "text-gray-700 border-t border-gray-300/30",
+    footer: "text-gray-700 border border-gray-300",
     footerHover: "hover:bg-gray-50/30 backdrop-blur-sm",
   },
   strainCard: {
-    container: "bg-white/60 backdrop-blur-xl text-gray-900 hover:bg-gray-50/30 border border-gray-200/30",
+    container: "bg-white/60 backdrop-blur-xl text-gray-900 hover:bg-gray-50/30 border border-gray-200",
     meta: "text-gray-600",
   },
   button: "bg-green-600 hover:bg-green-500 text-white border border-green-500/40 shadow-md hover:shadow-lg",
+  toggle: {
+    container:
+      "bg-white/60 backdrop-blur-xl border border-gray-200/60 shadow-inner shadow-gray-200/30",
+    indicator: {
+      base:
+        "absolute left-1.5 top-1.5 bottom-1.5 rounded-full transform transition-all duration-300 ease-out shadow-lg",
+      flower: "bg-gradient-to-r from-green-500 to-green-600 translate-x-0 w-24",
+      hash: "bg-gradient-to-r from-green-500 to-green-600 translate-x-24 w-22",
+    },
+    label: {
+      base: "font-semibold text-sm transition-all duration-300 ease-out",
+      active: "text-white drop-shadow-sm",
+      inactive: "text-gray-600 hover:text-gray-900",
+    },
+    labelWrapper: {
+      flower: "w-24",
+      hash: "w-22",
+    },
+    focusRing: "ring-green-400/30 ring-opacity-0 focus-within:ring-opacity-80",
+  },
 };
 
 // Dark mode theme for BLACK market
 const BLACK_THEME = {
   search: {
-    icon: "text-green-600",
+    searchIcon: "text-green-600",
     input: "bg-zinc-900/80 backdrop-blur-sm border border-zinc-700/60 text-zinc-100 placeholder-gray-400/60 hover:border-green-600/50",
     inputFocus: "bg-zinc-900/90 shadow-xl shadow-green-900/30 border-green-500/60",
     filterButton: "text-green-800 hover:text-green-300",
@@ -214,7 +275,7 @@ const BLACK_THEME = {
     text: "text-gray-300",
   },
   card: {
-    container: "bg-gray-900/70 backdrop-blur-sm border border-gray-700/40 shadow-xl hover:shadow-2xl text-gray-100",
+    container: "bg-gray-900/70 backdrop-blur-sm border border-gray-700 shadow-xl hover:shadow-2xl text-gray-100",
     header: "bg-green-950",
     headerOverlay: "bg-black/10",
     avatar: "bg-gray-800/80 shadow-md",
@@ -222,17 +283,37 @@ const BLACK_THEME = {
     infoText: "text-white",
     category: "text-white/80",
     meta: "text-white/90",
-    action: "bg-white/20 backdrop-blur-sm text-white border border-white/30 hover:bg-white/30",
+    action: "bg-white/20 backdrop-blur-sm text-white border border-white hover:bg-white/30",
     actionHover: "hover:bg-white/30",
     body: "bg-gray-800/30",
-    footer: "text-gray-200 border-t border-gray-600/40",
+    footer: "text-gray-200 border-t border-gray-600",
     footerHover: "hover:bg-gray-800/60",
   },
   strainCard: {
-    container: "bg-gray-900/80 backdrop-blur-sm text-gray-100 hover:bg-gray-800/60 border border-gray-700/30",
+    container: "bg-gray-900/80 backdrop-blur-sm text-gray-100 hover:bg-gray-800/60 border border-gray-700",
     meta: "text-gray-200",
   },
   button: "bg-green-600 hover:bg-green-500 text-white border border-green-500/60 shadow-lg hover:shadow-xl",
+  toggle: {
+    container:
+      "bg-zinc-900/80 backdrop-blur-sm border border-zinc-700/70 shadow-inner shadow-black/40",
+    indicator: {
+      base:
+        "absolute left-1.5 top-1.5 bottom-1.5 rounded-full transform transition-all duration-300 ease-out shadow-lg",
+      flower: "bg-gradient-to-r from-green-500 to-green-700 translate-x-0 w-24",
+      hash: "bg-gradient-to-r from-green-600 to-green-700 translate-x-24 w-22",
+    },
+    label: {
+      base: "font-semibold text-sm transition-all duration-300 ease-out",
+      active: "text-white drop-shadow-sm",
+      inactive: "text-gray-300 hover:text-white",
+    },
+    labelWrapper: {
+      flower: "w-24",
+      hash: "w-22",
+    },
+    focusRing: "ring-green-500/30 ring-opacity-0 focus-within:ring-opacity-80",
+  },
 };
 
 const MARKET_THEME: Record<Market, MarketTheme> = {

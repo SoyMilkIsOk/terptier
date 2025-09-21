@@ -13,7 +13,7 @@ export default function VoteButton({
   userRating,
   readOnly = false,
   navigateOnClick = false,
-  showNumber = true,
+  showNumber = false,
   linkSlug,
   compact = false,
 }: {

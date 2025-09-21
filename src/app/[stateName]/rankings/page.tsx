@@ -100,6 +100,17 @@ export default async function RankingsPage({
   const totalVotes =
     [...flower, ...hash].reduce((acc, p) => acc + p.votes.length, 0) || 0;
 
+  const marketDescriptor =
+    selectedMarket === "WHITE"
+      ? "Recreational"
+      : selectedMarket === "BLACK"
+        ? "Underground"
+        : "";
+
+  const heroTitle = `${state.name}'s Top ${
+    marketDescriptor ? `${marketDescriptor} ` : ""
+  }Producers`;
+
   return (
     <div
       data-market-theme={themeAttribute}
@@ -127,15 +138,8 @@ export default async function RankingsPage({
             <h1
               className={`text-5xl md:text-6xl font-bold mb-4 py-4 bg-clip-text text-transparent transition-colors duration-500 ${theme.hero.title}`}
             >
-              {state.name} Producer Rankings
+              {heroTitle}
             </h1>
-
-            <p
-              className={`text-lg md:text-xl mb-8 max-w-2xl mx-auto transition-colors duration-500 ${theme.hero.subtitle}`}
-            >
-              {state.tagline ??
-                "Vote for your favorite producers and see who's in the lead! Scores are community-driven and update as votes roll in."}
-            </p>
 
             <div
               className={`flex flex-wrap items-center justify-center gap-6 transition-colors duration-500 ${theme.hero.statText}`}
@@ -187,6 +191,7 @@ export default async function RankingsPage({
           initialView={initialViewParam}
           cardAppearance={theme.producerCardAppearance}
           searchTheme={theme.search}
+          toggleTheme={theme.toggle}
         />
 
         <div className="text-center mt-8">
