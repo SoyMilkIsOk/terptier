@@ -4,11 +4,13 @@ import { NextResponse } from "next/server";
 const NON_STATE_SEGMENTS = new Set([
   "about",
   "admin",
+  "drops",
   "error",
   "faq",
   "feedback",
   "login",
   "not-found",
+  "rankings",
   "privacy",
   "profile",
   "signup",
