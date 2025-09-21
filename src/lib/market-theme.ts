@@ -1,7 +1,7 @@
 import type { Market } from "@prisma/client";
 
 export type SearchTheme = {
-  icon: string;
+  searchIcon: string;
   input: string;
   inputFocus: string;
   filterButton: string;
@@ -94,7 +94,7 @@ type MarketTheme = {
 // Light mode theme for WHITE market
 const WHITE_THEME = {
   search: {
-    icon: "text-green-600",
+    searchIcon: "text-green-600",
     input: "bg-white/60 backdrop-blur-xl border border-gray-200/40 text-gray-900 placeholder-gray-400/60 hover:border-green-300/60",
     inputFocus: "bg-white/70 shadow-2xl shadow-green-100/30 border-green-500/50 backdrop-blur-xl",
     filterButton: "text-green-700 hover:text-green-800",
@@ -125,7 +125,7 @@ const WHITE_THEME = {
     text: "text-gray-600",
   },
   card: {
-    container: "bg-white/60 backdrop-blur-xl border border-gray-200/30 shadow-xl hover:shadow-2xl hover:bg-white/70 text-gray-900",
+    container: "bg-white/60 backdrop-blur-xl border border-gray-200 shadow-xl hover:shadow-2xl hover:bg-white/70 text-gray-900",
     header: "bg-green-800",
     headerOverlay: "bg-green-950/5",
     avatar: "bg-white/80 backdrop-blur-sm shadow-sm",
@@ -133,14 +133,14 @@ const WHITE_THEME = {
     infoText: "text-white",
     category: "text-white/80",
     meta: "text-white/90",
-    action: "bg-white/15 backdrop-blur-xl text-white border border-white/20 hover:bg-white/25",
+    action: "bg-white/15 backdrop-blur-xl text-white border border-gray-200 hover:bg-white/25",
     actionHover: "hover:bg-white/25",
     body: "bg-gray-50/20 backdrop-blur-sm",
-    footer: "text-gray-700 border-t border-gray-200/30",
+    footer: "text-gray-700 border border-gray-200",
     footerHover: "hover:bg-gray-50/30 backdrop-blur-sm",
   },
   strainCard: {
-    container: "bg-white/70 backdrop-blur-xl text-gray-900 hover:bg-gray-50/40 border border-gray-200/30",
+    container: "bg-white/70 backdrop-blur-xl text-gray-900 hover:bg-gray-50/40 border border-gray-200",
     meta: "text-gray-600",
   },
   button: "bg-green-600 hover:bg-green-500 text-white border border-green-500/40 shadow-md hover:shadow-lg",
@@ -169,7 +169,7 @@ const WHITE_THEME = {
 // Gray mode theme for BOTH market
 const BOTH_THEME = {
   search: {
-    icon: "text-green-600",
+    searchIcon: "text-green-600",
     input: "bg-white/50 backdrop-blur-xl border border-gray-300/40 text-gray-900 placeholder-gray-500/60 hover:border-green-400/50",
     inputFocus: "bg-white/60 shadow-2xl shadow-gray-200/30 border-green-500/50 backdrop-blur-xl",
     filterButton: "text-gray-700 hover:text-green-700",
@@ -200,7 +200,7 @@ const BOTH_THEME = {
     text: "text-gray-600",
   },
   card: {
-    container: "bg-white/50 backdrop-blur-xl border border-gray-200/40 shadow-xl hover:shadow-2xl hover:bg-white/60 text-gray-900",
+    container: "bg-white/50 backdrop-blur-xl border border-gray-200 shadow-xl hover:shadow-2xl hover:bg-white/60 text-gray-900",
     header: "bg-green-900",
     headerOverlay: "bg-green-950/5",
     avatar: "bg-white/80 backdrop-blur-sm shadow-sm",
@@ -208,14 +208,14 @@ const BOTH_THEME = {
     infoText: "text-white",
     category: "text-white/80",
     meta: "text-white/90",
-    action: "bg-white/15 backdrop-blur-xl text-white border border-white/20 hover:bg-white/25",
+    action: "bg-white/15 backdrop-blur-xl text-white border border-gray-200 hover:bg-white/25",
     actionHover: "hover:bg-white/25",
     body: "bg-gray-50/15 backdrop-blur-sm",
-    footer: "text-gray-700 border-t border-gray-300/30",
+    footer: "text-gray-700 border border-gray-300",
     footerHover: "hover:bg-gray-50/30 backdrop-blur-sm",
   },
   strainCard: {
-    container: "bg-white/60 backdrop-blur-xl text-gray-900 hover:bg-gray-50/30 border border-gray-200/30",
+    container: "bg-white/60 backdrop-blur-xl text-gray-900 hover:bg-gray-50/30 border border-gray-200",
     meta: "text-gray-600",
   },
   button: "bg-green-600 hover:bg-green-500 text-white border border-green-500/40 shadow-md hover:shadow-lg",
@@ -244,7 +244,7 @@ const BOTH_THEME = {
 // Dark mode theme for BLACK market
 const BLACK_THEME = {
   search: {
-    icon: "text-green-600",
+    searchIcon: "text-green-600",
     input: "bg-zinc-900/80 backdrop-blur-sm border border-zinc-700/60 text-zinc-100 placeholder-gray-400/60 hover:border-green-600/50",
     inputFocus: "bg-zinc-900/90 shadow-xl shadow-green-900/30 border-green-500/60",
     filterButton: "text-green-800 hover:text-green-300",
@@ -275,7 +275,7 @@ const BLACK_THEME = {
     text: "text-gray-300",
   },
   card: {
-    container: "bg-gray-900/70 backdrop-blur-sm border border-gray-700/40 shadow-xl hover:shadow-2xl text-gray-100",
+    container: "bg-gray-900/70 backdrop-blur-sm border border-gray-700 shadow-xl hover:shadow-2xl text-gray-100",
     header: "bg-green-950",
     headerOverlay: "bg-black/10",
     avatar: "bg-gray-800/80 shadow-md",
@@ -283,14 +283,14 @@ const BLACK_THEME = {
     infoText: "text-white",
     category: "text-white/80",
     meta: "text-white/90",
-    action: "bg-white/20 backdrop-blur-sm text-white border border-white/30 hover:bg-white/30",
+    action: "bg-white/20 backdrop-blur-sm text-white border border-white hover:bg-white/30",
     actionHover: "hover:bg-white/30",
     body: "bg-gray-800/30",
-    footer: "text-gray-200 border-t border-gray-600/40",
+    footer: "text-gray-200 border-t border-gray-600",
     footerHover: "hover:bg-gray-800/60",
   },
   strainCard: {
-    container: "bg-gray-900/80 backdrop-blur-sm text-gray-100 hover:bg-gray-800/60 border border-gray-700/30",
+    container: "bg-gray-900/80 backdrop-blur-sm text-gray-100 hover:bg-gray-800/60 border border-gray-700",
     meta: "text-gray-200",
   },
   button: "bg-green-600 hover:bg-green-500 text-white border border-green-500/60 shadow-lg hover:shadow-xl",

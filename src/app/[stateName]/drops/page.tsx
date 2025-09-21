@@ -40,12 +40,16 @@ export default async function DropsPage({
 
   const marketDescriptor =
     market === "WHITE"
-      ? "recreational"
+      ? "Recreational"
       : market === "BLACK"
-        ? "underground"
-        : "";
+        ? "Underground"
+      : market === "BOTH"
+        ? ""
+        : null;
 
-  const heroTitle = `Coming Soon to the ${
+  const heroTitle = `New to the 
+  ${state.name ? state.name : ""}
+  ${ 
     marketDescriptor ? `${marketDescriptor} ` : ""
   }Market`;
 

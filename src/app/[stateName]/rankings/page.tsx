@@ -102,12 +102,12 @@ export default async function RankingsPage({
 
   const marketDescriptor =
     selectedMarket === "WHITE"
-      ? "recreational"
+      ? "Recreational"
       : selectedMarket === "BLACK"
-        ? "underground"
+        ? "Underground"
         : "";
 
-  const heroTitle = `${state.name}'s Best ${
+  const heroTitle = `${state.name}'s Top ${
     marketDescriptor ? `${marketDescriptor} ` : ""
   }Producers`;
 
