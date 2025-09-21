@@ -114,7 +114,38 @@ export default function Navbar() {
     setSelectedState(newState);
     persistSelectedState(newState);
     setStateDropdownOpen(false);
-    router.push("/");
+
+    const currentPath = pathname ?? "/";
+    const segments = currentPath.split("/").filter(Boolean);
+    const knownSections = new Set(["drops", "rankings", "admin"]);
+
+    if (segments.length === 0) {
+      router.push(`/${newState}`);
+      return;
+    }
+
+    const [first, ...rest] = segments;
+    const isStatePath = slugSet.has(first);
+
+    if (isStatePath) {
+      const [section, ...tail] = rest;
+      if (section && knownSections.has(section)) {
+        const suffix = tail.length ? `/${tail.join("/")}` : "";
+        router.push(`/${newState}/${section}${suffix}`);
+        return;
+      }
+
+      router.push(`/${newState}`);
+      return;
+    }
+
+    if (knownSections.has(first)) {
+      const suffix = rest.length ? `/${rest.join("/")}` : "";
+      router.push(`/${newState}/${first}${suffix}`);
+      return;
+    }
+
+    router.push(`/${newState}`);
   };
 
   useEffect(() => {

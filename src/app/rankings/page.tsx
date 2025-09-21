@@ -6,7 +6,7 @@ import { getAllStateMetadata } from "@/lib/states";
 const AGE_COOKIE_NAME = "ageVerify";
 const STATE_COOKIE_NAME = "preferredState";
 
-export default async function AdminLandingPage() {
+export default async function RankingsLandingPage() {
   const cookieStore = await cookies();
   const is21 = cookieStore.get(AGE_COOKIE_NAME)?.value === "true";
   const preferredState = cookieStore.get(STATE_COOKIE_NAME)?.value ?? null;
@@ -23,7 +23,7 @@ export default async function AdminLandingPage() {
     preferredState !== null && serializableStates.some((state) => state.slug === preferredState);
 
   if (is21 && hasValidPreferredState) {
-    redirect(`/${preferredState}/admin`);
+    redirect(`/${preferredState}/rankings`);
   }
 
   return (
