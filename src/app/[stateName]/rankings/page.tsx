@@ -5,10 +5,11 @@ import AgeGate from "@/components/AgeGate";
 import ProducerList, { ProducerWithVotes } from "@/components/ProducerList";
 import Link from "next/link";
 import { prisma } from "@/lib/prismadb";
-import { Category, Market } from "@prisma/client";
+import { Category } from "@prisma/client";
 import { getStateMetadata } from "@/lib/states";
 import { notFound } from "next/navigation";
 import MarketModeToggle from "@/components/MarketModeToggle";
+import { buildMarketFilters, normalizeMarketParam } from "@/lib/market";
 import {
   Crown,
   Users,
@@ -34,12 +35,8 @@ export default async function RankingsPage({
     notFound();
   }
 
-  const normalizedMarket = (marketParam ?? "").toUpperCase();
-  const selectedMarket: Market = ["WHITE", "BLACK", "BOTH"].includes(
-    normalizedMarket,
-  )
-    ? (normalizedMarket as Market)
-    : "BOTH";
+  const selectedMarket = normalizeMarketParam(marketParam);
+  const marketFilters = buildMarketFilters(selectedMarket);
 
   // Age gate
   const cookieStore = await cookies();
@@ -76,6 +73,7 @@ export default async function RankingsPage({
     where: {
       ...(state.producerWhere ?? {}),
       category: Category.FLOWER,
+      market: { in: marketFilters },
     },
     include: { votes: true, _count: { select: { comments: true } } },
   })) as ProducerWithVotes[];
@@ -84,6 +82,7 @@ export default async function RankingsPage({
     where: {
       ...(state.producerWhere ?? {}),
       category: Category.HASH,
+      market: { in: marketFilters },
     },
     include: { votes: true, _count: { select: { comments: true } } },
   })) as ProducerWithVotes[];
@@ -95,16 +94,9 @@ export default async function RankingsPage({
     // If you later move to "hearts per week" tokens, update this accordingly.
   };
 
-  const matchesMarket = (producer: ProducerWithVotes) =>
-    selectedMarket === "BOTH" ||
-    producer.market === "BOTH" ||
-    producer.market === selectedMarket;
-
   // Sorted lists
-  const flower = flowerRaw
-    .filter(matchesMarket)
-    .sort((a, b) => score(b) - score(a));
-  const hash = hashRaw.filter(matchesMarket).sort((a, b) => score(b) - score(a));
+  const flower = flowerRaw.sort((a, b) => score(b) - score(a));
+  const hash = hashRaw.sort((a, b) => score(b) - score(a));
 
   // View selection
   const initialViewParam = view === "hash" ? "hash" : "flower";

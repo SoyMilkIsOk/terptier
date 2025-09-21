@@ -8,7 +8,7 @@ import { unstable_noStore as noStore } from "next/cache";
 import { getStateMetadata } from "@/lib/states";
 import { notFound } from "next/navigation";
 import MarketModeToggle from "@/components/MarketModeToggle";
-import type { Market } from "@prisma/client";
+import { buildMarketFilters, normalizeMarketParam } from "@/lib/market";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -32,17 +32,8 @@ export default async function DropsPage({
 
   noStore();
 
-  const normalizedMarket = (marketParam ?? "").toUpperCase();
-  const market: Market = ["WHITE", "BLACK", "BOTH"].includes(normalizedMarket)
-    ? (normalizedMarket as Market)
-    : "BOTH";
-
-  const marketFilters: Market[] =
-    market === "WHITE"
-      ? ["WHITE", "BOTH"]
-      : market === "BLACK"
-      ? ["BLACK", "BOTH"]
-      : ["WHITE", "BLACK", "BOTH"];
+  const market = normalizeMarketParam(marketParam);
+  const marketFilters = buildMarketFilters(market);
 
   const now = new Date();
   const mstParts = new Intl.DateTimeFormat("en-US", {
