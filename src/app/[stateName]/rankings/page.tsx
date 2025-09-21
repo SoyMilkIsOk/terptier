@@ -8,6 +8,8 @@ import { prisma } from "@/lib/prismadb";
 import { Category } from "@prisma/client";
 import { getStateMetadata } from "@/lib/states";
 import { notFound } from "next/navigation";
+import MarketModeToggle from "@/components/MarketModeToggle";
+import { buildMarketFilters, normalizeMarketParam } from "@/lib/market";
 import {
   Crown,
   Users,
@@ -21,14 +23,20 @@ export default async function RankingsPage({
   searchParams,
 }: {
   params: Promise<{ stateName: string }>;
-  searchParams: Promise<{ view?: string }>;
+  searchParams: Promise<{ view?: string; market?: string }>;
 }) {
-  const { stateName } = await params;
+  const [{ stateName }, { view, market: marketParam }] = await Promise.all([
+    params,
+    searchParams,
+  ]);
   const state = await getStateMetadata(stateName);
 
   if (!state) {
     notFound();
   }
+
+  const selectedMarket = normalizeMarketParam(marketParam);
+  const marketFilters = buildMarketFilters(selectedMarket);
 
   // Age gate
   const cookieStore = await cookies();
@@ -65,6 +73,7 @@ export default async function RankingsPage({
     where: {
       ...(state.producerWhere ?? {}),
       category: Category.FLOWER,
+      market: { in: marketFilters },
     },
     include: { votes: true, _count: { select: { comments: true } } },
   })) as ProducerWithVotes[];
@@ -73,6 +82,7 @@ export default async function RankingsPage({
     where: {
       ...(state.producerWhere ?? {}),
       category: Category.HASH,
+      market: { in: marketFilters },
     },
     include: { votes: true, _count: { select: { comments: true } } },
   })) as ProducerWithVotes[];
@@ -89,7 +99,6 @@ export default async function RankingsPage({
   const hash = hashRaw.sort((a, b) => score(b) - score(a));
 
   // View selection
-  const { view } = await searchParams;
   const initialViewParam = view === "hash" ? "hash" : "flower";
 
   const totalProducers = flower.length + hash.length;
@@ -98,6 +107,10 @@ export default async function RankingsPage({
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50">
+      <MarketModeToggle
+        className="fixed bottom-6 left-6 z-50"
+        value={selectedMarket}
+      />
       <div className="relative overflow-hidden bg-gradient-to-r from-green-600 to-emerald-600 text-white">
         <div className="absolute inset-0 bg-black/10"></div>
         <div className="relative container mx-auto px-4 py-16">
