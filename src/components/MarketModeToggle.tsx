@@ -100,13 +100,94 @@ export default function MarketModeToggle({
     [handleSelect],
   );
 
+  const activeIndex = MARKET_OPTIONS.findIndex(option => option.value === value);
+
+  // Dynamic color schemes based on market type
+  const getColorScheme = () => {
+    switch (value) {
+      case "WHITE":
+        return {
+          track: "bg-gradient-to-b from-gray-50/90 to-gray-100/95",
+          trackBorder: "border-gray-200/40",
+          sliderBg: "linear-gradient(145deg, rgba(34, 197, 94, 0.85), rgba(22, 163, 74, 0.9))",
+          sliderShadow: "0 2px 6px rgba(34, 197, 94, 0.25), 0 1px 2px rgba(0,0,0,0.08)",
+          innerTrack: "bg-gradient-to-b from-white/60 to-gray-50/40",
+        };
+      case "BOTH":
+        return {
+          track: "bg-gradient-to-b from-gray-200/80 to-gray-300/90",
+          trackBorder: "border-gray-400/30",
+          sliderBg: "linear-gradient(145deg, rgba(34, 197, 94, 0.85), rgba(22, 163, 74, 0.9))",
+          sliderShadow: "0 2px 6px rgba(34, 197, 94, 0.25), 0 1px 2px rgba(0,0,0,0.12)",
+          innerTrack: "bg-gradient-to-b from-gray-100/50 to-gray-200/40",
+        };
+      case "BLACK":
+        return {
+          track: "bg-gradient-to-b from-gray-700/90 to-gray-800/95",
+          trackBorder: "border-gray-600/40",
+          sliderBg: "linear-gradient(145deg, rgba(34, 197, 94, 0.9), rgba(22, 163, 74, 0.95))",
+          sliderShadow: "0 2px 8px rgba(34, 197, 94, 0.4), 0 1px 2px rgba(0,0,0,0.2)",
+          innerTrack: "bg-gradient-to-b from-gray-600/40 to-gray-700/30",
+        };
+      default:
+        return {
+          track: "bg-gradient-to-b from-gray-100/80 to-gray-200/90",
+          trackBorder: "border-gray-300/30",
+          sliderBg: "linear-gradient(145deg, rgba(34, 197, 94, 0.85), rgba(22, 163, 74, 0.9))",
+          sliderShadow: "0 2px 6px rgba(34, 197, 94, 0.25), 0 1px 2px rgba(0,0,0,0.1)",
+          innerTrack: "bg-gradient-to-b from-gray-50/50 to-white/30",
+        };
+    }
+  };
+
+  const colorScheme = getColorScheme();
+
   return (
     <div className={className}>
       <div
         role="radiogroup"
         aria-label="Select market focus"
-        className="inline-flex items-center gap-1 rounded-full border border-gray-200 bg-white p-1 shadow-sm"
+        className={`relative inline-flex items-center rounded-full backdrop-blur-sm border p-1 shadow-inner transition-all duration-300 ${colorScheme.track} ${colorScheme.trackBorder}`}
+        style={{
+          boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.08), inset 0 -1px 2px rgba(255,255,255,0.6), 0 1px 3px rgba(0,0,0,0.08)'
+        }}
       >
+        {/* Glass slider track - recessed look */}
+        <div className={`absolute inset-1 rounded-full shadow-inner transition-all duration-300 ${colorScheme.innerTrack}`}>
+          <div 
+            className="absolute inset-0 rounded-full"
+            style={{
+              boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)'
+            }}
+          />
+        </div>
+        
+        {/* Sliding glass toggle */}
+        <div 
+          className="absolute z-20 w-12 h-12 rounded-full transition-all duration-300 ease-out transform"
+          style={{
+            left: `${4 + activeIndex * 48}px`,
+            background: colorScheme.sliderBg,
+            boxShadow: `${colorScheme.sliderShadow}, inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(0,0,0,0.05)`
+          }}
+        >
+          {/* Subtle inner glass highlight */}
+          <div 
+            className="absolute top-1.5 left-1.5 w-8 h-4 rounded-full opacity-20"
+            style={{
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.6), transparent)'
+            }}
+          />
+          
+          {/* Minimal glass shine effect */}
+          <div 
+            className="absolute top-1 left-2.5 w-4 h-2 rounded-full opacity-15"
+            style={{
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.8), transparent)'
+            }}
+          />
+        </div>
+        
         {MARKET_OPTIONS.map((option, index) => {
           const isActive = option.value === value;
           const Icon = option.icon;
@@ -124,13 +205,20 @@ export default function MarketModeToggle({
               tabIndex={isActive ? 0 : -1}
               onClick={() => handleSelect(option.value)}
               onKeyDown={(event) => handleKeyDown(event, index)}
-              className={`flex items-center justify-center rounded-full px-3 py-2 text-sm transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-500 ${
+              className={`relative z-30 flex items-center justify-center w-12 h-12 rounded-full text-sm font-medium transition-all duration-200 ease-out group ${
                 isActive
-                  ? "bg-green-600 text-white shadow"
-                  : "text-gray-600 hover:bg-gray-100"
-              }`}
+                  ? "text-white drop-shadow-sm"
+                  : "text-gray-600 hover:text-gray-800"
+              } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-green-500 focus-visible:ring-offset-transparent`}
             >
-              <Icon aria-hidden="true" className="h-4 w-4" />
+              <Icon 
+                aria-hidden="true" 
+                className={`h-5 w-5 transition-all duration-200 ${
+                  isActive 
+                    ? "drop-shadow-sm scale-105" 
+                    : "group-hover:scale-110"
+                }`}
+              />
             </button>
           );
         })}
