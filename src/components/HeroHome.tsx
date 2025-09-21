@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ChevronRight, Star, Users, TrendingUp, Cannabis, LogIn } from "lucide-react";
+import { ChevronRight, Star, Users, TrendingUp, Cannabis, LogIn, Crown, Calendar } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import type { AgeGateStateOption } from "./AgeGate";
@@ -148,13 +148,12 @@ export default function HeroHome({ state }: HeroHomeProps) {
           </span>
         </motion.p>
         <motion.p variants={itemVariants} className="text-lg md:text-xl text-white/70 max-w-2xl mb-12 leading-relaxed">
-          {supportingCopy}
         </motion.p>
         <motion.div
           variants={itemVariants}
           className="flex flex-col sm:flex-row flex-wrap justify-center gap-4 mb-12"
         >
-          <Link href={`/${state.slug}/rankings`}>
+          <Link href={`/${state.slug}/drops`}>
             <motion.button
               whileHover={{ scale: 1.05, boxShadow: "0 20px 40px rgba(0,0,0,0.3)" }}
               whileTap={{ scale: 0.95 }}
@@ -162,12 +161,12 @@ export default function HeroHome({ state }: HeroHomeProps) {
             >
               <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-green-600 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
               <div className="relative flex items-center justify-center gap-2">
-                <span>Explore Brands</span>
-                <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                <span>Upcoming Drops</span>
+                <Calendar size={20} className="group-hover:translate-x-1 transition-transform" />
               </div>
             </motion.button>
           </Link>
-          <Link href={`/${state.slug}/drops`}>
+          <Link href={`/${state.slug}/rankings`}>
             <motion.button
               whileHover={{ scale: 1.05, boxShadow: "0 20px 40px rgba(0,0,0,0.3)" }}
               whileTap={{ scale: 0.95 }}
@@ -175,8 +174,8 @@ export default function HeroHome({ state }: HeroHomeProps) {
             >
               <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-indigo-500 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
               <div className="relative flex items-center justify-center gap-2">
-                <span>Upcoming Drops</span>
-                <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                <span>Explore Brands</span>
+                <Crown size={20} className="group-hover:translate-x-1 transition-transform" />
               </div>
             </motion.button>
           </Link>

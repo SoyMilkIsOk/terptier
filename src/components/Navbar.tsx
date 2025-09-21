@@ -120,7 +120,7 @@ export default function Navbar() {
     const knownSections = new Set(["drops", "rankings", "admin"]);
 
     if (segments.length === 0) {
-      router.push(`/${newState}`);
+            router.refresh(); // <-- ensures server components re-read cookie/localStorage and refetch
       return;
     }
 
@@ -482,7 +482,7 @@ export default function Navbar() {
               }`}
             >
               <Crown className="w-4 h-4" />
-              <span>Rankings</span>
+              <span>Brands</span>
             </Link>
 
             {profileUsername && (
@@ -591,7 +591,7 @@ export default function Navbar() {
                     className="flex items-center justify-center space-x-2 w-full py-3 bg-white/10 backdrop-blur-sm rounded-2xl hover:bg-white/20 transition-all duration-200 font-medium"
                   >
                     <Crown className="w-4 h-4" />
-                    <span>Rankings</span>
+                    <span>Brands</span>
                   </Link>
                   {profileUsername && (
                     <Link
