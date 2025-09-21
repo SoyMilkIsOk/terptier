@@ -24,6 +24,7 @@ interface Props {
   userVotes?: Record<string, number>; // Added userVotes to Props
   initialView?: "flower" | "hash";
   useColors?: boolean;
+  cardAppearance?: "light" | "gray" | "dark";
 }
 
 export default function ProducerList({
@@ -31,6 +32,7 @@ export default function ProducerList({
   userVotes,
   initialView,
   useColors = true,
+  cardAppearance = "light",
 }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -134,6 +136,7 @@ export default function ProducerList({
               isTopTen={i < 10}
               color={finalColor}
               useColors={useColors}
+              appearance={cardAppearance}
             />
           );
         })}

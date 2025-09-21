@@ -18,6 +18,7 @@ export default function ProducerCard({
   rankSuffix = "",
   showRank = true,
   useColors = true,
+  appearance = "light",
 }: {
   rank: number;
   producer: ProducerWithVotes;
@@ -27,6 +28,7 @@ export default function ProducerCard({
   rankSuffix?: string;
   showRank?: boolean;
   useColors?: boolean;
+  appearance?: "light" | "gray" | "dark";
 }) {
   const stateSlug = useStateSlug();
   const total = producer.votes.reduce((sum, v) => sum + v.value, 0);
@@ -51,6 +53,43 @@ export default function ProducerCard({
       ? "glow-bronze"
       : "";
 
+  const appearanceStyles: Record<
+    "light" | "gray" | "dark",
+    {
+      container: string;
+      secondary: string;
+      hover: string;
+      text: string;
+      comment: string;
+    }
+  > = {
+    light: {
+      container: "bg-white",
+      secondary: "bg-gray-100",
+      hover: "hover:bg-gray-50",
+      text: "text-gray-900",
+      comment: "text-gray-600",
+    },
+    gray: {
+      container: "bg-white/80 border border-slate-200/70 backdrop-blur",
+      secondary: "bg-white/60 border border-slate-200/50 backdrop-blur",
+      hover: "hover:bg-white/90",
+      text: "text-slate-900",
+      comment: "text-slate-600",
+    },
+    dark: {
+      container: "bg-slate-900/80 border border-slate-700",
+      secondary: "bg-slate-900/60 border border-slate-700/70",
+      hover: "hover:bg-slate-800/80",
+      text: "text-slate-100",
+      comment: "text-slate-300",
+    },
+  };
+
+  const activeAppearance = appearanceStyles[appearance];
+  const containerClass =
+    isTopTen === false ? activeAppearance.secondary : activeAppearance.container;
+
   const link = `/${stateSlug}/producer/${producer.slug ?? producer.id}`;
 
   const badgeClasses = `flex items-center justify-center ${colorClasses[useColors ? color : "none"]} rounded-full w-10 h-10 font-bold`;
@@ -58,7 +97,7 @@ export default function ProducerCard({
   return (
     <Link
       href={link}
-      className={`producer-card ${isTopTen === false ? "bg-gray-100" : "bg-white"} ${glowClass} p-4 rounded shadow flex items-center space-x-4 hover:bg-gray-50 transition`}
+      className={`${containerClass} ${activeAppearance.hover} ${glowClass} ${activeAppearance.text} p-4 rounded shadow flex items-center space-x-4 transition-colors duration-300`}
     >
       {showRank && (
         <div className={badgeClasses}>
@@ -76,7 +115,7 @@ export default function ProducerCard({
         />
       ) : null}
       <div className="flex-1">
-        <h2 className="producer-card-title text-lg font-semibold">{producer.name}</h2>
+        <h2 className="text-lg font-semibold">{producer.name}</h2>
         <VoteButton
           producerId={producer.id}
           initialAverage={average}
@@ -103,7 +142,7 @@ export default function ProducerCard({
           </div>
         )}
       </div>
-      <div className="producer-card-muted flex items-center text-sm">
+      <div className={`flex items-center text-sm ${activeAppearance.comment}`}>
         <MessageCircle className="w-4 h-4 mr-1" />
         {producer._count?.comments ?? 0}
       </div>
