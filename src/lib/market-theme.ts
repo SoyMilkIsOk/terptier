@@ -28,6 +28,10 @@ export type ToggleTheme = {
     active: string;
     inactive: string;
   };
+  labelWrapper: {
+    flower: string;
+    hash: string;
+  };
   focusRing: string;
 };
 
@@ -147,12 +151,16 @@ const WHITE_THEME = {
       base:
         "absolute left-1.5 top-1.5 bottom-1.5 rounded-full transform transition-all duration-300 ease-out shadow-lg",
       flower: "bg-gradient-to-r from-green-500 to-green-600 translate-x-0 w-24",
-      hash: "bg-gradient-to-r from-green-500 to-green-600 translate-x-24 w-24",
+      hash: "bg-gradient-to-r from-green-500 to-green-600 translate-x-24 w-22",
     },
     label: {
       base: "font-semibold text-sm transition-all duration-300 ease-out",
       active: "text-white drop-shadow-sm",
       inactive: "text-green-700/80 hover:text-green-900",
+    },
+    labelWrapper: {
+      flower: "w-24",
+      hash: "w-22",
     },
     focusRing: "ring-green-300/30 ring-opacity-0 focus-within:ring-opacity-80",
   },
@@ -218,12 +226,16 @@ const BOTH_THEME = {
       base:
         "absolute left-1.5 top-1.5 bottom-1.5 rounded-full transform transition-all duration-300 ease-out shadow-lg",
       flower: "bg-gradient-to-r from-green-500 to-green-600 translate-x-0 w-24",
-      hash: "bg-gradient-to-r from-green-500 to-green-600 translate-x-24 w-24",
+      hash: "bg-gradient-to-r from-green-500 to-green-600 translate-x-24 w-22",
     },
     label: {
       base: "font-semibold text-sm transition-all duration-300 ease-out",
       active: "text-white drop-shadow-sm",
       inactive: "text-gray-600 hover:text-gray-900",
+    },
+    labelWrapper: {
+      flower: "w-24",
+      hash: "w-22",
     },
     focusRing: "ring-green-400/30 ring-opacity-0 focus-within:ring-opacity-80",
   },
@@ -289,12 +301,16 @@ const BLACK_THEME = {
       base:
         "absolute left-1.5 top-1.5 bottom-1.5 rounded-full transform transition-all duration-300 ease-out shadow-lg",
       flower: "bg-gradient-to-r from-green-500 to-green-700 translate-x-0 w-24",
-      hash: "bg-gradient-to-r from-green-600 to-green-700 translate-x-24 w-24",
+      hash: "bg-gradient-to-r from-green-600 to-green-700 translate-x-24 w-22",
     },
     label: {
       base: "font-semibold text-sm transition-all duration-300 ease-out",
       active: "text-white drop-shadow-sm",
       inactive: "text-gray-300 hover:text-white",
+    },
+    labelWrapper: {
+      flower: "w-24",
+      hash: "w-22",
     },
     focusRing: "ring-green-500/30 ring-opacity-0 focus-within:ring-opacity-80",
   },

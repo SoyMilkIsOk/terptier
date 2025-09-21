@@ -40,14 +40,14 @@ export default async function DropsPage({
 
   const marketDescriptor =
     market === "WHITE"
-      ? "Recreational"
+      ? "recreational"
       : market === "BLACK"
-        ? "Underground"
+        ? "underground"
         : "";
 
-  const heroTitle = marketDescriptor
-    ? `${state.name}'s Top ${marketDescriptor} Producers`
-    : `${state.name}'s Top Producers`;
+  const heroTitle = `Discover ${state.name}'s best ${
+    marketDescriptor ? `${marketDescriptor} ` : ""
+  }producers...`;
 
   const now = new Date();
   const mstParts = new Intl.DateTimeFormat("en-US", {

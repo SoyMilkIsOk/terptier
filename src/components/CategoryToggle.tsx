@@ -17,12 +17,16 @@ const defaultTheme: ToggleTheme = {
     base:
       "absolute left-1.5 top-1.5 bottom-1.5 rounded-full transform transition-all duration-300 ease-out shadow-lg",
     flower: "bg-gradient-to-r from-green-600 to-green-700 translate-x-0 w-24",
-    hash: "bg-gradient-to-r from-green-500 to-green-600 translate-x-24 w-24",
+    hash: "bg-gradient-to-r from-green-500 to-green-600 translate-x-24 w-22",
   },
   label: {
     base: "font-semibold text-sm transition-all duration-300 ease-out",
     active: "text-white drop-shadow-sm",
     inactive: "text-gray-600 hover:text-gray-800",
+  },
+  labelWrapper: {
+    flower: "w-24",
+    hash: "w-22",
   },
   focusRing: "ring-green-400 ring-opacity-0 focus-within:ring-opacity-50",
 };
@@ -67,7 +71,9 @@ export default function CategoryToggle({
       />
 
       <div className="relative z-10 flex w-full">
-        <div className="flex items-center justify-center w-24 h-full">
+        <div
+          className={`flex items-center justify-center h-full ${theme.labelWrapper.flower}`}
+        >
           <span
             className={`${theme.label.base} ${
               isFlower ? theme.label.active : theme.label.inactive
@@ -76,7 +82,9 @@ export default function CategoryToggle({
             🌸 Flower
           </span>
         </div>
-        <div className="flex items-center justify-center w-24 h-full">
+        <div
+          className={`flex items-center justify-center h-full ${theme.labelWrapper.hash}`}
+        >
           <span
             className={`${theme.label.base} ${
               !isFlower ? theme.label.active : theme.label.inactive
