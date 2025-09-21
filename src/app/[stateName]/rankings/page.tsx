@@ -1,4 +1,5 @@
 // src/app/[stateName]/rankings/page.tsx
+import { Suspense } from "react";
 import { cookies } from "next/headers";
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import AgeGate from "@/components/AgeGate";
@@ -116,10 +117,12 @@ export default async function RankingsPage({
       data-market-theme={themeAttribute}
       className={`min-h-screen transition-colors duration-500 ${theme.page}`}
     >
-      <MarketModeToggle
-        className="fixed bottom-6 left-6 z-50"
-        value={selectedMarket}
-      />
+      <Suspense fallback={null}>
+        <MarketModeToggle
+          className="fixed bottom-6 left-6 z-50"
+          value={selectedMarket}
+        />
+      </Suspense>
       <div
         className={`relative overflow-hidden bg-gradient-to-r transition-colors duration-500 ${theme.hero.wrapper}`}
       >
