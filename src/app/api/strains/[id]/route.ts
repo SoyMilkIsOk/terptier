@@ -38,12 +38,12 @@ export async function GET(
       return NextResponse.json({ success: false, error: "Not found" }, { status: 404 });
     }
 
-    const { session, claims } = await authorize();
-    if (!session) {
+    const { user, claims } = await authorize();
+    if (!user) {
       return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
     }
 
-    const email = session.user.email;
+    const email = user.email;
     if (!email) {
       return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
     }
@@ -78,8 +78,8 @@ export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { session, claims } = await authorize();
-  if (!session) {
+  const { user, claims } = await authorize();
+  if (!user) {
     return NextResponse.json({ success: false, error: "Not authenticated" }, { status: 401 });
   }
 
@@ -88,7 +88,7 @@ export async function PUT(
   if (!existing) {
     return NextResponse.json({ success: false, error: "Not found" }, { status: 404 });
   }
-  const email = session.user.email;
+  const email = user.email;
   if (!email) {
     return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
   }
@@ -144,8 +144,8 @@ export async function DELETE(
   _req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { session, claims } = await authorize();
-  if (!session) {
+  const { user, claims } = await authorize();
+  if (!user) {
     return NextResponse.json({ success: false, error: "Not authenticated" }, { status: 401 });
   }
 
@@ -154,7 +154,7 @@ export async function DELETE(
   if (!existing) {
     return NextResponse.json({ success: false, error: "Not found" }, { status: 404 });
   }
-  const email = session.user.email;
+  const email = user.email;
   if (!email) {
     return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
   }

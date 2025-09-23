@@ -39,11 +39,20 @@ export async function authorize() {
   );
 
   const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
+
+  if (error || !user) {
+    return { user: null, claims: null };
+  }
+
+  const {
     data: { session },
   } = await supabase.auth.getSession();
 
-  if (!session) return { session: null, claims: null };
+  const accessToken = session?.access_token;
+  const claims = accessToken ? decodeJwt(accessToken) : null;
 
-  const claims = decodeJwt(session.access_token);
-  return { session, claims };
+  return { user, claims };
 }

@@ -63,8 +63,9 @@ export default async function ProfilePage({
 
   const supabase = createServerComponentClient(cookieContext);
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user: authUser },
+    error: authError,
+  } = await supabase.auth.getUser();
 
   let user = await prisma.user.findUnique({
     where: { username: id },
@@ -155,8 +156,8 @@ export default async function ProfilePage({
     );
   }
 
-  const isOwner = session?.user?.email === user.email;
-  const currentViewerId = session?.user?.id;
+  const isOwner = !authError && authUser?.email === user.email;
+  const currentViewerId = !authError ? authUser?.id : undefined;
 
   // Process votes into liked and disliked producers
   const likedProducers = user.votes

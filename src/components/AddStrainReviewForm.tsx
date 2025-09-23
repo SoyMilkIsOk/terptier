@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
 import UploadButton from "./UploadButton";
-import type { Session } from "@supabase/supabase-js";
+import type { User } from "@supabase/supabase-js";
 import { Star } from "lucide-react";
 
 function StarRating({
@@ -41,7 +41,7 @@ export default function AddStrainReviewForm({
   const [smoke, setSmoke] = useState(0);
   const [comment, setComment] = useState("");
   const [file, setFile] = useState<File | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const router = useRouter();
 
   const MAX_SIZE = 5 * 1024 * 1024;
@@ -61,11 +61,25 @@ export default function AddStrainReviewForm({
   };
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => setSession(data.session));
-    const { data: listener } = supabase.auth.onAuthStateChange((_e, sess) =>
-      setSession(sess)
-    );
+    let isMounted = true;
+
+    const refreshUser = async () => {
+      const { data, error } = await supabase.auth.getUser();
+      if (!isMounted) return;
+      if (error) {
+        setUser(null);
+        return;
+      }
+      setUser(data.user ?? null);
+    };
+
+    void refreshUser();
+
+    const { data: listener } = supabase.auth.onAuthStateChange(async () => {
+      await refreshUser();
+    });
     return () => {
+      isMounted = false;
       listener.subscription.unsubscribe();
     };
   }, []);
@@ -80,7 +94,7 @@ export default function AddStrainReviewForm({
   };
 
   const submit = async () => {
-    if (!session?.user) {
+    if (!user) {
       router.push("/login?reason=review");
       return;
     }
@@ -129,9 +143,9 @@ export default function AddStrainReviewForm({
         />
         <UploadButton
           onChange={handleFileChange}
-          disabled={!session?.user}
+          disabled={!user}
           onClick={() => {
-            if (!session?.user) router.push("/login?reason=review");
+            if (!user) router.push("/login?reason=review");
           }}
         />
         {file && (

@@ -124,13 +124,14 @@ export default async function StrainPage({ params }: StrainPageProps) {
 
   const supabase = await createSupabaseServerClient();
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
 
   let currentUserId: string | null = null;
-  if (session?.user?.email) {
+  if (!userError && user?.email) {
     const prismaUser = await prisma.user.findUnique({
-      where: { email: session.user.email },
+      where: { email: user.email },
     });
     currentUserId = prismaUser?.id || null;
   }

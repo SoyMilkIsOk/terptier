@@ -10,10 +10,11 @@ export async function PUT(
   const { cookieContext } = await getSupabaseCookieContext();
   const supabase = createServerComponentClient(cookieContext);
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
 
-  if (!session?.user?.email) {
+  if (error || !user?.email) {
     return NextResponse.json(
       { success: false, error: "Not authenticated" },
       { status: 401 }
@@ -21,7 +22,7 @@ export async function PUT(
   }
 
   const prismaUser = await prisma.user.findUnique({
-    where: { email: session.user.email },
+    where: { email: user.email },
   });
 
   if (!prismaUser) {

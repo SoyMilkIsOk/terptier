@@ -21,18 +21,22 @@ export async function POST(request: Request) {
     }
   );
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user: authUser },
+    error,
+  } = await supabase.auth.getUser();
 
-  if (!session?.user?.email) {
+  if (error || !authUser?.email) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
 
-  const user = await getAdminScopedUserByEmail(session.user.email);
+  const user = await getAdminScopedUserByEmail(authUser.email);
   if (!user) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
-  const claims = decodeJwt(session.access_token);
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  const claims = session?.access_token ? decodeJwt(session.access_token) : null;
 
   const {
     name,

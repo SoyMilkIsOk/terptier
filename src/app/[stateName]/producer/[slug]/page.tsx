@@ -70,12 +70,13 @@ export default async function ProducerProfilePage({
 
   const supabase = await createSupabaseServerClient();
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
 
-  const currentUser = session?.user?.email
+  const currentUser = !userError && user?.email
     ? await prisma.user.findUnique({
-        where: { email: session.user.email },
+        where: { email: user.email },
         include: {
           producerAdmins: { select: { producerId: true } },
           stateAdmins: {

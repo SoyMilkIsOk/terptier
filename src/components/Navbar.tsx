@@ -8,7 +8,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import Image from "next/image";
 import { LogIn, LogOut, User, Calendar, Crown } from "lucide-react";
-import type { Session } from "@supabase/supabase-js";
+import type { User as SupabaseUser } from "@supabase/supabase-js";
 import DropOptInModal from "./DropOptInModal";
 import { DEFAULT_STATE, DEFAULT_STATE_SLUG } from "@/lib/stateConstants";
 
@@ -39,7 +39,7 @@ type CurrentUserResponse = {
 export default function Navbar() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [session, setSession] = useState<Session | null>(null);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
   const [profileUsername, setProfileUsername] = useState<string | null>(null);
   const [isGlobalAdmin, setIsGlobalAdmin] = useState(false);
   const [adminStateSlugs, setAdminStateSlugs] = useState<string[]>([]);
@@ -234,49 +234,46 @@ export default function Navbar() {
   }, []);
 
   useEffect(() => {
-    // fetch initial session
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      setSession(session);
-      if (session?.user?.email) {
-        try {
-          const res = await fetch("/api/users/me");
-          if (res.ok) {
-            const data: CurrentUserResponse = await res.json();
-            applyUserResponse(data.success ? data : null);
-          } else {
-            applyUserResponse(null);
-          }
-        } catch (err) {
-          console.error("Failed to fetch user", err);
-          applyUserResponse(null);
-        }
-      } else {
+    let isMounted = true;
+
+    const syncUser = async () => {
+      const { data, error } = await supabase.auth.getUser();
+      if (!isMounted) return;
+      if (error) {
+        setUser(null);
         applyUserResponse(null);
+        return;
       }
-    });
-    // listen for changes (login/logout)
-    const { data: listener } = supabase.auth.onAuthStateChange(
-      async (_event, sess) => {
-        setSession(sess);
-        if (sess?.user?.email) {
-          try {
-            const res = await fetch("/api/users/me");
-            if (res.ok) {
-              const data: CurrentUserResponse = await res.json();
-              applyUserResponse(data.success ? data : null);
-            } else {
-              applyUserResponse(null);
-            }
-          } catch (err) {
-            console.error("Failed to fetch user", err);
-            applyUserResponse(null);
-          }
+
+      const nextUser = data.user ?? null;
+      setUser(nextUser);
+
+      if (!nextUser?.email) {
+        applyUserResponse(null);
+        return;
+      }
+
+      try {
+        const res = await fetch("/api/users/me");
+        if (res.ok) {
+          const payload: CurrentUserResponse = await res.json();
+          applyUserResponse(payload.success ? payload : null);
         } else {
           applyUserResponse(null);
         }
-      },
-    );
+      } catch (err) {
+        console.error("Failed to fetch user", err);
+        applyUserResponse(null);
+      }
+    };
+
+    void syncUser();
+
+    const { data: listener } = supabase.auth.onAuthStateChange(async () => {
+      await syncUser();
+    });
     return () => {
+      isMounted = false;
       listener.subscription.unsubscribe();
     };
   }, [applyUserResponse]);
@@ -423,7 +420,7 @@ export default function Navbar() {
               </Link>
             )}
             {/* Auth Buttons */}
-            {!session ? (
+            {!user ? (
               <Link
                 href="/login"
                 className="flex items-center space-x-2 bg-white/95 backdrop-blur-sm text-green-800 px-6 py-2.5 rounded-2xl font-medium hover:bg-white/100 hover:scale-105 transition-all duration-200 shadow-lg"
@@ -436,7 +433,8 @@ export default function Navbar() {
                 type="button"
                 onClick={async () => {
                   await supabase.auth.signOut();
-                  setSession(null);
+                  setUser(null);
+                  applyUserResponse(null);
                   location.reload();
                 }}
                 className="flex items-center space-x-2 bg-red-500/90 backdrop-blur-sm hover:bg-red-600/90 px-6 py-2.5 rounded-2xl font-medium cursor-pointer hover:scale-105 transition-all duration-200 shadow-lg"
@@ -493,7 +491,7 @@ export default function Navbar() {
 
                 {/* Mobile Auth Buttons */}
                 <div className="pt-4 space-y-3">
-                  {!session ? (
+                  {!user ? (
                     <Link
                       href="/login"
                       onClick={() => setMenuOpen(false)}
@@ -507,7 +505,8 @@ export default function Navbar() {
                       type="button"
                       onClick={async () => {
                         await supabase.auth.signOut();
-                        setSession(null);
+                        setUser(null);
+                        applyUserResponse(null);
                         setMenuOpen(false);
                         location.reload();
                       }}

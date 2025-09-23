@@ -39,10 +39,11 @@ export async function DELETE(
       }
     );
     const {
-      data: { session },
-    } = await supabase.auth.getSession();
+      data: { user: authUser },
+      error,
+    } = await supabase.auth.getUser();
 
-    if (!session) {
+    if (error || !authUser) {
       return NextResponse.json(
         { success: false, error: "Not authenticated" },
         { status: 401 },
@@ -59,7 +60,7 @@ export async function DELETE(
       );
     }
 
-    const email = session.user.email;
+    const email = authUser.email;
     if (!email) {
       return NextResponse.json(
         { success: false, error: "Forbidden" },
@@ -67,16 +68,19 @@ export async function DELETE(
       );
     }
 
-    const user = await getAdminScopedUserByEmail(email);
-    if (!user) {
+    const adminUser = await getAdminScopedUserByEmail(email);
+    if (!adminUser) {
       return NextResponse.json(
         { success: false, error: "Forbidden" },
         { status: 403 },
       );
     }
-    const claims = decodeJwt(session.access_token);
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    const claims = session?.access_token ? decodeJwt(session.access_token) : null;
     const access = await evaluateAdminAccess(
-      { user, claims },
+      { user: adminUser, claims },
       { targetProducerId: producerId, targetStateSlug: stateSlug },
     );
 
@@ -96,7 +100,7 @@ export async function DELETE(
       where: { id: producerId },
     });
 
-    console.log(`[API] Producer ${producerId} deleted by admin ${session.user.email}`);
+    console.log(`[API] Producer ${producerId} deleted by admin ${email}`);
     return NextResponse.json({ success: true, message: "Producer deleted successfully" });
   } catch (error: any) {
     console.error("[API DELETE /api/producers/[id]] Error:", error);
@@ -129,10 +133,11 @@ export async function PUT(
       }
     );
     const {
-      data: { session },
-    } = await supabase.auth.getSession();
+      data: { user: authUser },
+      error,
+    } = await supabase.auth.getUser();
 
-    if (!session) {
+    if (error || !authUser) {
       return NextResponse.json(
         { success: false, error: "Not authenticated" },
         { status: 401 },
@@ -175,7 +180,7 @@ export async function PUT(
       (otherUpdates as { market: MarketValue }).market = normalizedMarket as MarketValue;
     }
 
-    const email = session.user.email;
+    const email = authUser.email;
     if (!email) {
       return NextResponse.json(
         { success: false, error: "Forbidden" },
@@ -183,16 +188,19 @@ export async function PUT(
       );
     }
 
-    const user = await getAdminScopedUserByEmail(email);
-    if (!user) {
+    const adminUser = await getAdminScopedUserByEmail(email);
+    if (!adminUser) {
       return NextResponse.json(
         { success: false, error: "Forbidden" },
         { status: 403 },
       );
     }
-    const claims = decodeJwt(session.access_token);
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    const claims = session?.access_token ? decodeJwt(session.access_token) : null;
     const access = await evaluateAdminAccess(
-      { user, claims },
+      { user: adminUser, claims },
       { targetProducerId: id, targetStateSlug: stateSlug },
     );
     if (!access.allowed) {

@@ -62,13 +62,14 @@ export default async function RankingsPage({
 
   const supabase = createServerComponentClient(cookieContext);
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
 
   let userVotes: Record<string, number> = {};
-  const currentUser = session?.user?.email
+  const currentUser = !userError && user?.email
     ? await prisma.user.findUnique({
-        where: { email: session.user.email },
+        where: { email: user.email },
         include: {
           stateAdmins: {
             include: { state: { select: { slug: true } } },

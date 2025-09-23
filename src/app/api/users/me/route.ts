@@ -28,10 +28,11 @@ export async function GET() {
     }
   );
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user: authUser },
+    error,
+  } = await supabase.auth.getUser();
 
-  if (!session?.user?.email) {
+  if (error || !authUser?.email) {
     return NextResponse.json(
       { success: false, error: "Not authenticated" },
       { status: 401 }
@@ -39,7 +40,7 @@ export async function GET() {
   }
 
   const user = await prisma.user.findUnique({
-    where: { email: session.user.email },
+    where: { email: authUser.email },
     include: {
       stateAdmins: {
         include: {
@@ -112,10 +113,11 @@ export async function PATCH(request: Request) {
     }
   );
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user: authUser },
+    error,
+  } = await supabase.auth.getUser();
 
-  if (!session?.user?.email) {
+  if (error || !authUser?.email) {
     return NextResponse.json(
       { success: false, error: "Not authenticated" },
       { status: 401 },
@@ -129,7 +131,7 @@ export async function PATCH(request: Request) {
   if (notificationOptIn !== undefined) data.notificationOptIn = notificationOptIn;
 
   await prisma.user.update({
-    where: { email: session.user.email },
+    where: { email: authUser.email },
     data,
   });
 

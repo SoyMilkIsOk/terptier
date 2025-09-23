@@ -13,15 +13,16 @@ export async function POST(request: Request) {
     const { cookieContext } = await getSupabaseCookieContext();
     const supabase = createServerComponentClient(cookieContext);
     const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    if (!session) {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser();
+    if (error || !user) {
       return NextResponse.json(
         { success: false, error: "Not authenticated" },
         { status: 401 }
       );
     }
-    const { email, user_metadata } = session.user;
+    const { email, user_metadata } = user;
 
     // 2) Upsert Prisma user BY EMAIL (not by id), so it matches any seed
     const prismaUser = await prisma.user.upsert({
