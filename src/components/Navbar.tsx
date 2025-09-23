@@ -4,10 +4,10 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import Image from "next/image";
-import { LogIn, LogOut, User, Shield, Calendar, Crown } from "lucide-react";
+import { LogIn, LogOut, User, Calendar, Crown } from "lucide-react";
 import type { Session } from "@supabase/supabase-js";
 import DropOptInModal from "./DropOptInModal";
 import { DEFAULT_STATE, DEFAULT_STATE_SLUG } from "@/lib/stateConstants";
@@ -38,11 +38,9 @@ type CurrentUserResponse = {
 
 export default function Navbar() {
   const pathname = usePathname();
-  const router = useRouter();
   const searchParams = useSearchParams();
   const [session, setSession] = useState<Session | null>(null);
   const [profileUsername, setProfileUsername] = useState<string | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
   const [isGlobalAdmin, setIsGlobalAdmin] = useState(false);
   const [adminStateSlugs, setAdminStateSlugs] = useState<string[]>([]);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -124,10 +122,6 @@ export default function Navbar() {
     () => `/${selectedState}/rankings`,
     [selectedState],
   );
-  const adminPath = useMemo(
-    () => `/${selectedState}/admin`,
-    [selectedState],
-  );
 
   const dropsHref = useMemo(
     () => applyPreservedQuery(dropsPath),
@@ -136,10 +130,6 @@ export default function Navbar() {
   const rankingsHref = useMemo(
     () => applyPreservedQuery(rankingsPath),
     [applyPreservedQuery, rankingsPath],
-  );
-  const adminHref = useMemo(
-    () => applyPreservedQuery(adminPath),
-    [applyPreservedQuery, adminPath],
   );
 
   useEffect(() => {
@@ -212,7 +202,6 @@ export default function Navbar() {
       setAdminStateSlugs([]);
       setNotificationOptIn(true);
       setShowDropModal(false);
-      setIsAdmin(false);
       adminDefaultApplied.current = false;
       return;
     }
@@ -291,10 +280,6 @@ export default function Navbar() {
       listener.subscription.unsubscribe();
     };
   }, [applyUserResponse]);
-
-  useEffect(() => {
-    setIsAdmin(isGlobalAdmin || adminStateSlugs.includes(selectedState));
-  }, [isGlobalAdmin, adminStateSlugs, selectedState]);
 
   useEffect(() => {
     if (isGlobalAdmin) {
@@ -437,21 +422,6 @@ export default function Navbar() {
                 <span>Profile</span>
               </Link>
             )}
-
-            {session && isAdmin && (
-              <Link
-                href={adminHref}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-2xl text-sm font-medium transition-all duration-200 ${
-                  pathname?.startsWith(adminPath)
-                    ? "bg-white/20 backdrop-blur-sm"
-                    : "hover:bg-white/10 backdrop-blur-sm"
-                }`}
-              >
-                <Shield className="w-4 h-4" />
-                <span>Admin</span>
-              </Link>
-            )}
-
             {/* Auth Buttons */}
             {!session ? (
               <Link
@@ -518,16 +488,7 @@ export default function Navbar() {
                       <span>Profile</span>
                     </Link>
                   )}
-                  {session && isAdmin && (
-                    <Link
-                      href={adminHref}
-                      onClick={() => setMenuOpen(false)}
-                      className="flex items-center justify-center space-x-2 w-full py-3 bg-white/10 backdrop-blur-sm rounded-2xl hover:bg-white/20 transition-all duration-200 font-medium"
-                    >
-                      <Shield className="w-4 h-4" />
-                      <span>Admin Panel</span>
-                    </Link>
-                  )}
+                  
                 </div>
 
                 {/* Mobile Auth Buttons */}
