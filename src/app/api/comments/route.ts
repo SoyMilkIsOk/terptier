@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prismadb";
 import { del } from "@vercel/blob";
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
-import { cookies } from "next/headers";
+import { getSupabaseCookieContext } from "@/lib/supabaseCookieContext";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -40,7 +40,8 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const supabase = createServerComponentClient({ cookies });
+  const { cookieContext } = await getSupabaseCookieContext();
+  const supabase = createServerComponentClient(cookieContext);
   const {
     data: { session },
   } = await supabase.auth.getSession();
@@ -110,7 +111,8 @@ export async function POST(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
-  const supabase = createServerComponentClient({ cookies });
+  const { cookieContext } = await getSupabaseCookieContext();
+  const supabase = createServerComponentClient(cookieContext);
   const {
     data: { session },
   } = await supabase.auth.getSession();

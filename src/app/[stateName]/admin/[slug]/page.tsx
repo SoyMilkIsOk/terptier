@@ -45,7 +45,7 @@ export default async function ProducerAdminPage({
   const { stateName, slug } = await params;
   const normalizedState = stateName.toLowerCase();
 
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
   const {
     data: { session },
   } = await supabase.auth.getSession();

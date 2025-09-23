@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prismadb";
 import { createServerActionClient } from "@supabase/auth-helpers-nextjs";
-import { cookies } from "next/headers";
+import { getSupabaseCookieContext } from "@/lib/supabaseCookieContext";
 
 type StateAdminSummary = {
   stateId: string;
@@ -19,10 +19,14 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
 
 export async function GET() {
-  const supabase = createServerActionClient({ cookies }, {
-    supabaseUrl,
-    supabaseKey,
-  });
+  const { cookieContext } = await getSupabaseCookieContext();
+  const supabase = createServerActionClient(
+    cookieContext,
+    {
+      supabaseUrl,
+      supabaseKey,
+    }
+  );
   const {
     data: { session },
   } = await supabase.auth.getSession();
@@ -99,10 +103,14 @@ export async function GET() {
 }
 
 export async function PATCH(request: Request) {
-  const supabase = createServerActionClient({ cookies }, {
-    supabaseUrl,
-    supabaseKey,
-  });
+  const { cookieContext } = await getSupabaseCookieContext();
+  const supabase = createServerActionClient(
+    cookieContext,
+    {
+      supabaseUrl,
+      supabaseKey,
+    }
+  );
   const {
     data: { session },
   } = await supabase.auth.getSession();
