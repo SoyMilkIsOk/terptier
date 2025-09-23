@@ -89,7 +89,24 @@ export default function StateSelector({
     return states.find((state) => state.slug === selectedState) ?? null;
   }, [selectedState, states]);
 
-  const selectedStateLabel = selectedStateData?.name ?? selectedState ?? "---";
+  const formatStateSlug = useCallback((slug: string | null) => {
+    if (!slug) {
+      return null;
+    }
+
+    return slug
+      .split("-")
+      .filter(Boolean)
+      .map((segment) =>
+        segment.length <= 2
+          ? segment.toUpperCase()
+          : segment.charAt(0).toUpperCase() + segment.slice(1),
+      )
+      .join(" ");
+  }, []);
+
+  const selectedStateLabel =
+    selectedStateData?.name ?? formatStateSlug(selectedState) ?? "---";
 
   const handleStateChange = useCallback(
     (newState: string) => {
