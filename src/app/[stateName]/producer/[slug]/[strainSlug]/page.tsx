@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { prisma } from "@/lib/prismadb";
@@ -9,13 +10,50 @@ import { createSupabaseServerClient } from "@/lib/supabaseServer";
 import React from "react";
 import { getStateMetadata } from "@/lib/states";
 import { notFound } from "next/navigation";
+import { getStaticPageTitle, getStrainPageTitle } from "@/lib/seo";
 
 interface StrainPageProps {
   params: Promise<{ stateName: string; slug: string; strainSlug: string }>;
 }
 
+export async function generateMetadata({
+  params,
+}: StrainPageProps): Promise<Metadata> {
+  const { stateName, slug: producerSlug, strainSlug } = await params;
+  const state = await getStateMetadata(stateName);
+
+  if (!state) {
+    return { title: getStaticPageTitle("strain") };
+  }
+
+  const strain = await prisma.strain.findFirst({
+    where: {
+      AND: [
+        { strainSlug },
+        state.strainWhere ?? {},
+        {
+          producer: {
+            ...(state.producerWhere ?? {}),
+            OR: [{ slug: producerSlug }, { id: producerSlug }],
+          },
+        },
+      ],
+    },
+    select: {
+      name: true,
+      producer: { select: { name: true } },
+    },
+  });
+
+  if (!strain?.producer?.name) {
+    return { title: getStaticPageTitle("strain") };
+  }
+
+  return { title: getStrainPageTitle(strain.name, strain.producer.name) };
+}
+
 // Client component for expandable reviews section
-function ExpandableReviewSection({ 
+function ExpandableReviewSection({
   children, 
   title, 
   count, 

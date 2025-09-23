@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import React from "react";
 import { cookies } from "next/headers";
 import {
@@ -19,8 +20,13 @@ import Link from "next/link";
 import Image from "next/image";
 import { DEFAULT_STATE_SLUG } from "@/lib/stateConstants";
 import { getStateMetadata } from "@/lib/states";
+import { getStaticPageTitle } from "@/lib/seo";
 
 const STATE_COOKIE_NAME = "preferredState";
+
+export const metadata: Metadata = {
+  title: getStaticPageTitle("about"),
+};
 
 export default async function AboutPage() {
   const cookieStore = await cookies();

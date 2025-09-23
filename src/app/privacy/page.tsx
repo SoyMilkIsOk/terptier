@@ -1,4 +1,10 @@
-import React from 'react';
+import type { Metadata } from "next";
+import React from "react";
+import { getStaticPageTitle } from "@/lib/seo";
+
+export const metadata: Metadata = {
+  title: getStaticPageTitle("privacy"),
+};
 
 export default function PrivacyPage() {
   return (

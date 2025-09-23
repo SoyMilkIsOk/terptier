@@ -1,4 +1,5 @@
 // src/app/[stateName]/producer/[slug]/strains/page.tsx
+import type { Metadata } from "next";
 import Link from "next/link";
 import BackButton from "@/components/BackButton";
 import ProducerStrainList from "@/components/ProducerStrainList";
@@ -6,9 +7,37 @@ import { ArrowRight } from "lucide-react";
 import { prisma } from "@/lib/prismadb";
 import { getStateMetadata } from "@/lib/states";
 import { notFound } from "next/navigation";
+import {
+  getProducerStrainLibraryTitle,
+  getStaticPageTitle,
+} from "@/lib/seo";
 
 interface ProducerStrainsPageProps {
   params: Promise<{ stateName: string; slug: string }>;
+}
+
+export async function generateMetadata({
+  params,
+}: ProducerStrainsPageProps): Promise<Metadata> {
+  const { stateName, slug } = await params;
+  const state = await getStateMetadata(stateName);
+
+  if (!state) {
+    return { title: getStaticPageTitle("producerStrains") };
+  }
+
+  const producer = await prisma.producer.findFirst({
+    where: {
+      AND: [{ OR: [{ slug }, { id: slug }] }, state.producerWhere ?? {}],
+    },
+    select: { name: true },
+  });
+
+  if (!producer) {
+    return { title: getStaticPageTitle("producerStrains") };
+  }
+
+  return { title: getProducerStrainLibraryTitle(producer.name) };
 }
 
 export default async function ProducerStrainsPage({

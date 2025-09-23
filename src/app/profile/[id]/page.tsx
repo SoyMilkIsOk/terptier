@@ -1,4 +1,5 @@
 // src/app/profile/[id]/page.tsx
+import type { Metadata } from "next";
 import React from "react";
 import CommentCard from "@/components/CommentCard";
 import ProfileImageUpload from "@/components/ProfileImageUpload";
@@ -14,8 +15,29 @@ import { Instagram, ExternalLink, Link as LinkIcon } from "lucide-react";
 import ProducerCard from "@/components/ProducerCard";
 import { StateProvider } from "@/components/StateProvider";
 import { DEFAULT_STATE_SLUG } from "@/lib/stateConstants";
+import { getProfilePageTitle, getStaticPageTitle } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+
+  const user = await prisma.user.findFirst({
+    where: { OR: [{ username: id }, { id }] },
+    select: { name: true, username: true },
+  });
+
+  if (!user) {
+    return { title: getStaticPageTitle("profile") };
+  }
+
+  const displayName = user.username ?? user.name ?? "User";
+  return { title: getProfilePageTitle(displayName) };
+}
 
 // Helper function to detect social platform
 const getSocialPlatform = (url: string) => {

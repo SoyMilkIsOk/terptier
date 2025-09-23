@@ -1,4 +1,5 @@
 // src/app/[stateName]/drops/[producerSlug]/page.tsx
+import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import StrainCard from "@/components/StrainCard";
@@ -14,9 +15,42 @@ import BackButton from "@/components/BackButton";
 import { unstable_noStore as noStore } from "next/cache";
 import { getStateMetadata } from "@/lib/states";
 import { notFound } from "next/navigation";
+import {
+  getProducerDropsPageTitle,
+  getStaticPageTitle,
+} from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ stateName: string; producerSlug: string }>;
+}): Promise<Metadata> {
+  const { stateName, producerSlug } = await params;
+  const state = await getStateMetadata(stateName);
+
+  if (!state) {
+    return { title: getStaticPageTitle("stateDrops") };
+  }
+
+  const producer = await prisma.producer.findFirst({
+    where: {
+      AND: [
+        { OR: [{ slug: producerSlug }, { id: producerSlug }] },
+        state.producerWhere ?? {},
+      ],
+    },
+    select: { name: true },
+  });
+
+  if (!producer) {
+    return { title: getStaticPageTitle("stateDrops") };
+  }
+
+  return { title: getProducerDropsPageTitle(producer.name) };
+}
 
 interface DropsByProducerPageProps {
   params: Promise<{ stateName: string; producerSlug: string }>;

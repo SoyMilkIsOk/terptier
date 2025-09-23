@@ -1,5 +1,6 @@
 // src/app/[stateName]/drops/page.tsx
 import { Suspense } from "react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import StrainCard from "@/components/StrainCard";
@@ -11,9 +12,28 @@ import { notFound } from "next/navigation";
 import MarketModeToggle from "@/components/MarketModeToggle";
 import { buildMarketFilters, normalizeMarketParam } from "@/lib/market";
 import { getMarketTheme } from "@/lib/market-theme";
+import {
+  getStateDropsPageTitle,
+  getStaticPageTitle,
+} from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ stateName: string }>;
+}): Promise<Metadata> {
+  const { stateName } = await params;
+  const state = await getStateMetadata(stateName);
+
+  if (!state) {
+    return { title: getStaticPageTitle("stateDrops") };
+  }
+
+  return { title: getStateDropsPageTitle(state.name) };
+}
 
 export default async function DropsPage({
   params,

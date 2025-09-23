@@ -1,5 +1,6 @@
 // src/app/[stateName]/rankings/page.tsx
 import { Suspense } from "react";
+import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import AgeGate from "@/components/AgeGate";
@@ -19,6 +20,25 @@ import {
   Flower2,
   FlaskConical,
 } from "lucide-react";
+import {
+  getStateRankingsPageTitle,
+  getStaticPageTitle,
+} from "@/lib/seo";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ stateName: string }>;
+}): Promise<Metadata> {
+  const { stateName } = await params;
+  const state = await getStateMetadata(stateName);
+
+  if (!state) {
+    return { title: getStaticPageTitle("stateRankings") };
+  }
+
+  return { title: getStateRankingsPageTitle(state.name) };
+}
 
 export default async function RankingsPage({
   params,
