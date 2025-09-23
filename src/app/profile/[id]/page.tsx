@@ -35,7 +35,7 @@ export async function generateMetadata({
     return { title: getStaticPageTitle("profile") };
   }
 
-  const displayName = user.name ?? user.username ?? "User";
+  const displayName = user.username ?? user.name ?? "User";
   return { title: getProfilePageTitle(displayName) };
 }
 

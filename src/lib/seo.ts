@@ -11,7 +11,7 @@ export const BASE_METADATA: Metadata = {
 };
 
 export const STATIC_PAGE_TITLES = {
-  home: "Discover Top Cannabis Producers, Strains & Drops",
+  home: "Discover Top Cannabis Producers, Strains & Drops on TerpTier",
   about: "About TerpTier",
   faq: "Frequently Asked Questions",
   feedback: "Share Feedback",
@@ -33,7 +33,7 @@ export const STATIC_PAGE_TITLES = {
 export type StaticPageKey = keyof typeof STATIC_PAGE_TITLES;
 
 export const createPageTitle = (title: string) =>
-  `${title}${TITLE_SEPARATOR}${SITE_NAME}`;
+  `${title}`;
 
 export const getStaticPageTitle = (key: StaticPageKey) =>
   createPageTitle(STATIC_PAGE_TITLES[key]);
@@ -51,19 +51,19 @@ export const getStrainPageTitle = (
   strainName: string,
   producerName: string,
 ) =>
-  createPageTitle(`${strainName} by ${producerName}: Reviews & Terp Insights`);
+  createPageTitle(`${strainName} by ${producerName}: Reviews & Info`);
 
 export const getStateDropsPageTitle = (stateName: string) =>
-  createPageTitle(`${stateName} Cannabis Drops & Release Calendar`);
+  createPageTitle(`${stateName} Drops & Release Calendar`);
 
 export const getStateRankingsPageTitle = (stateName: string) =>
-  createPageTitle(`${stateName} Cannabis Producer Rankings`);
+  createPageTitle(`${stateName} Producer Rankings`);
 
 export const getStateAdminPageTitle = (stateName: string) =>
   createPageTitle(`${stateName} Admin Dashboard`);
 
-export const getProfilePageTitle = (displayName: string) =>
-  createPageTitle(`${displayName}'s TerpTier Profile`);
+export const getProfilePageTitle = (username: string) =>
+  createPageTitle(`${username}'s Profile`);
 
 export const getAdminProducerEditTitle = (producerName: string) =>
-  createPageTitle(`Manage ${producerName} on TerpTier`);
+  createPageTitle(`Manage ${producerName}`);
