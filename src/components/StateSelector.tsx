@@ -41,12 +41,13 @@ export default function StateSelector({
     const match = pathname.match(/^\/([^/]+)(?:\/|$)/);
     return match ? match[1] : null;
   }, [pathname]);
-  const [selectedState, setSelectedState] = useState<string | null>(
+  const [fallbackState, setFallbackState] = useState<string | null>(
     () => pathnameSlug ?? null,
   );
   const [open, setOpen] = useState(false);
 
   const slugSet = useMemo(() => new Set(states.map((state) => state.slug)), [states]);
+  const selectedState = pathnameSlug ?? fallbackState;
 
   const preservedQueryString = useMemo(() => {
     const params = new URLSearchParams();
@@ -80,16 +81,19 @@ export default function StateSelector({
     document.cookie = `${STATE_COOKIE_NAME}=${slug};expires=${expires.toUTCString()};path=/;SameSite=Lax`;
   }, []);
 
-  const selectedStateData = useMemo(
-    () => states.find((state) => state.slug === selectedState) ?? null,
-    [selectedState, states],
-  );
+  const selectedStateData = useMemo(() => {
+    if (!selectedState) {
+      return null;
+    }
 
-  const selectedStateLabel = selectedStateData?.name ?? "---";
+    return states.find((state) => state.slug === selectedState) ?? null;
+  }, [selectedState, states]);
+
+  const selectedStateLabel = selectedStateData?.name ?? selectedState ?? "---";
 
   const handleStateChange = useCallback(
     (newState: string) => {
-      setSelectedState(newState);
+      setFallbackState(newState);
       persistSelectedState(newState);
       setOpen(false);
 
@@ -158,7 +162,7 @@ export default function StateSelector({
     }
 
     if (pathnameSlug) {
-      setSelectedState(pathnameSlug);
+      setFallbackState(pathnameSlug);
       persistSelectedState(pathnameSlug);
       return;
     }
@@ -176,16 +180,16 @@ export default function StateSelector({
 
     const cookieState = getCookieValue(STATE_COOKIE_NAME);
     if (cookieState && (!slugSet.size || slugSet.has(cookieState))) {
-      setSelectedState(cookieState);
+      setFallbackState(cookieState);
       persistSelectedState(cookieState);
       return;
     }
 
     const stored = window.localStorage.getItem(STATE_STORAGE_KEY);
     if (stored && (!slugSet.size || slugSet.has(stored))) {
-      setSelectedState(stored);
+      setFallbackState(stored);
     } else {
-      setSelectedState(null);
+      setFallbackState(null);
     }
   }, [pathnameSlug, persistSelectedState, slugSet]);
 
