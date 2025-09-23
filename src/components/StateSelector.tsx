@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
-import { DEFAULT_STATE, DEFAULT_STATE_SLUG } from "@/lib/stateConstants";
+import { DEFAULT_STATE } from "@/lib/stateConstants";
 
 type StateOption = {
   slug: string;
@@ -41,8 +41,8 @@ export default function StateSelector({
     const match = pathname.match(/^\/([^/]+)(?:\/|$)/);
     return match ? match[1] : null;
   }, [pathname]);
-  const [selectedState, setSelectedState] = useState(
-    () => pathnameSlug ?? DEFAULT_STATE_SLUG,
+  const [selectedState, setSelectedState] = useState<string | null>(
+    () => pathnameSlug ?? null,
   );
   const [open, setOpen] = useState(false);
 
@@ -81,9 +81,11 @@ export default function StateSelector({
   }, []);
 
   const selectedStateData = useMemo(
-    () => states.find((state) => state.slug === selectedState) || states[0],
+    () => states.find((state) => state.slug === selectedState) ?? null,
     [selectedState, states],
   );
+
+  const selectedStateLabel = selectedStateData?.name ?? "---";
 
   const handleStateChange = useCallback(
     (newState: string) => {
@@ -183,7 +185,7 @@ export default function StateSelector({
     if (stored && (!slugSet.size || slugSet.has(stored))) {
       setSelectedState(stored);
     } else {
-      setSelectedState(DEFAULT_STATE_SLUG);
+      setSelectedState(null);
     }
   }, [pathnameSlug, persistSelectedState, slugSet]);
 
@@ -221,9 +223,7 @@ export default function StateSelector({
           aria-haspopup="listbox"
           aria-expanded={open}
         >
-          <span className="truncate">
-            {selectedStateData?.name ?? "Select a state"}
-          </span>
+          <span className="truncate">{selectedStateLabel}</span>
           <ChevronDown className={`h-4 w-4 transition-transform ${open ? "rotate-180" : ""}`} />
         </button>
         <AnimatePresence>
