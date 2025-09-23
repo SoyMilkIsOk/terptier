@@ -14,8 +14,8 @@ type StateOption = {
 
 type StateSelectorProps = {
   className?: string;
-  label?: string;
   preserveParams?: string[];
+  label?: string;
 };
 
 const STATE_STORAGE_KEY = "terptier:selectedState";
@@ -25,7 +25,7 @@ const KNOWN_SECTIONS = new Set(["drops", "rankings", "admin"]);
 
 export default function StateSelector({
   className = "",
-  label = "Select Your State",
+  label,
   preserveParams = ["market", "view"],
 }: StateSelectorProps) {
   const router = useRouter();
@@ -220,54 +220,58 @@ export default function StateSelector({
 
   return (
     <div className={`w-full max-w-xs sm:max-w-sm ${className}`} ref={dropdownRef}>
-      <span className="block text-xs uppercase tracking-wide text-white/70 mb-2 text-center">
-        {label}
-      </span>
-      <button
-        type="button"
-        onClick={() => setOpen((value) => !value)}
-        className="w-full flex items-center justify-between gap-2 rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-left text-sm font-semibold text-white shadow-lg backdrop-blur-md transition-all duration-200 hover:bg-white/20"
-        aria-haspopup="listbox"
-        aria-expanded={open}
-      >
-        <span className="truncate">
-          {selectedStateData?.name ?? "Select a state"}
+      {label ? (
+        <span className="mb-2 block text-center text-xs uppercase tracking-wide text-white/70">
+          {label}
         </span>
-        <ChevronDown className={`h-4 w-4 transition-transform ${open ? "rotate-180" : ""}`} />
-      </button>
-      <AnimatePresence>
-        {open && (
-          <motion.ul
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.2 }}
-            className="mt-2 max-h-64 overflow-y-auto rounded-2xl border border-white/10 bg-white/95 text-green-900 shadow-2xl backdrop-blur-lg"
-            role="listbox"
-          >
-            {states.map((state) => (
-              <li key={state.slug}>
-                <button
-                  type="button"
-                  onClick={() => handleStateChange(state.slug)}
-                  className={`flex w-full items-center justify-between px-4 py-3 text-sm transition-colors duration-150 ${
-                    selectedState === state.slug
-                      ? "bg-green-100/80 font-semibold text-green-900"
-                      : "hover:bg-green-50/80"
-                  }`}
-                  role="option"
-                  aria-selected={selectedState === state.slug}
-                >
-                  <span>{state.name}</span>
-                  <span className="text-xs uppercase tracking-wide text-green-600">
-                    {state.abbreviation}
-                  </span>
-                </button>
-              </li>
-            ))}
-          </motion.ul>
-        )}
-      </AnimatePresence>
+      ) : null}
+      <div className="relative">
+        <button
+          type="button"
+          onClick={() => setOpen((value) => !value)}
+          className="flex w-full items-center justify-between gap-2 rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-left text-sm font-semibold text-white shadow-lg backdrop-blur-md transition-all duration-200 hover:bg-white/20"
+          aria-haspopup="listbox"
+          aria-expanded={open}
+        >
+          <span className="truncate">
+            {selectedStateData?.name ?? "Select a state"}
+          </span>
+          <ChevronDown className={`h-4 w-4 transition-transform ${open ? "rotate-180" : ""}`} />
+        </button>
+        <AnimatePresence>
+          {open && (
+            <motion.ul
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.2 }}
+              className="absolute left-0 right-0 z-50 mt-2 max-h-[40vh] overflow-y-auto rounded-2xl border border-white/10 bg-white/95 text-green-900 shadow-2xl backdrop-blur-lg"
+              role="listbox"
+            >
+              {states.map((state) => (
+                <li key={state.slug}>
+                  <button
+                    type="button"
+                    onClick={() => handleStateChange(state.slug)}
+                    className={`flex w-full items-center justify-between px-4 py-3 text-sm transition-colors duration-150 ${
+                      selectedState === state.slug
+                        ? "bg-green-100/80 font-semibold text-green-900"
+                        : "hover:bg-green-50/80"
+                    }`}
+                    role="option"
+                    aria-selected={selectedState === state.slug}
+                  >
+                    <span>{state.name}</span>
+                    <span className="text-xs uppercase tracking-wide text-green-600">
+                      {state.abbreviation}
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </motion.ul>
+          )}
+        </AnimatePresence>
+      </div>
     </div>
   );
 }

@@ -214,25 +214,22 @@ export default async function DropsPage({
         <div className="relative px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
           <div className="max-w-4xl mx-auto text-center">
             <div
-              className={`inline-flex items-center gap-2 backdrop-blur-sm rounded-full px-3 sm:px-4 py-2 mb-4 sm:mb-6 transition-colors duration-500 ${theme.hero.chip}`}
+              className={`inline-flex items-center gap-2 backdrop-blur-sm rounded-full px-3 sm:px-4 py-2 mb-4 transition-colors duration-500 ${theme.hero.chip}`}
             >
               <TrendingUp className="w-4 h-4" />
               <span className="text-sm font-medium">Weekly Drops</span>
             </div>
+            <div className="mb-6 flex justify-center">
+              <StateSelector preserveParams={["market"]} />
+            </div>
             <h1
-          className={`text-4xl sm:text-5xl lg:text-6xl font-bold mb-3 sm:mb-4 py-2 sm:py-4 bg-clip-text text-transparent transition-colors duration-500 ${theme.hero.title}`}
-        >
-          {heroTitle}
-        </h1>
-        <div className="mt-6 flex justify-center">
-          <StateSelector
-            label="Browse drops in another state"
-            preserveParams={["market"]}
-          />
-        </div>
-        <div
-          className={`flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 transition-colors duration-500 ${theme.hero.statText}`}
-        >
+              className={`text-4xl sm:text-5xl lg:text-6xl font-bold mb-3 sm:mb-4 py-2 sm:py-4 bg-clip-text text-transparent transition-colors duration-500 ${theme.hero.title}`}
+            >
+              {heroTitle}
+            </h1>
+            <div
+              className={`flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 transition-colors duration-500 ${theme.hero.statText}`}
+            >
               <div className="flex items-center gap-2">
                 <Calendar className="w-5 h-5" />
                 <span className="text-sm font-medium">Last 7 & Next 7 Days</span>

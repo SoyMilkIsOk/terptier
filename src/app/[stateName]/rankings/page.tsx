@@ -153,10 +153,14 @@ export default async function RankingsPage({
         <div className="relative container mx-auto px-4 py-16">
           <div className="max-w-4xl mx-auto text-center">
             <div
-              className={`inline-flex items-center gap-2 backdrop-blur-sm rounded-full px-4 py-2 mb-6 transition-colors duration-500 ${theme.hero.chip}`}
+              className={`inline-flex items-center gap-2 backdrop-blur-sm rounded-full px-4 py-2 mb-4 transition-colors duration-500 ${theme.hero.chip}`}
             >
               <Crown className="w-4 h-4" />
               <span className="text-sm font-medium">Community Rankings</span>
+            </div>
+
+            <div className="mb-6 flex justify-center">
+              <StateSelector />
             </div>
 
             <h1
@@ -164,9 +168,6 @@ export default async function RankingsPage({
             >
               {heroTitle}
             </h1>
-            <div className="mt-6 flex justify-center">
-              <StateSelector label="View rankings in another state" />
-            </div>
 
             <div
               className={`flex flex-wrap sm:w-full w-[80%] mx-auto items-center justify-center py-2 sm:gap-6 gap-8 transition-colors duration-500 ${theme.hero.statText}`}
