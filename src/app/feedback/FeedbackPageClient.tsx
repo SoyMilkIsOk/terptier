@@ -1,10 +1,6 @@
 "use client";
 
-import dynamic from "next/dynamic";
-
-const GoogleFormEmbed = dynamic(() => import("@/components/GoogleFormEmbed"), {
-  ssr: false,
-});
+import GoogleFormEmbed from "@/components/GoogleFormEmbed";
 
 export function FeedbackPageClient() {
   return (
