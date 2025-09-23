@@ -49,17 +49,30 @@ function LoginForm() {
 
   const finalizeAuth = async () => {
     const {
-      data: { session },
-      error: sessionError,
-    } = await supabase.auth.getSession();
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
 
-    if (session?.access_token) {
+    if (userError) {
+      setError(userError.message || "Authentication failed");
+      return;
+    }
+
+    if (user) {
       const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser(session.access_token);
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
 
-      if (user && session) {
+      if (sessionError && sessionError.name !== "AuthSessionMissingError") {
+        console.error("Failed to retrieve Supabase session", sessionError);
+      }
+
+      if (!session) {
+        setError("Authentication failed");
+        return;
+      }
+
         await fetch("/api/users", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -98,14 +111,9 @@ function LoginForm() {
         }
         return;
       }
-
-      const fallbackError = userError?.message || sessionError?.message || "Authentication failed";
-      setError(fallbackError);
-      return;
     }
 
-    const fallbackError = sessionError?.message || "Authentication failed";
-    setError(fallbackError);
+    setError("Authentication failed");
   };
 
   const handleSignIn = async () => {

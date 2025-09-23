@@ -16,22 +16,9 @@ export async function getVerifiedAuth(
   supabase: GenericSupabaseClient,
 ): Promise<VerifiedAuthResult> {
   const {
-    data: { session },
-    error: sessionError,
-  } = await supabase.auth.getSession();
-
-  if (sessionError && sessionError.name !== "AuthSessionMissingError") {
-    console.error("Failed to retrieve Supabase session", sessionError);
-  }
-
-  if (!session?.access_token) {
-    return { user: null, session: null };
-  }
-
-  const {
     data: { user },
     error: userError,
-  } = await supabase.auth.getUser(session.access_token);
+  } = await supabase.auth.getUser();
 
   if (userError) {
     if (userError.name !== "AuthSessionMissingError") {
@@ -44,5 +31,14 @@ export async function getVerifiedAuth(
     return { user: null, session: null };
   }
 
-  return { user, session };
+  const {
+    data: { session },
+    error: sessionError,
+  } = await supabase.auth.getSession();
+
+  if (sessionError && sessionError.name !== "AuthSessionMissingError") {
+    console.error("Failed to retrieve Supabase session", sessionError);
+  }
+
+  return { user, session: session ?? null };
 }

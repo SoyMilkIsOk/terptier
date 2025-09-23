@@ -237,34 +237,46 @@ export default function Navbar() {
   const refreshUserProfile = useCallback(async () => {
     try {
       const {
-        data: { session },
-      } = await supabase.auth.getSession();
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
 
-      if (session?.access_token) {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser(session.access_token);
-
-        if (user?.email) {
-          try {
-            const res = await fetch("/api/users/me");
-            if (res.ok) {
-              const data: CurrentUserResponse = await res.json();
-              applyUserResponse(data.success ? data : null);
-            } else {
-              applyUserResponse(null);
-            }
-          } catch (err) {
-            console.error("Failed to fetch user", err);
-            applyUserResponse(null);
-          }
-          return;
-        }
+      if (userError && userError.name !== "AuthSessionMissingError") {
+        console.error("Failed to verify Supabase user", userError);
       }
 
-      applyUserResponse(null);
+      if (!user?.email) {
+        setSession(null);
+        applyUserResponse(null);
+        return;
+      }
+
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
+
+      if (sessionError && sessionError.name !== "AuthSessionMissingError") {
+        console.error("Failed to retrieve Supabase session", sessionError);
+      }
+
+      setSession(session ?? null);
+
+      try {
+        const res = await fetch("/api/users/me");
+        if (res.ok) {
+          const data: CurrentUserResponse = await res.json();
+          applyUserResponse(data.success ? data : null);
+        } else {
+          applyUserResponse(null);
+        }
+      } catch (err) {
+        console.error("Failed to fetch user", err);
+        applyUserResponse(null);
+      }
     } catch (err) {
-      console.error("Failed to verify Supabase user", err);
+      console.error("Failed to refresh Supabase user", err);
+      setSession(null);
       applyUserResponse(null);
     }
   }, [applyUserResponse]);
@@ -272,18 +284,14 @@ export default function Navbar() {
   useEffect(() => {
     let isMounted = true;
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!isMounted) {
-        return;
-      }
-      setSession(session);
-    });
-
     refreshUserProfile();
 
     // listen for changes (login/logout)
     const { data: listener } = supabase.auth.onAuthStateChange(
       async (_event, sess) => {
+        if (!isMounted) {
+          return;
+        }
         setSession(sess);
         await refreshUserProfile();
       },
