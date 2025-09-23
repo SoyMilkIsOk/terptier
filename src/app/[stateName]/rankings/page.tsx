@@ -161,10 +161,10 @@ export default async function RankingsPage({
             <div className="absolute right-4 top-4">
               <Link
                 href={`/${stateSlug}/admin`}
-                className="inline-flex items-center gap-2 rounded-full bg-white/95 px-4 py-2 text-sm font-semibold text-green-800 shadow-lg transition-colors duration-200 hover:bg-white"
+                className="inline-flex items-center gap-2 rounded-full bg-green-600 px-4 py-2 text-sm font-semibold text-white shadow-lg transition-colors duration-200 hover:bg-green-500"
               >
                 <Shield className="h-4 w-4" />
-                <span>Manage Producers</span>
+                <span className="sm:block hidden">Manage Producers</span>
               </Link>
             </div>
           )}
