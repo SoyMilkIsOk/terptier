@@ -58,62 +58,76 @@ function LoginForm() {
       return;
     }
 
-    if (user) {
-      const {
-        data: { session },
-        error: sessionError,
-      } = await supabase.auth.getSession();
-
-      if (sessionError && sessionError.name !== "AuthSessionMissingError") {
-        console.error("Failed to retrieve Supabase session", sessionError);
-      }
-
-      if (!session) {
-        setError("Authentication failed");
-        return;
-      }
-
-        await fetch("/api/users", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            id: user.id,
-            email: user.email,
-            name: user.user_metadata?.name || user.email,
-          }),
-        });
-        const meRes = await fetch("/api/users/me");
-        const meData: {
-          success: boolean;
-          isGlobalAdmin?: boolean;
-          stateAdminAssignments?: { stateSlug?: string | null }[];
-        } = await meRes.json();
-        if (meData.success) {
-          const preferredState = getPreferredStateSlug();
-          const assignedStates = Array.isArray(meData.stateAdminAssignments)
-            ? meData.stateAdminAssignments
-                .map((assignment: { stateSlug?: string | null }) => assignment?.stateSlug)
-                .filter((slug): slug is string => Boolean(slug))
-            : [];
-
-          if (meData.isGlobalAdmin) {
-            router.push(`/${preferredState}/admin`);
-          } else if (assignedStates.length > 0) {
-            const targetState = assignedStates.includes(preferredState)
-              ? preferredState
-              : assignedStates[0];
-            router.push(`/${targetState}/admin`);
-          } else {
-            router.push(`/${DEFAULT_STATE_SLUG}/rankings`);
-          }
-        } else {
-          router.push("/");
-        }
-        return;
-      }
+    if (!user) {
+      setError("Authentication failed");
+      return;
     }
 
-    setError("Authentication failed");
+    const {
+      data: { session },
+      error: sessionError,
+    } = await supabase.auth.getSession();
+
+    if (sessionError && sessionError.name !== "AuthSessionMissingError") {
+      console.error("Failed to retrieve Supabase session", sessionError);
+    }
+
+    if (!session) {
+      setError("Authentication failed");
+      return;
+    }
+
+    try {
+      const createResponse = await fetch("/api/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: user.id,
+          email: user.email,
+          name: user.user_metadata?.name || user.email,
+        }),
+      });
+
+      if (!createResponse.ok) {
+        throw new Error("Failed to finalize account");
+      }
+
+      const meRes = await fetch("/api/users/me");
+      if (!meRes.ok) {
+        throw new Error("Failed to fetch profile");
+      }
+
+      const meData: {
+        success: boolean;
+        isGlobalAdmin?: boolean;
+        stateAdminAssignments?: { stateSlug?: string | null }[];
+      } = await meRes.json();
+      if (meData.success) {
+        const preferredState = getPreferredStateSlug();
+        const assignedStates = Array.isArray(meData.stateAdminAssignments)
+          ? meData.stateAdminAssignments
+              .map((assignment: { stateSlug?: string | null }) => assignment?.stateSlug)
+              .filter((slug): slug is string => Boolean(slug))
+          : [];
+
+        if (meData.isGlobalAdmin) {
+          router.push(`/${preferredState}/admin`);
+        } else if (assignedStates.length > 0) {
+          const targetState = assignedStates.includes(preferredState)
+            ? preferredState
+            : assignedStates[0];
+          router.push(`/${targetState}/admin`);
+        } else {
+          router.push(`/${DEFAULT_STATE_SLUG}/rankings`);
+        }
+      } else {
+        router.push("/");
+      }
+      router.refresh();
+    } catch (fetchError) {
+      console.error("Failed to finalize authentication", fetchError);
+      setError("Authentication failed");
+    }
   };
 
   const handleSignIn = async () => {
