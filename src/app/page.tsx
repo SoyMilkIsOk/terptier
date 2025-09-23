@@ -39,5 +39,5 @@ export default async function HomePage() {
     );
   }
 
-  return <HeroHome state={selectedState} />;
+  return <HeroHome state={selectedState} states={serializableStates} />;
 }
