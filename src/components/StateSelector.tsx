@@ -33,7 +33,17 @@ export default function StateSelector({
   const searchParams = useSearchParams();
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   const [states, setStates] = useState<StateOption[]>([DEFAULT_STATE]);
-  const [selectedState, setSelectedState] = useState(DEFAULT_STATE_SLUG);
+  const pathnameSlug = useMemo(() => {
+    if (!pathname) {
+      return null;
+    }
+
+    const match = pathname.match(/^\/([^/]+)(?:\/|$)/);
+    return match ? match[1] : null;
+  }, [pathname]);
+  const [selectedState, setSelectedState] = useState(
+    () => pathnameSlug ?? DEFAULT_STATE_SLUG,
+  );
   const [open, setOpen] = useState(false);
 
   const slugSet = useMemo(() => new Set(states.map((state) => state.slug)), [states]);
@@ -56,27 +66,6 @@ export default function StateSelector({
     (targetPath: string) =>
       preservedQueryString ? `${targetPath}${preservedQueryString}` : targetPath,
     [preservedQueryString],
-  );
-
-  const getStateSlugFromPath = useCallback(
-    (currentPath: string | null): string | null => {
-      if (!currentPath) {
-        return null;
-      }
-
-      const match = currentPath.match(/^\/([^/]+)(?:\/|$)/);
-      if (!match) {
-        return null;
-      }
-
-      const slug = match[1];
-      if (!slugSet.size || slugSet.has(slug)) {
-        return slug;
-      }
-
-      return null;
-    },
-    [slugSet],
   );
 
   const persistSelectedState = useCallback((slug: string) => {
@@ -166,10 +155,9 @@ export default function StateSelector({
       return;
     }
 
-    const slugFromPath = getStateSlugFromPath(pathname);
-    if (slugFromPath) {
-      setSelectedState(slugFromPath);
-      persistSelectedState(slugFromPath);
+    if (pathnameSlug) {
+      setSelectedState(pathnameSlug);
+      persistSelectedState(pathnameSlug);
       return;
     }
 
@@ -197,7 +185,7 @@ export default function StateSelector({
     } else {
       setSelectedState(DEFAULT_STATE_SLUG);
     }
-  }, [getStateSlugFromPath, pathname, persistSelectedState, slugSet]);
+  }, [pathnameSlug, persistSelectedState, slugSet]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
