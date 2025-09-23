@@ -13,10 +13,7 @@ import MarketModeToggle from "@/components/MarketModeToggle";
 import StateSelector from "@/components/StateSelector";
 import { buildMarketFilters, normalizeMarketParam } from "@/lib/market";
 import { getMarketTheme } from "@/lib/market-theme";
-import {
-  getStateDropsPageTitle,
-  getStaticPageTitle,
-} from "@/lib/seo";
+import { getStateDropsPageTitle, getStaticPageTitle } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -64,16 +61,14 @@ export default async function DropsPage({
     market === "WHITE"
       ? "Recreational"
       : market === "BLACK"
-        ? "Underground"
+      ? "Underground"
       : market === "BOTH"
-        ? ""
-        : null;
+      ? ""
+      : null;
 
   const heroTitle = `New to the 
   ${state.name ? state.name : ""}
-  ${ 
-    marketDescriptor ? `${marketDescriptor} ` : ""
-  }Market`;
+  ${marketDescriptor ? `${marketDescriptor} ` : ""}Market`;
 
   const now = new Date();
   const mstParts = new Intl.DateTimeFormat("en-US", {
@@ -130,24 +125,26 @@ export default async function DropsPage({
     return { ...rest, avgRating: avg };
   });
 
-  const grouped = strainsWithAvg.reduce<Record<string, {
-    producer: typeof strainsWithAvg[number]["producer"];
-    strains: (typeof strainsWithAvg)[number][];
-  }>>(
-    (acc, strain) => {
-      const producerId = strain.producer.id;
-      if (!acc[producerId]) {
-        acc[producerId] = {
-          producer: strain.producer,
-          strains: [],
-        };
+  const grouped = strainsWithAvg.reduce<
+    Record<
+      string,
+      {
+        producer: (typeof strainsWithAvg)[number]["producer"];
+        strains: (typeof strainsWithAvg)[number][];
       }
-      acc[producerId].strains.push(strain);
+    >
+  >((acc, strain) => {
+    const producerId = strain.producer.id;
+    if (!acc[producerId]) {
+      acc[producerId] = {
+        producer: strain.producer,
+        strains: [],
+      };
+    }
+    acc[producerId].strains.push(strain);
 
-      return acc;
-    },
-    {}
-  );
+    return acc;
+  }, {});
 
   const getDaysUntilDrop = (releaseDate: Date) => {
     const releaseUtc = Date.UTC(
@@ -206,7 +203,7 @@ export default async function DropsPage({
         />
       </Suspense>
       <div
-        className={`relative overflow-hidden bg-gradient-to-r transition-colors duration-500 ${theme.hero.wrapper}`}
+        className={`relative overflow-visible bg-gradient-to-r transition-colors duration-500 ${theme.hero.wrapper}`}
       >
         <div
           className={`absolute inset-0 transition-colors duration-500 ${theme.hero.overlay}`}
@@ -219,9 +216,6 @@ export default async function DropsPage({
               <TrendingUp className="w-4 h-4" />
               <span className="text-sm font-medium">Weekly Drops</span>
             </div>
-            <div className="mb-6 flex justify-center">
-              <StateSelector preserveParams={["market"]} />
-            </div>
             <h1
               className={`text-4xl sm:text-5xl lg:text-6xl font-bold mb-3 sm:mb-4 py-2 sm:py-4 bg-clip-text text-transparent transition-colors duration-500 ${theme.hero.title}`}
             >
@@ -232,7 +226,9 @@ export default async function DropsPage({
             >
               <div className="flex items-center gap-2">
                 <Calendar className="w-5 h-5" />
-                <span className="text-sm font-medium">Last 7 & Next 7 Days</span>
+                <span className="text-sm font-medium">
+                  Last 7 & Next 7 Days
+                </span>
               </div>
               <div
                 className={`hidden sm:block w-px h-4 transition-colors duration-500 ${theme.hero.divider}`}
@@ -252,6 +248,9 @@ export default async function DropsPage({
                   {totalStrainCount === 1 ? "" : "s"}
                 </span>
               </div>
+            </div>
+            <div className="mt-6 flex justify-center">
+              <StateSelector preserveParams={["market"]} />
             </div>
           </div>
         </div>
@@ -275,7 +274,8 @@ export default async function DropsPage({
             <p
               className={`max-w-md mx-auto px-4 transition-colors duration-500 ${theme.empty.text}`}
             >
-              Check back soon for the latest strain releases from your favorite producers.
+              Check back soon for the latest strain releases from your favorite
+              producers.
             </p>
           </div>
         ) : (
@@ -294,7 +294,9 @@ export default async function DropsPage({
                     <div className="absolute bottom-3 sm:bottom-4 left-4 sm:left-6 right-4 sm:right-6">
                       <div className="flex items-end justify-between gap-3">
                         <Link
-                          href={`/${state.slug}/producer/${producer.slug ?? producer.id}`}
+                          href={`/${state.slug}/producer/${
+                            producer.slug ?? producer.id
+                          }`}
                           className={`flex items-center gap-3 group/producer hover:opacity-90 transition-opacity flex-1 min-w-0 ${theme.card.infoText}`}
                         >
                           <div className="relative flex-shrink-0">
@@ -343,10 +345,14 @@ export default async function DropsPage({
 
                         <div className="flex-shrink-0 self-end mb-1">
                           <Link
-                            href={`/${state.slug}/producer/${producer.slug ?? producer.id}/strains`}
+                            href={`/${state.slug}/producer/${
+                              producer.slug ?? producer.id
+                            }/strains`}
                             className={`group/btn px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 flex items-center gap-1 ${theme.card.action}`}
                           >
-                            <span className="hidden sm:inline">All Strains</span>
+                            <span className="hidden sm:inline">
+                              All Strains
+                            </span>
                             <span className="sm:hidden">View All</span>
                             <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 group-hover/btn:translate-x-0.5 transition-transform" />
                           </Link>
@@ -363,7 +369,9 @@ export default async function DropsPage({
                         .slice(0, 3)
                         .map((strain, index) => {
                           if (!strain.releaseDate) return null;
-                          const daysUntil = getDaysUntilDrop(strain.releaseDate);
+                          const daysUntil = getDaysUntilDrop(
+                            strain.releaseDate
+                          );
                           return (
                             <div
                               key={strain.id}
@@ -424,7 +432,9 @@ export default async function DropsPage({
                     {strains.length > 0 && (
                       <div className="mt-4 sm:mt-6 text-center">
                         <Link
-                          href={`/${state.slug}/drops/${producer.slug ?? producer.id}`}
+                          href={`/${state.slug}/drops/${
+                            producer.slug ?? producer.id
+                          }`}
                           className={`group inline-flex items-center justify-center gap-2 font-semibold text-sm sm:text-base px-4 py-2 rounded-lg transition-all duration-200 ${theme.card.footer} ${theme.card.footerHover}`}
                         >
                           <span>See upcoming drops</span>

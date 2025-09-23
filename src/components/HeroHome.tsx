@@ -192,19 +192,19 @@ export default function HeroHome({ state, states }: HeroHomeProps) {
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -12 }}
-                transition={{ duration: 0.45, ease: "easeOut" }}
+                transition={{ duration: 0.55, ease: "easeOut" }}
                 className="bg-gradient-to-r from-emerald-300 via-green-200 to-sky-300 bg-clip-text text-transparent font-semibold"
               >
                 {rotatingName}'s
               </motion.span>
             </AnimatePresence>
           </span>
-          <span className="bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent font-semibold">
+          <span className="font-semibold">
             Top Tier Terps
           </span>
         </motion.p>
         <motion.p variants={itemVariants} className="text-lg md:text-xl text-white/70 max-w-2xl mb-12 leading-relaxed">
-          {supportingCopy}
+          Discover the nation's top tier producers and strains.
         </motion.p>
         <motion.div
           variants={itemVariants}

@@ -14,17 +14,8 @@ import MarketModeToggle from "@/components/MarketModeToggle";
 import StateSelector from "@/components/StateSelector";
 import { buildMarketFilters, normalizeMarketParam } from "@/lib/market";
 import { getMarketTheme } from "@/lib/market-theme";
-import {
-  Crown,
-  Users,
-  Star,
-  Flower2,
-  FlaskConical,
-} from "lucide-react";
-import {
-  getStateRankingsPageTitle,
-  getStaticPageTitle,
-} from "@/lib/seo";
+import { Crown, Users, Star, Flower2, FlaskConical } from "lucide-react";
+import { getStateRankingsPageTitle, getStaticPageTitle } from "@/lib/seo";
 
 export async function generateMetadata({
   params,
@@ -126,8 +117,8 @@ export default async function RankingsPage({
     selectedMarket === "WHITE"
       ? "Recreational"
       : selectedMarket === "BLACK"
-        ? "Underground"
-        : "";
+      ? "Underground"
+      : "";
 
   const heroTitle = `${state.name}'s Top ${
     marketDescriptor ? `${marketDescriptor} ` : ""
@@ -145,22 +136,18 @@ export default async function RankingsPage({
         />
       </Suspense>
       <div
-        className={`relative overflow-hidden bg-gradient-to-r transition-colors duration-500 ${theme.hero.wrapper}`}
+        className={`relative overflow-visible bg-gradient-to-r transition-colors duration-500 ${theme.hero.wrapper}`}
       >
         <div
           className={`absolute inset-0 transition-colors duration-500 ${theme.hero.overlay}`}
         ></div>
-        <div className="relative container mx-auto px-4 py-16">
+        <div className="relative mx-auto px-4 py-16">
           <div className="max-w-4xl mx-auto text-center">
             <div
               className={`inline-flex items-center gap-2 backdrop-blur-sm rounded-full px-4 py-2 mb-4 transition-colors duration-500 ${theme.hero.chip}`}
             >
               <Crown className="w-4 h-4" />
               <span className="text-sm font-medium">Community Rankings</span>
-            </div>
-
-            <div className="mb-6 flex justify-center">
-              <StateSelector />
             </div>
 
             <h1
@@ -205,6 +192,9 @@ export default async function RankingsPage({
                   {hash.length} Hash Maker{hash.length === 1 ? "" : "s"}
                 </span>
               </div>
+            </div>
+            <div className="mt-6 flex justify-center">
+              <StateSelector />
             </div>
           </div>
         </div>
