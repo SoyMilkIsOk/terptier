@@ -237,25 +237,32 @@ export default function Navbar() {
   const refreshUserProfile = useCallback(async () => {
     try {
       const {
-        data: { user },
-      } = await supabase.auth.getUser();
+        data: { session },
+      } = await supabase.auth.getSession();
 
-      if (user?.email) {
-        try {
-          const res = await fetch("/api/users/me");
-          if (res.ok) {
-            const data: CurrentUserResponse = await res.json();
-            applyUserResponse(data.success ? data : null);
-          } else {
+      if (session?.access_token) {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser(session.access_token);
+
+        if (user?.email) {
+          try {
+            const res = await fetch("/api/users/me");
+            if (res.ok) {
+              const data: CurrentUserResponse = await res.json();
+              applyUserResponse(data.success ? data : null);
+            } else {
+              applyUserResponse(null);
+            }
+          } catch (err) {
+            console.error("Failed to fetch user", err);
             applyUserResponse(null);
           }
-        } catch (err) {
-          console.error("Failed to fetch user", err);
-          applyUserResponse(null);
+          return;
         }
-      } else {
-        applyUserResponse(null);
       }
+
+      applyUserResponse(null);
     } catch (err) {
       console.error("Failed to verify Supabase user", err);
       applyUserResponse(null);

@@ -31,7 +31,7 @@ export async function getVerifiedAuth(
   const {
     data: { user },
     error: userError,
-  } = await supabase.auth.getUser();
+  } = await supabase.auth.getUser(session.access_token);
 
   if (userError) {
     if (userError.name !== "AuthSessionMissingError") {

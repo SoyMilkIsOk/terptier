@@ -66,12 +66,27 @@ export default function AddStrainReviewForm({
     const loadUser = async () => {
       try {
         const {
-          data: { user },
-        } = await supabase.auth.getUser();
+          data: { session },
+        } = await supabase.auth.getSession();
+
         if (!isMounted) {
           return;
         }
-        setCurrentUser(user ?? null);
+
+        if (session?.access_token) {
+          const {
+            data: { user },
+          } = await supabase.auth.getUser(session.access_token);
+
+          if (!isMounted) {
+            return;
+          }
+
+          setCurrentUser(user ?? null);
+          return;
+        }
+
+        setCurrentUser(null);
       } catch (err) {
         console.error("Failed to verify Supabase user", err);
         if (isMounted) {
