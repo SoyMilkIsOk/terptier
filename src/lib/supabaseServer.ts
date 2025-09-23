@@ -1,6 +1,6 @@
 // src/lib/supabaseServer.ts
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
-import { cookies } from "next/headers";
+import { getSupabaseCookieContext } from "./supabaseCookieContext";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
@@ -10,9 +10,9 @@ if (!supabaseUrl || !supabaseKey) {
 }
 
 export const createSupabaseServerClient = async () => {
-  const cookieStore = await cookies();
+  const { cookieContext } = await getSupabaseCookieContext();
   return createServerComponentClient(
-    { cookies: async () => cookieStore },
+    cookieContext,
     {
       supabaseUrl: supabaseUrl || "",
       supabaseKey: supabaseKey || "",

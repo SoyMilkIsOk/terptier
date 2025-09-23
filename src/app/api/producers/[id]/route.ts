@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prismadb";
 import { createServerActionClient } from "@supabase/auth-helpers-nextjs"; // Correct import for Route Handlers
-import { cookies } from "next/headers";
+import { getSupabaseCookieContext } from "@/lib/supabaseCookieContext";
 import { decodeJwt } from "@/lib/authorize";
 import {
   evaluateAdminAccess,
@@ -30,9 +30,9 @@ export async function DELETE(
     }
 
     // 1. Authentication & Authorization
-    const cookieStore = await cookies();
+    const { cookieContext } = await getSupabaseCookieContext();
     const supabase = createServerActionClient(
-      { cookies: async () => cookieStore },
+      cookieContext,
       {
         supabaseUrl,
         supabaseKey,
@@ -120,9 +120,9 @@ export async function PUT(
       );
     }
 
-    const cookieStore = await cookies();
+    const { cookieContext } = await getSupabaseCookieContext();
     const supabase = createServerActionClient(
-      { cookies: async () => cookieStore },
+      cookieContext,
       {
         supabaseUrl,
         supabaseKey,

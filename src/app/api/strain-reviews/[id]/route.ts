@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prismadb";
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
-import { cookies } from "next/headers";
+import { getSupabaseCookieContext } from "@/lib/supabaseCookieContext";
 
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const cookieStore = await cookies();
-  const supabase = createServerComponentClient({ cookies: async () => cookieStore });
+  const { cookieContext } = await getSupabaseCookieContext();
+  const supabase = createServerComponentClient(cookieContext);
   const {
     data: { session },
   } = await supabase.auth.getSession();

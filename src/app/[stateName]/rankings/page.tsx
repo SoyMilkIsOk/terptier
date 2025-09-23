@@ -1,7 +1,6 @@
 // src/app/[stateName]/rankings/page.tsx
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import { cookies } from "next/headers";
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import AgeGate from "@/components/AgeGate";
 import ProducerList, { ProducerWithVotes } from "@/components/ProducerList";
@@ -16,6 +15,7 @@ import { buildMarketFilters, normalizeMarketParam } from "@/lib/market";
 import { getMarketTheme } from "@/lib/market-theme";
 import { Crown, Users, Star, Flower2, FlaskConical, Shield } from "lucide-react";
 import { getStateRankingsPageTitle, getStaticPageTitle } from "@/lib/seo";
+import { getSupabaseCookieContext } from "@/lib/supabaseCookieContext";
 
 export async function generateMetadata({
   params,
@@ -56,11 +56,11 @@ export default async function RankingsPage({
   const themeAttribute = selectedMarket.toLowerCase();
   const theme = getMarketTheme(selectedMarket).rankings;
 
-  const cookieStore = await cookies();
+  const { cookieStore, cookieContext } = await getSupabaseCookieContext();
   const is21 = cookieStore.get("ageVerify")?.value === "true";
   if (!is21) return <AgeGate />;
 
-  const supabase = createServerComponentClient({ cookies: async () => cookieStore });
+  const supabase = createServerComponentClient(cookieContext);
   const {
     data: { session },
   } = await supabase.auth.getSession();

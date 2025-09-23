@@ -9,13 +9,13 @@ import StrainReviewCard from "@/components/StrainReviewCard";
 import ExpandableSection from "@/components/ExpandableSection";
 import Link from "next/link";
 import { prisma } from "@/lib/prismadb";
-import { cookies } from "next/headers";
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { Instagram, ExternalLink, Link as LinkIcon } from "lucide-react";
 import ProducerCard from "@/components/ProducerCard";
 import { StateProvider } from "@/components/StateProvider";
 import { DEFAULT_STATE_SLUG } from "@/lib/stateConstants";
 import { getProfilePageTitle, getStaticPageTitle } from "@/lib/seo";
+import { getSupabaseCookieContext } from "@/lib/supabaseCookieContext";
 
 export const dynamic = "force-dynamic";
 
@@ -59,9 +59,9 @@ export default async function ProfilePage({
   const { id } = await params;
 
   // Awaiting the cookie store ensures this page is rendered dynamically per request
-  const cookieStore = await cookies();
+  const { cookieContext } = await getSupabaseCookieContext();
 
-  const supabase = createServerComponentClient({ cookies: async () => cookieStore });
+  const supabase = createServerComponentClient(cookieContext);
   const {
     data: { session },
   } = await supabase.auth.getSession();

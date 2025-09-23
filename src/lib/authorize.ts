@@ -1,5 +1,5 @@
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
-import { cookies } from "next/headers";
+import { getSupabaseCookieContext } from "./supabaseCookieContext";
 
 const supabaseUrl =
   process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
@@ -29,9 +29,9 @@ export function decodeJwt(token: string): JwtClaims {
 }
 
 export async function authorize() {
-  const cookieStore = await cookies();
+  const { cookieContext } = await getSupabaseCookieContext();
   const supabase = createServerComponentClient(
-    { cookies: async () => cookieStore },
+    cookieContext,
     {
       supabaseUrl,
       supabaseKey,
