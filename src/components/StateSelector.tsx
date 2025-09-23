@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
-import { DEFAULT_STATE, DEFAULT_STATE_SLUG } from "@/lib/stateConstants";
+import { DEFAULT_STATE } from "@/lib/stateConstants";
 
 type StateOption = {
   slug: string;
@@ -33,10 +33,21 @@ export default function StateSelector({
   const searchParams = useSearchParams();
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   const [states, setStates] = useState<StateOption[]>([DEFAULT_STATE]);
-  const [selectedState, setSelectedState] = useState(DEFAULT_STATE_SLUG);
+  const pathnameSlug = useMemo(() => {
+    if (!pathname) {
+      return null;
+    }
+
+    const match = pathname.match(/^\/([^/]+)(?:\/|$)/);
+    return match ? match[1] : null;
+  }, [pathname]);
+  const [fallbackState, setFallbackState] = useState<string | null>(
+    () => pathnameSlug ?? null,
+  );
   const [open, setOpen] = useState(false);
 
   const slugSet = useMemo(() => new Set(states.map((state) => state.slug)), [states]);
+  const selectedState = pathnameSlug ?? fallbackState;
 
   const preservedQueryString = useMemo(() => {
     const params = new URLSearchParams();
@@ -58,27 +69,6 @@ export default function StateSelector({
     [preservedQueryString],
   );
 
-  const getStateSlugFromPath = useCallback(
-    (currentPath: string | null): string | null => {
-      if (!currentPath) {
-        return null;
-      }
-
-      const match = currentPath.match(/^\/([^/]+)(?:\/|$)/);
-      if (!match) {
-        return null;
-      }
-
-      const slug = match[1];
-      if (!slugSet.size || slugSet.has(slug)) {
-        return slug;
-      }
-
-      return null;
-    },
-    [slugSet],
-  );
-
   const persistSelectedState = useCallback((slug: string) => {
     if (typeof window === "undefined") {
       return;
@@ -91,14 +81,36 @@ export default function StateSelector({
     document.cookie = `${STATE_COOKIE_NAME}=${slug};expires=${expires.toUTCString()};path=/;SameSite=Lax`;
   }, []);
 
-  const selectedStateData = useMemo(
-    () => states.find((state) => state.slug === selectedState) || states[0],
-    [selectedState, states],
-  );
+  const selectedStateData = useMemo(() => {
+    if (!selectedState) {
+      return null;
+    }
+
+    return states.find((state) => state.slug === selectedState) ?? null;
+  }, [selectedState, states]);
+
+  const formatStateSlug = useCallback((slug: string | null) => {
+    if (!slug) {
+      return null;
+    }
+
+    return slug
+      .split("-")
+      .filter(Boolean)
+      .map((segment) =>
+        segment.length <= 2
+          ? segment.toUpperCase()
+          : segment.charAt(0).toUpperCase() + segment.slice(1),
+      )
+      .join(" ");
+  }, []);
+
+  const selectedStateLabel =
+    selectedStateData?.name ?? formatStateSlug(selectedState) ?? "---";
 
   const handleStateChange = useCallback(
     (newState: string) => {
-      setSelectedState(newState);
+      setFallbackState(newState);
       persistSelectedState(newState);
       setOpen(false);
 
@@ -166,10 +178,9 @@ export default function StateSelector({
       return;
     }
 
-    const slugFromPath = getStateSlugFromPath(pathname);
-    if (slugFromPath) {
-      setSelectedState(slugFromPath);
-      persistSelectedState(slugFromPath);
+    if (pathnameSlug) {
+      setFallbackState(pathnameSlug);
+      persistSelectedState(pathnameSlug);
       return;
     }
 
@@ -186,18 +197,18 @@ export default function StateSelector({
 
     const cookieState = getCookieValue(STATE_COOKIE_NAME);
     if (cookieState && (!slugSet.size || slugSet.has(cookieState))) {
-      setSelectedState(cookieState);
+      setFallbackState(cookieState);
       persistSelectedState(cookieState);
       return;
     }
 
     const stored = window.localStorage.getItem(STATE_STORAGE_KEY);
     if (stored && (!slugSet.size || slugSet.has(stored))) {
-      setSelectedState(stored);
+      setFallbackState(stored);
     } else {
-      setSelectedState(DEFAULT_STATE_SLUG);
+      setFallbackState(null);
     }
-  }, [getStateSlugFromPath, pathname, persistSelectedState, slugSet]);
+  }, [pathnameSlug, persistSelectedState, slugSet]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -233,9 +244,7 @@ export default function StateSelector({
           aria-haspopup="listbox"
           aria-expanded={open}
         >
-          <span className="truncate">
-            {selectedStateData?.name ?? "Select a state"}
-          </span>
+          <span className="truncate">{selectedStateLabel}</span>
           <ChevronDown className={`h-4 w-4 transition-transform ${open ? "rotate-180" : ""}`} />
         </button>
         <AnimatePresence>
