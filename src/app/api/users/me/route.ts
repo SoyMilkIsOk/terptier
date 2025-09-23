@@ -3,8 +3,6 @@ import { prisma } from "@/lib/prismadb";
 import { createServerActionClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
 
-type CookieStore = Awaited<ReturnType<typeof cookies>>;
-
 type StateAdminSummary = {
   stateId: string;
   slug: string;
@@ -21,9 +19,9 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
 
 export async function GET() {
-  const cookieStore: CookieStore = await cookies();
+  const cookieStore = await cookies();
   const supabase = createServerActionClient(
-    { cookies: (() => cookieStore) as unknown as typeof cookies },
+    { cookies: async () => cookieStore },
     {
       supabaseUrl,
       supabaseKey,
@@ -105,9 +103,9 @@ export async function GET() {
 }
 
 export async function PATCH(request: Request) {
-  const cookieStore: CookieStore = await cookies();
+  const cookieStore = await cookies();
   const supabase = createServerActionClient(
-    { cookies: (() => cookieStore) as unknown as typeof cookies },
+    { cookies: async () => cookieStore },
     {
       supabaseUrl,
       supabaseKey,

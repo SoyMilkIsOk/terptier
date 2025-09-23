@@ -8,15 +8,13 @@ import {
   getAdminScopedUserByEmail,
 } from "@/lib/adminAuthorization";
 
-type CookieStore = Awaited<ReturnType<typeof cookies>>;
-
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
 
 export async function POST(request: Request) {
-  const cookieStore: CookieStore = await cookies();
+  const cookieStore = await cookies();
   const supabase = createServerActionClient(
-    { cookies: (() => cookieStore) as unknown as typeof cookies },
+    { cookies: async () => cookieStore },
     {
       supabaseUrl,
       supabaseKey,

@@ -29,10 +29,14 @@ export function decodeJwt(token: string): JwtClaims {
 }
 
 export async function authorize() {
-  const supabase = createServerComponentClient({ cookies }, {
-    supabaseUrl,
-    supabaseKey,
-  });
+  const cookieStore = await cookies();
+  const supabase = createServerComponentClient(
+    { cookies: async () => cookieStore },
+    {
+      supabaseUrl,
+      supabaseKey,
+    },
+  );
 
   const {
     data: { session },

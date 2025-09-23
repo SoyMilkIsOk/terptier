@@ -7,7 +7,8 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const supabase = createServerComponentClient({ cookies });
+  const cookieStore = await cookies();
+  const supabase = createServerComponentClient({ cookies: async () => cookieStore });
   const {
     data: { session },
   } = await supabase.auth.getSession();

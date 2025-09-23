@@ -10,7 +10,8 @@ export async function POST(request: Request) {
     console.log("[/api/vote] Received raw request body:", originalRequestBody);
 
     // 1) Authenticate via Supabase
-    const supabase = createServerComponentClient({ cookies });
+    const cookieStore = await cookies();
+    const supabase = createServerComponentClient({ cookies: async () => cookieStore });
     const {
       data: { session },
     } = await supabase.auth.getSession();

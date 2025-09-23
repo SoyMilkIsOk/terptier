@@ -9,8 +9,13 @@ if (!supabaseUrl || !supabaseKey) {
   console.warn("Supabase environment variables are missing");
 }
 
-export const createSupabaseServerClient = () =>
-  createServerComponentClient({ cookies }, {
-    supabaseUrl: supabaseUrl || "",
-    supabaseKey: supabaseKey || "",
-  });
+export const createSupabaseServerClient = async () => {
+  const cookieStore = await cookies();
+  return createServerComponentClient(
+    { cookies: async () => cookieStore },
+    {
+      supabaseUrl: supabaseUrl || "",
+      supabaseKey: supabaseKey || "",
+    },
+  );
+};
