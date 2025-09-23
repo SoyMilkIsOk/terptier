@@ -1,4 +1,6 @@
 // next.config.js
+const path = require('path');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -20,6 +22,24 @@ const nextConfig = {
         pathname: '/**',
       },
     ],
+  },
+  webpack: (config) => {
+    const realtimeModuleEntry = path.resolve(
+      __dirname,
+      'node_modules/@supabase/realtime-js/dist/module/index.js',
+    );
+
+    config.resolve = config.resolve || {};
+    config.resolve.alias = {
+      ...(config.resolve.alias || {}),
+      '@supabase/realtime-js': realtimeModuleEntry,
+      '@supabase/realtime-js/dist/main': realtimeModuleEntry,
+      '@supabase/realtime-js/dist/main/index.js': realtimeModuleEntry,
+      '@supabase/realtime-js/dist/module': realtimeModuleEntry,
+      '@supabase/realtime-js/dist/module/index.js': realtimeModuleEntry,
+    };
+
+    return config;
   },
 };
 
