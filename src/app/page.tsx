@@ -1,8 +1,14 @@
 // src/app/page.tsx
+import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import AgeGate from "@/components/AgeGate";
 import HeroHome from "@/components/HeroHome";
 import { getAllStateMetadata } from "@/lib/states";
+import { getStaticPageTitle } from "@/lib/seo";
+
+export const metadata: Metadata = {
+  title: getStaticPageTitle("home"),
+};
 
 const STATE_COOKIE_NAME = "preferredState";
 

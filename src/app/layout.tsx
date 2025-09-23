@@ -4,12 +4,13 @@ import Navbar from "@/components/Navbar";
 import MainContainer from "@/components/MainContainer";
 import Footer from "@/components/Footer";
 import type { Metadata } from "next";
-import { Analytics } from "@vercel/analytics/next"
-import { SpeedInsights } from "@vercel/speed-insights/next"
-import { GoogleAnalytics } from '@next/third-parties/google'
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import { GoogleAnalytics } from "@next/third-parties/google";
+import { BASE_METADATA } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: "TerpTier",
+  ...BASE_METADATA,
   icons: { icon: "/favicon.ico" },
 };
 

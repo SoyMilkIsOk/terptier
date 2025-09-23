@@ -1,10 +1,16 @@
+import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import AgeGate from "@/components/AgeGate";
 import { getAllStateMetadata } from "@/lib/states";
+import { getStaticPageTitle } from "@/lib/seo";
 
 const AGE_COOKIE_NAME = "ageVerify";
 const STATE_COOKIE_NAME = "preferredState";
+
+export const metadata: Metadata = {
+  title: getStaticPageTitle("rankings"),
+};
 
 export default async function RankingsLandingPage() {
   const cookieStore = await cookies();

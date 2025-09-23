@@ -1,5 +1,6 @@
 // src/app/[stateName]/producer/[slug]/page.tsx
 import { prisma } from "@/lib/prismadb";
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import CommentCard from "@/components/CommentCard";
@@ -15,6 +16,10 @@ import { ATTRIBUTE_OPTIONS } from "@/constants/attributes";
 import Tooltip from "@/components/Tooltip";
 import { getStateMetadata } from "@/lib/states";
 import { notFound } from "next/navigation";
+import {
+  getProducerPageTitle,
+  getStaticPageTitle,
+} from "@/lib/seo";
 
 // Helper function to capitalize category
 const capitalize = (s: string) =>
@@ -25,6 +30,30 @@ interface ProducerProfilePageProps {
     stateName: string;
     slug: string;
   }>;
+}
+
+export async function generateMetadata({
+  params,
+}: ProducerProfilePageProps): Promise<Metadata> {
+  const { stateName, slug } = await params;
+  const state = await getStateMetadata(stateName);
+
+  if (!state) {
+    return { title: getStaticPageTitle("producerStrains") };
+  }
+
+  const producer = await prisma.producer.findFirst({
+    where: {
+      AND: [{ OR: [{ slug }, { id: slug }] }, state.producerWhere ?? {}],
+    },
+    select: { name: true },
+  });
+
+  if (!producer) {
+    return { title: getStaticPageTitle("producerStrains") };
+  }
+
+  return { title: getProducerPageTitle(producer.name) };
 }
 
 export default async function ProducerProfilePage({

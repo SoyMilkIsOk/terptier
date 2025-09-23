@@ -1,4 +1,10 @@
-import React from 'react';
+import type { Metadata } from "next";
+import React from "react";
+import { getStaticPageTitle } from "@/lib/seo";
+
+export const metadata: Metadata = {
+  title: getStaticPageTitle("terms"),
+};
 
 export default function TermsPage() {
   return (

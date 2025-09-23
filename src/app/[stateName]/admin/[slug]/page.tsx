@@ -1,9 +1,41 @@
 import { prisma } from "@/lib/prismadb";
+import type { Metadata } from "next";
 import { createSupabaseServerClient } from "@/lib/supabaseServer";
 import { notFound, redirect } from "next/navigation";
 import StrainManager from "@/components/StrainManager";
+import { getStateMetadata } from "@/lib/states";
+import { getAdminProducerEditTitle, getStaticPageTitle } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ stateName: string; slug: string }>;
+}): Promise<Metadata> {
+  const { stateName, slug } = await params;
+  const state = await getStateMetadata(stateName);
+
+  if (!state) {
+    return { title: getStaticPageTitle("stateAdmin") };
+  }
+
+  const producer = await prisma.producer.findFirst({
+    where: {
+      AND: [
+        { OR: [{ slug }, { id: slug }] },
+        state.producerWhere ?? {},
+      ],
+    },
+    select: { name: true },
+  });
+
+  if (!producer) {
+    return { title: getStaticPageTitle("stateAdmin") };
+  }
+
+  return { title: getAdminProducerEditTitle(producer.name) };
+}
 
 export default async function ProducerAdminPage({
   params,
