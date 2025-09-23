@@ -18,27 +18,22 @@ interface CreateStrainBody {
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const producerId = searchParams.get("producerId");
-  const { session, claims } = await authorize();
+  const { session, user, claims } = await authorize();
 
-  if (!session) {
+  if (!session || !user?.email) {
     return NextResponse.json({ success: false, error: "Not authenticated" }, { status: 401 });
   }
   if (!producerId) {
     return NextResponse.json({ success: false, error: "Missing producerId" }, { status: 400 });
   }
 
-  const email = session.user.email;
-  if (!email) {
-    return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
-  }
-
-  const user = await getAdminScopedUserByEmail(email);
-  if (!user) {
+  const adminUser = await getAdminScopedUserByEmail(user.email);
+  if (!adminUser) {
     return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
   }
 
   const access = await evaluateAdminAccess(
-    { user, claims },
+    { user: adminUser, claims },
     { targetProducerId: producerId },
   );
 
@@ -76,27 +71,22 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   const body = (await request.json()) as CreateStrainBody;
-  const { session, claims } = await authorize();
+  const { session, user, claims } = await authorize();
 
-  if (!session) {
+  if (!session || !user?.email) {
     return NextResponse.json({ success: false, error: "Not authenticated" }, { status: 401 });
   }
   if (!body.producerId || !body.name) {
     return NextResponse.json({ success: false, error: "Missing fields" }, { status: 400 });
   }
 
-  const email = session.user.email;
-  if (!email) {
-    return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
-  }
-
-  const user = await getAdminScopedUserByEmail(email);
-  if (!user) {
+  const adminUser = await getAdminScopedUserByEmail(user.email);
+  if (!adminUser) {
     return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
   }
 
   const access = await evaluateAdminAccess(
-    { user, claims },
+    { user: adminUser, claims },
     { targetProducerId: body.producerId },
   );
 

@@ -16,6 +16,7 @@ import { StateProvider } from "@/components/StateProvider";
 import { DEFAULT_STATE_SLUG } from "@/lib/stateConstants";
 import { getProfilePageTitle, getStaticPageTitle } from "@/lib/seo";
 import { getSupabaseCookieContext } from "@/lib/supabaseCookieContext";
+import { getVerifiedAuth } from "@/lib/supabaseAuth";
 
 export const dynamic = "force-dynamic";
 
@@ -62,9 +63,7 @@ export default async function ProfilePage({
   const { cookieContext } = await getSupabaseCookieContext();
 
   const supabase = createServerComponentClient(cookieContext);
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  const { user: supabaseUser } = await getVerifiedAuth(supabase);
 
   let user = await prisma.user.findUnique({
     where: { username: id },
@@ -155,8 +154,8 @@ export default async function ProfilePage({
     );
   }
 
-  const isOwner = session?.user?.email === user.email;
-  const currentViewerId = session?.user?.id;
+  const isOwner = supabaseUser?.email === user.email;
+  const currentViewerId = supabaseUser?.id ?? null;
 
   // Process votes into liked and disliked producers
   const likedProducers = user.votes

@@ -7,6 +7,7 @@ import {
   evaluateAdminAccess,
   getAdminScopedUserByEmail,
 } from "@/lib/adminAuthorization";
+import { getVerifiedAuth } from "@/lib/supabaseAuth";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
@@ -20,16 +21,14 @@ export async function POST(request: Request) {
       supabaseKey,
     }
   );
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  const { user, session } = await getVerifiedAuth(supabase);
 
-  if (!session?.user?.email) {
+  if (!user?.email || !session) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
 
-  const user = await getAdminScopedUserByEmail(session.user.email);
-  if (!user) {
+  const adminUser = await getAdminScopedUserByEmail(user.email);
+  if (!adminUser) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
   const claims = decodeJwt(session.access_token);
@@ -96,7 +95,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid state" }, { status: 400 });
   }
   const access = await evaluateAdminAccess(
-    { user, claims },
+    { user: adminUser, claims },
     { targetStateId: state.id, targetStateSlug: state.slug },
   );
 
@@ -114,7 +113,7 @@ export async function POST(request: Request) {
       slug,
       profileImage,
       market: normalizedMarket,
-      createdById: user.id,
+      createdById: adminUser.id,
       stateId: state.id,
     },
   });

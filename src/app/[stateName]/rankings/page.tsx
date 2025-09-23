@@ -16,6 +16,7 @@ import { getMarketTheme } from "@/lib/market-theme";
 import { Crown, Users, Star, Flower2, FlaskConical, Shield } from "lucide-react";
 import { getStateRankingsPageTitle, getStaticPageTitle } from "@/lib/seo";
 import { getSupabaseCookieContext } from "@/lib/supabaseCookieContext";
+import { getVerifiedAuth } from "@/lib/supabaseAuth";
 
 export async function generateMetadata({
   params,
@@ -61,14 +62,12 @@ export default async function RankingsPage({
   if (!is21) return <AgeGate />;
 
   const supabase = createServerComponentClient(cookieContext);
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  const { user: supabaseUser } = await getVerifiedAuth(supabase);
 
   let userVotes: Record<string, number> = {};
-  const currentUser = session?.user?.email
+  const currentUser = supabaseUser?.email
     ? await prisma.user.findUnique({
-        where: { email: session.user.email },
+        where: { email: supabaseUser.email },
         include: {
           stateAdmins: {
             include: { state: { select: { slug: true } } },

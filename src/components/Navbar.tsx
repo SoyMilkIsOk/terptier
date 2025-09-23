@@ -233,11 +233,13 @@ export default function Navbar() {
     }
   }, []);
 
-  useEffect(() => {
-    // fetch initial session
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      setSession(session);
-      if (session?.user?.email) {
+  const refreshUserProfile = useCallback(async () => {
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (user?.email) {
         try {
           const res = await fetch("/api/users/me");
           if (res.ok) {
@@ -253,33 +255,36 @@ export default function Navbar() {
       } else {
         applyUserResponse(null);
       }
+    } catch (err) {
+      console.error("Failed to verify Supabase user", err);
+      applyUserResponse(null);
+    }
+  }, [applyUserResponse]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!isMounted) {
+        return;
+      }
+      setSession(session);
     });
+
+    refreshUserProfile();
+
     // listen for changes (login/logout)
     const { data: listener } = supabase.auth.onAuthStateChange(
       async (_event, sess) => {
         setSession(sess);
-        if (sess?.user?.email) {
-          try {
-            const res = await fetch("/api/users/me");
-            if (res.ok) {
-              const data: CurrentUserResponse = await res.json();
-              applyUserResponse(data.success ? data : null);
-            } else {
-              applyUserResponse(null);
-            }
-          } catch (err) {
-            console.error("Failed to fetch user", err);
-            applyUserResponse(null);
-          }
-        } else {
-          applyUserResponse(null);
-        }
+        await refreshUserProfile();
       },
     );
     return () => {
+      isMounted = false;
       listener.subscription.unsubscribe();
     };
-  }, [applyUserResponse]);
+  }, [refreshUserProfile]);
 
   useEffect(() => {
     if (isGlobalAdmin) {

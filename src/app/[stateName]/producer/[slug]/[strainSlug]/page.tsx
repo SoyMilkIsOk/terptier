@@ -11,6 +11,7 @@ import React from "react";
 import { getStateMetadata } from "@/lib/states";
 import { notFound } from "next/navigation";
 import { getStaticPageTitle, getStrainPageTitle } from "@/lib/seo";
+import { getVerifiedAuth } from "@/lib/supabaseAuth";
 
 interface StrainPageProps {
   params: Promise<{ stateName: string; slug: string; strainSlug: string }>;
@@ -123,14 +124,12 @@ export default async function StrainPage({ params }: StrainPageProps) {
   }
 
   const supabase = await createSupabaseServerClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  const { user: supabaseUser } = await getVerifiedAuth(supabase);
 
   let currentUserId: string | null = null;
-  if (session?.user?.email) {
+  if (supabaseUser?.email) {
     const prismaUser = await prisma.user.findUnique({
-      where: { email: session.user.email },
+      where: { email: supabaseUser.email },
     });
     currentUserId = prismaUser?.id || null;
   }

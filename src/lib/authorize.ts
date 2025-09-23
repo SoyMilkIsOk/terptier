@@ -1,5 +1,6 @@
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { getSupabaseCookieContext } from "./supabaseCookieContext";
+import { getVerifiedAuth } from "./supabaseAuth";
 
 const supabaseUrl =
   process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
@@ -38,12 +39,10 @@ export async function authorize() {
     },
   );
 
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  const { user, session } = await getVerifiedAuth(supabase);
 
-  if (!session) return { session: null, claims: null };
+  if (!user || !session) return { session: null, user: null, claims: null };
 
   const claims = decodeJwt(session.access_token);
-  return { session, claims };
+  return { session, user, claims };
 }

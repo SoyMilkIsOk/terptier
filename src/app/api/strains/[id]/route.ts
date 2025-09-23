@@ -38,23 +38,18 @@ export async function GET(
       return NextResponse.json({ success: false, error: "Not found" }, { status: 404 });
     }
 
-    const { session, claims } = await authorize();
-    if (!session) {
+    const { session, user, claims } = await authorize();
+    if (!session || !user?.email) {
       return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
     }
 
-    const email = session.user.email;
-    if (!email) {
-      return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
-    }
-
-    const user = await getAdminScopedUserByEmail(email);
-    if (!user) {
+    const adminUser = await getAdminScopedUserByEmail(user.email);
+    if (!adminUser) {
       return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
     }
 
     const access = await evaluateAdminAccess(
-      { user, claims },
+      { user: adminUser, claims },
       { targetProducerId: strain.producerId },
     );
     if (!access.allowed) {
@@ -78,8 +73,8 @@ export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { session, claims } = await authorize();
-  if (!session) {
+  const { session, user, claims } = await authorize();
+  if (!session || !user?.email) {
     return NextResponse.json({ success: false, error: "Not authenticated" }, { status: 401 });
   }
 
@@ -88,16 +83,12 @@ export async function PUT(
   if (!existing) {
     return NextResponse.json({ success: false, error: "Not found" }, { status: 404 });
   }
-  const email = session.user.email;
-  if (!email) {
-    return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
-  }
-  const user = await getAdminScopedUserByEmail(email);
-  if (!user) {
+  const adminUser = await getAdminScopedUserByEmail(user.email);
+  if (!adminUser) {
     return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
   }
   const access = await evaluateAdminAccess(
-    { user, claims },
+    { user: adminUser, claims },
     { targetProducerId: existing.producerId },
   );
   if (!access.allowed) {
@@ -144,8 +135,8 @@ export async function DELETE(
   _req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { session, claims } = await authorize();
-  if (!session) {
+  const { session, user, claims } = await authorize();
+  if (!session || !user?.email) {
     return NextResponse.json({ success: false, error: "Not authenticated" }, { status: 401 });
   }
 
@@ -154,16 +145,12 @@ export async function DELETE(
   if (!existing) {
     return NextResponse.json({ success: false, error: "Not found" }, { status: 404 });
   }
-  const email = session.user.email;
-  if (!email) {
-    return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
-  }
-  const user = await getAdminScopedUserByEmail(email);
-  if (!user) {
+  const adminUser = await getAdminScopedUserByEmail(user.email);
+  if (!adminUser) {
     return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
   }
   const access = await evaluateAdminAccess(
-    { user, claims },
+    { user: adminUser, claims },
     { targetProducerId: existing.producerId },
   );
   if (!access.allowed) {

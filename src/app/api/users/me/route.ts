@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prismadb";
 import { createServerActionClient } from "@supabase/auth-helpers-nextjs";
 import { getSupabaseCookieContext } from "@/lib/supabaseCookieContext";
+import { getVerifiedAuth } from "@/lib/supabaseAuth";
 
 type StateAdminSummary = {
   stateId: string;
@@ -27,19 +28,17 @@ export async function GET() {
       supabaseKey,
     }
   );
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  const { user: supabaseUser } = await getVerifiedAuth(supabase);
 
-  if (!session?.user?.email) {
+  if (!supabaseUser?.email) {
     return NextResponse.json(
       { success: false, error: "Not authenticated" },
       { status: 401 }
     );
   }
 
-  const user = await prisma.user.findUnique({
-    where: { email: session.user.email },
+  const prismaUser = await prisma.user.findUnique({
+    where: { email: supabaseUser.email },
     include: {
       stateAdmins: {
         include: {
@@ -59,40 +58,40 @@ export async function GET() {
     },
   });
 
-  if (!user) {
+  if (!prismaUser) {
     return NextResponse.json(
       { success: false, error: "User not found" },
       { status: 404 }
     );
   }
 
-  const stateAdminSummaries: StateAdminSummary[] = user.stateAdmins.map((stateAdmin) => ({
+  const stateAdminSummaries: StateAdminSummary[] = prismaUser.stateAdmins.map((stateAdmin) => ({
     stateId: stateAdmin.stateId,
     slug: stateAdmin.state.slug,
     name: stateAdmin.state.name,
     abbreviation: stateAdmin.state.code,
   }));
 
-  const stateAdminAssignments: StateAdminAssignment[] = user.stateAdmins.map(
+  const stateAdminAssignments: StateAdminAssignment[] = prismaUser.stateAdmins.map(
     (stateAdmin) => ({
       stateId: stateAdmin.stateId,
       stateSlug: stateAdmin.state.slug,
     }),
   );
 
-  const producerAdminIds = user.producerAdmins.map((producerAdmin) => producerAdmin.producerId);
+  const producerAdminIds = prismaUser.producerAdmins.map((producerAdmin) => producerAdmin.producerId);
 
-  const isGlobalAdmin = user.role === "ADMIN";
+  const isGlobalAdmin = prismaUser.role === "ADMIN";
   const isStateAdmin = stateAdminSummaries.length > 0;
   const isProducerAdmin = producerAdminIds.length > 0;
 
   return NextResponse.json({
     success: true,
-    id: user.id,
-    role: user.role,
-    username: user.username,
-    profilePicUrl: user.profilePicUrl,
-    notificationOptIn: user.notificationOptIn,
+    id: prismaUser.id,
+    role: prismaUser.role,
+    username: prismaUser.username,
+    profilePicUrl: prismaUser.profilePicUrl,
+    notificationOptIn: prismaUser.notificationOptIn,
     isGlobalAdmin,
     isStateAdmin,
     isProducerAdmin,
@@ -111,11 +110,9 @@ export async function PATCH(request: Request) {
       supabaseKey,
     }
   );
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  const { user: supabaseUser } = await getVerifiedAuth(supabase);
 
-  if (!session?.user?.email) {
+  if (!supabaseUser?.email) {
     return NextResponse.json(
       { success: false, error: "Not authenticated" },
       { status: 401 },
@@ -129,7 +126,7 @@ export async function PATCH(request: Request) {
   if (notificationOptIn !== undefined) data.notificationOptIn = notificationOptIn;
 
   await prisma.user.update({
-    where: { email: session.user.email },
+    where: { email: supabaseUser.email },
     data,
   });
 

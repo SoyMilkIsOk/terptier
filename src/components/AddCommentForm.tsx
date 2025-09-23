@@ -3,12 +3,12 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
 import UploadButton from "./UploadButton";
-import type { Session } from "@supabase/supabase-js";
+import type { User } from "@supabase/supabase-js";
 
 export default function AddCommentForm({ producerId }: { producerId: string }) {
   const [text, setText] = useState("");
   const [file, setFile] = useState<File | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const router = useRouter();
 
   const MAX_SIZE = 5 * 1024 * 1024;
@@ -28,13 +28,33 @@ export default function AddCommentForm({ producerId }: { producerId: string }) {
   };
 
   useEffect(() => {
-    supabase.auth
-      .getSession()
-      .then(({ data }) => setSession(data.session));
-    const { data: listener } = supabase.auth.onAuthStateChange((_e, sess) =>
-      setSession(sess)
-    );
+    let isMounted = true;
+
+    const loadUser = async () => {
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!isMounted) {
+          return;
+        }
+        setCurrentUser(user ?? null);
+      } catch (err) {
+        console.error("Failed to verify Supabase user", err);
+        if (isMounted) {
+          setCurrentUser(null);
+        }
+      }
+    };
+
+    loadUser();
+
+    const { data: listener } = supabase.auth.onAuthStateChange(async () => {
+      await loadUser();
+    });
+
     return () => {
+      isMounted = false;
       listener.subscription.unsubscribe();
     };
   }, []);
@@ -49,7 +69,7 @@ export default function AddCommentForm({ producerId }: { producerId: string }) {
   };
 
   const submit = async () => {
-    if (!session?.user) {
+    if (!currentUser?.id) {
       router.push("/login?reason=comment");
       return;
     }
@@ -74,9 +94,9 @@ export default function AddCommentForm({ producerId }: { producerId: string }) {
       />
       <UploadButton
         onChange={handleFileChange}
-        disabled={!session?.user}
+        disabled={!currentUser}
         onClick={() => {
-          if (!session?.user) router.push("/login?reason=comment");
+          if (!currentUser) router.push("/login?reason=comment");
         }}
       />
       {file && (

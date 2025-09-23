@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Star } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
-import type { Session } from "@supabase/supabase-js";
+import type { User } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
 import { useStateSlug } from "./StateProvider";
 
@@ -28,19 +28,38 @@ export default function VoteButton({
 }) {
   const router = useRouter();
   const stateSlug = useStateSlug();
-  const [session, setSession] = useState<Session | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [rating, setRating] = useState(userRating ?? 0);
   const [showTooltip, setShowTooltip] = useState(false);
 
   useEffect(() => {
     if (readOnly) return;
-    supabase.auth
-      .getSession()
-      .then(({ data }) => setSession(data.session));
-    const { data: listener } = supabase.auth.onAuthStateChange((_e, sess) =>
-      setSession(sess)
-    );
+    let isMounted = true;
+
+    const loadUser = async () => {
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!isMounted) {
+          return;
+        }
+        setCurrentUser(user ?? null);
+      } catch (err) {
+        console.error("Failed to verify Supabase user", err);
+        if (isMounted) {
+          setCurrentUser(null);
+        }
+      }
+    };
+
+    loadUser();
+
+    const { data: listener } = supabase.auth.onAuthStateChange(async () => {
+      await loadUser();
+    });
     return () => {
+      isMounted = false;
       listener?.subscription.unsubscribe();
     };
   }, [readOnly]);
@@ -53,7 +72,7 @@ export default function VoteButton({
       return;
     }
 
-    if (!session?.user.id) {
+    if (!currentUser?.id) {
       router.push("/login?reason=vote_redirect");
       return;
     }

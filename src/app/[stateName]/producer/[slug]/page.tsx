@@ -20,6 +20,7 @@ import {
   getProducerPageTitle,
   getStaticPageTitle,
 } from "@/lib/seo";
+import { getVerifiedAuth } from "@/lib/supabaseAuth";
 
 // Helper function to capitalize category
 const capitalize = (s: string) =>
@@ -69,13 +70,11 @@ export default async function ProducerProfilePage({
   const stateSlug = state.slug;
 
   const supabase = await createSupabaseServerClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  const { user: supabaseUser } = await getVerifiedAuth(supabase);
 
-  const currentUser = session?.user?.email
+  const currentUser = supabaseUser?.email
     ? await prisma.user.findUnique({
-        where: { email: session.user.email },
+        where: { email: supabaseUser.email },
         include: {
           producerAdmins: { select: { producerId: true } },
           stateAdmins: {

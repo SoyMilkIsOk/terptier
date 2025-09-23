@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prismadb";
 import { del } from "@vercel/blob";
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { getSupabaseCookieContext } from "@/lib/supabaseCookieContext";
+import { getVerifiedAuth } from "@/lib/supabaseAuth";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -42,11 +43,9 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const { cookieContext } = await getSupabaseCookieContext();
   const supabase = createServerComponentClient(cookieContext);
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  const { user } = await getVerifiedAuth(supabase);
 
-  if (!session?.user?.email) {
+  if (!user?.email) {
     return NextResponse.json(
       { success: false, error: "Not authenticated" },
       { status: 401 }
@@ -54,7 +53,7 @@ export async function POST(request: NextRequest) {
   }
 
   const prismaUser = await prisma.user.findUnique({
-    where: { email: session.user.email },
+    where: { email: user.email },
   });
 
   if (!prismaUser) {
@@ -113,11 +112,9 @@ export async function POST(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   const { cookieContext } = await getSupabaseCookieContext();
   const supabase = createServerComponentClient(cookieContext);
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  const { user } = await getVerifiedAuth(supabase);
 
-  if (!session?.user?.email) {
+  if (!user?.email) {
     return NextResponse.json(
       { success: false, error: "Not authenticated" },
       { status: 401 }
@@ -134,7 +131,7 @@ export async function DELETE(request: NextRequest) {
   }
 
   const prismaUser = await prisma.user.findUnique({
-    where: { email: session.user.email },
+    where: { email: user.email },
   });
 
   if (!prismaUser) {
