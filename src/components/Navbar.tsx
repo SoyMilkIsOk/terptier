@@ -7,7 +7,7 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import Image from "next/image";
-import { LogIn, LogOut, UserPlus, ChevronDown, User, Shield, Calendar, Crown } from "lucide-react";
+import { LogIn, LogOut, User, Shield, Calendar, Crown } from "lucide-react";
 import type { Session } from "@supabase/supabase-js";
 import DropOptInModal from "./DropOptInModal";
 import { DEFAULT_STATE, DEFAULT_STATE_SLUG } from "@/lib/stateConstants";
@@ -51,7 +51,6 @@ export default function Navbar() {
   const [showDropModal, setShowDropModal] = useState(false);
   const [states, setStates] = useState<StateOption[]>([DEFAULT_STATE]);
   const [selectedState, setSelectedState] = useState(DEFAULT_STATE_SLUG);
-  const [stateDropdownOpen, setStateDropdownOpen] = useState(false);
   const lastScrollY = useRef(0);
   const adminDefaultApplied = useRef(false);
 
@@ -142,49 +141,6 @@ export default function Navbar() {
     () => applyPreservedQuery(adminPath),
     [applyPreservedQuery, adminPath],
   );
-
-  const selectedStateData = useMemo(
-    () => states.find(state => state.slug === selectedState) || states[0],
-    [states, selectedState]
-  );
-
-  const handleStateChange = (newState: string) => {
-    setSelectedState(newState);
-    persistSelectedState(newState);
-    setStateDropdownOpen(false);
-
-    const currentPath = pathname ?? "/";
-    const segments = currentPath.split("/").filter(Boolean);
-    const knownSections = new Set(["drops", "rankings", "admin"]);
-
-    if (segments.length === 0) {
-      router.refresh(); // <-- ensures server components re-read cookie/localStorage and refetch
-      return;
-    }
-
-    const [first, ...rest] = segments;
-    const isStatePath = slugSet.has(first);
-
-    if (isStatePath) {
-      const [section, ...tail] = rest;
-      if (section && knownSections.has(section)) {
-        const suffix = tail.length ? `/${tail.join("/")}` : "";
-        router.push(applyPreservedQuery(`/${newState}/${section}${suffix}`));
-        return;
-      }
-
-      router.push(applyPreservedQuery(`/${newState}`));
-      return;
-    }
-
-    if (knownSections.has(first)) {
-      const suffix = rest.length ? `/${rest.join("/")}` : "";
-      router.push(applyPreservedQuery(`/${newState}/${first}${suffix}`));
-      return;
-    }
-
-    router.push(applyPreservedQuery(`/${newState}`));
-  };
 
   useEffect(() => {
     let cancelled = false;
@@ -384,7 +340,6 @@ export default function Navbar() {
       } else if (currentY > lastScrollY.current) {
         setShowBar(false);
         setMenuOpen(false);
-        setStateDropdownOpen(false);
       }
       lastScrollY.current = currentY;
     };
@@ -394,21 +349,7 @@ export default function Navbar() {
 
   useEffect(() => {
     setMenuOpen(false);
-    setStateDropdownOpen(false);
   }, [pathname]);
-
-  // Close dropdowns when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Element;
-      if (!target.closest('[data-dropdown]')) {
-        setStateDropdownOpen(false);
-      }
-    };
-
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
-  }, []);
 
   return (
     <>
@@ -459,46 +400,6 @@ export default function Navbar() {
 
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center space-x-6">
-            {/* State Dropdown */}
-            <div className="relative" data-dropdown>
-              <button
-                onClick={() => setStateDropdownOpen(!stateDropdownOpen)}
-                className="flex items-center space-x-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl px-4 py-2 hover:bg-white/20 transition-all duration-200 group"
-              >
-                <span className="text-sm font-medium">{selectedStateData?.name}</span>
-                <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${stateDropdownOpen ? 'rotate-180' : ''}`} />
-              </button>
-              
-              <AnimatePresence>
-                {stateDropdownOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                    transition={{ duration: 0.2, ease: "easeOut" }}
-                    className="absolute top-full mt-2 left-0 w-64 bg-white/95 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl overflow-hidden z-50"
-                  >
-                    <div className="p-2">
-                      {states.map((state, index) => (
-                        <motion.button
-                          key={state.slug}
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: index * 0.05 }}
-                          onClick={() => handleStateChange(state.slug)}
-                          className={`w-full text-left px-4 py-3 rounded-xl text-green-800 hover:bg-green-50/80 transition-all duration-200 ${
-                            selectedState === state.slug ? 'bg-green-100/80 font-semibold' : ''
-                          }`}
-                        >
-                          {state.name}
-                        </motion.button>
-                      ))}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
             {/* Navigation Links */}
             <Link
               href={dropsHref}
@@ -589,30 +490,6 @@ export default function Navbar() {
               className="md:hidden overflow-hidden bg-gradient-to-b from-green-800/95 to-green-900/95 backdrop-blur-lg border-t border-white/10"
             >
               <div className="px-6 py-6 space-y-4">
-                {/* Mobile State Selector */}
-                <div className="space-y-2">
-                  <label className="block text-xs uppercase tracking-wide text-green-200 font-medium">
-                    State
-                  </label>
-                  <div className="relative">
-                    <select
-                      className="w-full bg-white/95 backdrop-blur-sm text-green-800 rounded-2xl px-4 py-3 pr-10 focus:outline-none focus:ring-2 focus:ring-white/50 appearance-none font-medium shadow-lg"
-                      value={selectedState}
-                      onChange={(event) => {
-                        handleStateChange(event.target.value);
-                        setMenuOpen(false);
-                      }}
-                    >
-                      {states.map((state) => (
-                        <option key={state.slug} value={state.slug}>
-                          {state.name}
-                        </option>
-                      ))}
-                    </select>
-                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-green-600 pointer-events-none" />
-                  </div>
-                </div>
-
                 {/* Mobile Navigation Links */}
                 <div className="space-y-2 pt-4">
                   <Link

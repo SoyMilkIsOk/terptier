@@ -11,6 +11,7 @@ import { Category } from "@prisma/client";
 import { getStateMetadata } from "@/lib/states";
 import { notFound } from "next/navigation";
 import MarketModeToggle from "@/components/MarketModeToggle";
+import StateSelector from "@/components/StateSelector";
 import { buildMarketFilters, normalizeMarketParam } from "@/lib/market";
 import { getMarketTheme } from "@/lib/market-theme";
 import {
@@ -163,6 +164,9 @@ export default async function RankingsPage({
             >
               {heroTitle}
             </h1>
+            <div className="mt-6 flex justify-center">
+              <StateSelector label="View rankings in another state" />
+            </div>
 
             <div
               className={`flex flex-wrap sm:w-full w-[80%] mx-auto items-center justify-center py-2 sm:gap-6 gap-8 transition-colors duration-500 ${theme.hero.statText}`}

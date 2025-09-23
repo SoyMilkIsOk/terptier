@@ -10,6 +10,7 @@ import { unstable_noStore as noStore } from "next/cache";
 import { getStateMetadata } from "@/lib/states";
 import { notFound } from "next/navigation";
 import MarketModeToggle from "@/components/MarketModeToggle";
+import StateSelector from "@/components/StateSelector";
 import { buildMarketFilters, normalizeMarketParam } from "@/lib/market";
 import { getMarketTheme } from "@/lib/market-theme";
 import {
@@ -219,13 +220,19 @@ export default async function DropsPage({
               <span className="text-sm font-medium">Weekly Drops</span>
             </div>
             <h1
-              className={`text-4xl sm:text-5xl lg:text-6xl font-bold mb-3 sm:mb-4 py-2 sm:py-4 bg-clip-text text-transparent transition-colors duration-500 ${theme.hero.title}`}
-            >
-              {heroTitle}
-            </h1>
-            <div
-              className={`flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 transition-colors duration-500 ${theme.hero.statText}`}
-            >
+          className={`text-4xl sm:text-5xl lg:text-6xl font-bold mb-3 sm:mb-4 py-2 sm:py-4 bg-clip-text text-transparent transition-colors duration-500 ${theme.hero.title}`}
+        >
+          {heroTitle}
+        </h1>
+        <div className="mt-6 flex justify-center">
+          <StateSelector
+            label="Browse drops in another state"
+            preserveParams={["market"]}
+          />
+        </div>
+        <div
+          className={`flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 transition-colors duration-500 ${theme.hero.statText}`}
+        >
               <div className="flex items-center gap-2">
                 <Calendar className="w-5 h-5" />
                 <span className="text-sm font-medium">Last 7 & Next 7 Days</span>

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { useEffect, useMemo, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { ChevronRight, Star, Users, TrendingUp, Cannabis, LogIn, Crown, Calendar } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -9,9 +9,10 @@ import type { AgeGateStateOption } from "./AgeGate";
 
 type HeroHomeProps = {
   state: AgeGateStateOption;
+  states: AgeGateStateOption[];
 };
 
-export default function HeroHome({ state }: HeroHomeProps) {
+export default function HeroHome({ state, states }: HeroHomeProps) {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
@@ -77,6 +78,47 @@ export default function HeroHome({ state }: HeroHomeProps) {
     },
   };
 
+  const rotationOptions = useMemo(() => {
+    const uniqueStates = new Map<string, AgeGateStateOption>();
+
+    states.forEach((option) => {
+      if (option?.slug) {
+        uniqueStates.set(option.slug, option);
+      }
+    });
+
+    if (state?.slug) {
+      uniqueStates.set(state.slug, state);
+    }
+
+    return Array.from(uniqueStates.values());
+  }, [state, states]);
+
+  const preferredIndex = useMemo(() => {
+    const index = rotationOptions.findIndex((option) => option.slug === state.slug);
+    return index >= 0 ? index : 0;
+  }, [rotationOptions, state.slug]);
+
+  const [currentStateIndex, setCurrentStateIndex] = useState(preferredIndex);
+
+  useEffect(() => {
+    setCurrentStateIndex(preferredIndex);
+  }, [preferredIndex]);
+
+  useEffect(() => {
+    if (rotationOptions.length <= 1) {
+      return;
+    }
+
+    const interval = window.setInterval(() => {
+      setCurrentStateIndex((index) => (index + 1) % rotationOptions.length);
+    }, 3500);
+
+    return () => window.clearInterval(interval);
+  }, [rotationOptions.length]);
+
+  const rotatingState = rotationOptions[currentStateIndex] ?? state;
+  const rotatingName = rotatingState.name || rotatingState.abbreviation;
   const headlineStateName = state.name || state.abbreviation;
   const supportingCopy = state.tagline
     ? state.tagline
@@ -142,12 +184,27 @@ export default function HeroHome({ state }: HeroHomeProps) {
       >
         <Image src="/TerpTier.svg" alt="TerpTier logo" className="my-8" width={170} height={50} />
         <motion.p variants={itemVariants} className="text-xl md:text-3xl font-light mb-4 text-white/90 max-w-3xl leading-relaxed">
-          Discover {headlineStateName}'s
+          Discover
+          <span className="relative mx-2 inline-flex items-baseline justify-center">
+            <AnimatePresence mode="wait">
+              <motion.span
+                key={rotatingState.slug}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.45, ease: "easeOut" }}
+                className="bg-gradient-to-r from-emerald-300 via-green-200 to-sky-300 bg-clip-text text-transparent font-semibold"
+              >
+                {rotatingName}'s
+              </motion.span>
+            </AnimatePresence>
+          </span>
           <span className="bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent font-semibold">
-            {" "}Top Tier Terps
+            Top Tier Terps
           </span>
         </motion.p>
         <motion.p variants={itemVariants} className="text-lg md:text-xl text-white/70 max-w-2xl mb-12 leading-relaxed">
+          {supportingCopy}
         </motion.p>
         <motion.div
           variants={itemVariants}
