@@ -14,7 +14,7 @@ import MarketModeToggle from "@/components/MarketModeToggle";
 import StateSelector from "@/components/StateSelector";
 import { buildMarketFilters, normalizeMarketParam } from "@/lib/market";
 import { getMarketTheme } from "@/lib/market-theme";
-import { Crown, Users, Star, Flower2, FlaskConical } from "lucide-react";
+import { Crown, Users, Star, Flower2, FlaskConical, Shield } from "lucide-react";
 import { getStateRankingsPageTitle, getStaticPageTitle } from "@/lib/seo";
 
 export async function generateMetadata({
@@ -49,6 +49,8 @@ export default async function RankingsPage({
     notFound();
   }
 
+  const stateSlug = state.slug;
+  const normalizedStateSlug = stateSlug.toLowerCase();
   const selectedMarket = normalizeMarketParam(marketParam);
   const marketFilters = buildMarketFilters(selectedMarket);
   const themeAttribute = selectedMarket.toLowerCase();
@@ -64,21 +66,34 @@ export default async function RankingsPage({
   } = await supabase.auth.getSession();
 
   let userVotes: Record<string, number> = {};
+  const currentUser = session?.user?.email
+    ? await prisma.user.findUnique({
+        where: { email: session.user.email },
+        include: {
+          stateAdmins: {
+            include: { state: { select: { slug: true } } },
+          },
+        },
+      })
+    : null;
 
-  if (session?.user?.email) {
-    const prismaUser = await prisma.user.findUnique({
-      where: { email: session.user.email },
+  const isAdminForState = Boolean(
+    currentUser &&
+      (currentUser.role === "ADMIN" ||
+        (currentUser.stateAdmins?.some((assignment) => {
+          const slug = assignment.state?.slug?.toLowerCase();
+          return slug === normalizedStateSlug;
+        }) ?? false)),
+  );
+
+  if (currentUser) {
+    const votes = await prisma.vote.findMany({
+      where: { userId: currentUser.id },
     });
 
-    if (prismaUser) {
-      const votes = await prisma.vote.findMany({
-        where: { userId: prismaUser.id },
-      });
-
-      votes.forEach((vote) => {
-        userVotes[vote.producerId] = vote.value;
-      });
-    }
+    votes.forEach((vote) => {
+      userVotes[vote.producerId] = vote.value;
+    });
   }
 
   const flowerRaw = (await prisma.producer.findMany({
@@ -142,6 +157,17 @@ export default async function RankingsPage({
           className={`absolute inset-0 transition-colors duration-500 ${theme.hero.overlay}`}
         ></div>
         <div className="relative mx-auto px-4 py-16">
+          {isAdminForState && (
+            <div className="absolute right-4 top-4">
+              <Link
+                href={`/${stateSlug}/admin`}
+                className="inline-flex items-center gap-2 rounded-full bg-green-600 px-4 py-2 text-sm font-semibold text-white shadow-lg transition-colors duration-200 hover:bg-green-500"
+              >
+                <Shield className="h-4 w-4" />
+                <span className="sm:block hidden">Manage Producers</span>
+              </Link>
+            </div>
+          )}
           <div className="max-w-4xl mx-auto text-center">
             <div
               className={`inline-flex items-center gap-2 backdrop-blur-sm rounded-full px-4 py-2 mb-4 transition-colors duration-500 ${theme.hero.chip}`}
