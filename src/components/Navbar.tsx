@@ -4,7 +4,7 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import Image from "next/image";
 import { LogIn, LogOut, User, Calendar, Crown } from "lucide-react";
@@ -39,6 +39,7 @@ type CurrentUserResponse = {
 export default function Navbar() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const router = useRouter();
   const [session, setSession] = useState<Session | null>(null);
   const [profileUsername, setProfileUsername] = useState<string | null>(null);
   const [isGlobalAdmin, setIsGlobalAdmin] = useState(false);
@@ -442,7 +443,8 @@ export default function Navbar() {
                 onClick={async () => {
                   await supabase.auth.signOut();
                   setSession(null);
-                  location.reload();
+                  await refreshUserProfile();
+                  router.refresh();
                 }}
                 className="flex items-center space-x-2 bg-red-500/90 backdrop-blur-sm hover:bg-red-600/90 px-6 py-2.5 rounded-2xl font-medium cursor-pointer hover:scale-105 transition-all duration-200 shadow-lg"
               >
@@ -514,7 +516,8 @@ export default function Navbar() {
                         await supabase.auth.signOut();
                         setSession(null);
                         setMenuOpen(false);
-                        location.reload();
+                        await refreshUserProfile();
+                        router.refresh();
                       }}
                       className="flex items-center justify-center space-x-2 w-full py-3 bg-red-500/90 backdrop-blur-sm hover:bg-red-600/90 rounded-2xl font-medium cursor-pointer text-white shadow-lg"
                     >
