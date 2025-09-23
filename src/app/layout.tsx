@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import Navbar from "@/components/Navbar";
 import MainContainer from "@/components/MainContainer";
 import Footer from "@/components/Footer";
+import SupabaseListener from "@/providers/SupabaseListener";
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -22,11 +23,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="min-h-screen bg-gray-50 flex flex-col pt-20">
-        <Suspense fallback={null}>
-          <Navbar />
-        </Suspense>
-        <MainContainer>{children}</MainContainer>
-        <Footer />
+        <SupabaseListener>
+          <Suspense fallback={null}>
+            <Navbar />
+          </Suspense>
+          <MainContainer>{children}</MainContainer>
+          <Footer />
+        </SupabaseListener>
         <Analytics />
         <SpeedInsights />
         <GoogleAnalytics gaId="G-SVL6LBN7QS" />

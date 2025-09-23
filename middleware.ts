@@ -1,5 +1,6 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import { createMiddlewareClient } from "@supabase/auth-helpers-nextjs";
 
 const NON_STATE_SEGMENTS = new Set([
   "about",
@@ -63,43 +64,52 @@ async function getStateSlugs(request: NextRequest): Promise<Set<string> | null> 
   }
 }
 
+const supabaseUrl =
+  process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || "";
+const supabaseKey =
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || "";
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  let response = NextResponse.next();
 
-  if (pathname === "/" || pathname === "") {
-    return NextResponse.next();
+  if (pathname !== "/" && pathname !== "") {
+    const segments = pathname.split("/").filter(Boolean);
+
+    if (segments.length) {
+      const [first] = segments;
+      const normalized = first.toLowerCase();
+
+      if (
+        !NON_STATE_SEGMENTS.has(normalized) &&
+        !normalized.startsWith("_") &&
+        !normalized.includes(".")
+      ) {
+        const stateSlugs = await getStateSlugs(request);
+
+        if (stateSlugs?.size && !stateSlugs.has(normalized)) {
+          const notFoundUrl = request.nextUrl.clone();
+          notFoundUrl.pathname = "/not-found";
+          response = NextResponse.rewrite(notFoundUrl);
+        }
+      }
+    }
   }
 
-  const segments = pathname.split("/").filter(Boolean);
+  if (supabaseUrl && supabaseKey) {
+    const supabase = createMiddlewareClient(
+      { req: request, res: response },
+      { supabaseUrl, supabaseKey }
+    );
 
-  if (!segments.length) {
-    return NextResponse.next();
+    try {
+      await supabase.auth.getUser();
+    } catch (error) {
+      console.error("Failed to refresh Supabase session in middleware", error);
+    }
   }
 
-  const [first] = segments;
-  const normalized = first.toLowerCase();
-
-  if (NON_STATE_SEGMENTS.has(normalized) || normalized.startsWith("_")) {
-    return NextResponse.next();
-  }
-
-  if (normalized.includes(".")) {
-    return NextResponse.next();
-  }
-
-  const stateSlugs = await getStateSlugs(request);
-
-  if (!stateSlugs || !stateSlugs.size) {
-    return NextResponse.next();
-  }
-
-  if (stateSlugs.has(normalized)) {
-    return NextResponse.next();
-  }
-
-  const notFoundUrl = request.nextUrl.clone();
-  notFoundUrl.pathname = "/not-found";
-  return NextResponse.rewrite(notFoundUrl);
+  return response;
 }
 
 export const config = {
