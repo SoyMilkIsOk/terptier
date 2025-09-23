@@ -48,19 +48,28 @@ function LoginForm() {
   };
 
   const finalizeAuth = async () => {
+    const [userResponse, sessionResponse] = await Promise.all([
+      supabase.auth.getUser(),
+      supabase.auth.getSession(),
+    ]);
+
+    const {
+      data: { user },
+      error: userError,
+    } = userResponse;
     const {
       data: { session },
-      error: finalError,
-    } = await supabase.auth.getSession();
+      error: sessionError,
+    } = sessionResponse;
 
-    if (session) {
+    if (user && session) {
       await fetch("/api/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          id: session.user.id,
-          email: session.user.email,
-          name: session.user.user_metadata?.name || session.user.email,
+          id: user.id,
+          email: user.email,
+          name: user.user_metadata?.name || user.email,
         }),
       });
       const meRes = await fetch("/api/users/me");
@@ -91,7 +100,9 @@ function LoginForm() {
         router.push("/");
       }
     } else {
-      setError(finalError?.message ?? "Authentication failed");
+      const fallbackError =
+        userError?.message || sessionError?.message || "Authentication failed";
+      setError(fallbackError);
     }
   };
 

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prismadb";
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { getSupabaseCookieContext } from "@/lib/supabaseCookieContext";
+import { getVerifiedAuth } from "@/lib/supabaseAuth";
 
 export async function PUT(
   request: NextRequest,
@@ -9,11 +10,9 @@ export async function PUT(
 ) {
   const { cookieContext } = await getSupabaseCookieContext();
   const supabase = createServerComponentClient(cookieContext);
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  const { user } = await getVerifiedAuth(supabase);
 
-  if (!session?.user?.email) {
+  if (!user?.email) {
     return NextResponse.json(
       { success: false, error: "Not authenticated" },
       { status: 401 }
@@ -21,7 +20,7 @@ export async function PUT(
   }
 
   const prismaUser = await prisma.user.findUnique({
-    where: { email: session.user.email },
+    where: { email: user.email },
   });
 
   if (!prismaUser) {

@@ -5,6 +5,7 @@ import { notFound, redirect } from "next/navigation";
 import StrainManager from "@/components/StrainManager";
 import { getStateMetadata } from "@/lib/states";
 import { getAdminProducerEditTitle, getStaticPageTitle } from "@/lib/seo";
+import { getVerifiedAuth } from "@/lib/supabaseAuth";
 
 export const dynamic = "force-dynamic";
 
@@ -46,16 +47,14 @@ export default async function ProducerAdminPage({
   const normalizedState = stateName.toLowerCase();
 
   const supabase = await createSupabaseServerClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  const { user: supabaseUser } = await getVerifiedAuth(supabase);
 
-  if (!session?.user?.email) {
+  if (!supabaseUser?.email) {
     redirect("/login?reason=producer_admin");
   }
 
   const user = await prisma.user.findUnique({
-    where: { email: session.user.email },
+    where: { email: supabaseUser.email },
     include: {
       producerAdmins: true,
       stateAdmins: {

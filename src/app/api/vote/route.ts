@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prismadb";
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { getSupabaseCookieContext } from "@/lib/supabaseCookieContext";
+import { getVerifiedAuth } from "@/lib/supabaseAuth";
 
 export async function POST(request: Request) {
   try {
@@ -12,16 +13,14 @@ export async function POST(request: Request) {
     // 1) Authenticate via Supabase
     const { cookieContext } = await getSupabaseCookieContext();
     const supabase = createServerComponentClient(cookieContext);
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    if (!session) {
+    const { user } = await getVerifiedAuth(supabase);
+    if (!user) {
       return NextResponse.json(
         { success: false, error: "Not authenticated" },
         { status: 401 }
       );
     }
-    const { email, user_metadata } = session.user;
+    const { email, user_metadata } = user;
 
     // 2) Upsert Prisma user BY EMAIL (not by id), so it matches any seed
     const prismaUser = await prisma.user.upsert({

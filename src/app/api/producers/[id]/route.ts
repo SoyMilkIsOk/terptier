@@ -8,6 +8,7 @@ import {
   evaluateAdminAccess,
   getAdminScopedUserByEmail,
 } from "@/lib/adminAuthorization";
+import { getVerifiedAuth } from "@/lib/supabaseAuth";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
@@ -38,11 +39,9 @@ export async function DELETE(
         supabaseKey,
       }
     );
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
+    const { user, session } = await getVerifiedAuth(supabase);
 
-    if (!session) {
+    if (!user?.email || !session) {
       return NextResponse.json(
         { success: false, error: "Not authenticated" },
         { status: 401 },
@@ -59,16 +58,8 @@ export async function DELETE(
       );
     }
 
-    const email = session.user.email;
-    if (!email) {
-      return NextResponse.json(
-        { success: false, error: "Forbidden" },
-        { status: 403 },
-      );
-    }
-
-    const user = await getAdminScopedUserByEmail(email);
-    if (!user) {
+    const adminUser = await getAdminScopedUserByEmail(user.email);
+    if (!adminUser) {
       return NextResponse.json(
         { success: false, error: "Forbidden" },
         { status: 403 },
@@ -76,7 +67,7 @@ export async function DELETE(
     }
     const claims = decodeJwt(session.access_token);
     const access = await evaluateAdminAccess(
-      { user, claims },
+      { user: adminUser, claims },
       { targetProducerId: producerId, targetStateSlug: stateSlug },
     );
 
@@ -96,7 +87,7 @@ export async function DELETE(
       where: { id: producerId },
     });
 
-    console.log(`[API] Producer ${producerId} deleted by admin ${session.user.email}`);
+    console.log(`[API] Producer ${producerId} deleted by admin ${user.email}`);
     return NextResponse.json({ success: true, message: "Producer deleted successfully" });
   } catch (error: any) {
     console.error("[API DELETE /api/producers/[id]] Error:", error);
@@ -128,11 +119,9 @@ export async function PUT(
         supabaseKey,
       }
     );
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
+    const { user, session } = await getVerifiedAuth(supabase);
 
-    if (!session) {
+    if (!user?.email || !session) {
       return NextResponse.json(
         { success: false, error: "Not authenticated" },
         { status: 401 },
@@ -175,16 +164,8 @@ export async function PUT(
       (otherUpdates as { market: MarketValue }).market = normalizedMarket as MarketValue;
     }
 
-    const email = session.user.email;
-    if (!email) {
-      return NextResponse.json(
-        { success: false, error: "Forbidden" },
-        { status: 403 },
-      );
-    }
-
-    const user = await getAdminScopedUserByEmail(email);
-    if (!user) {
+    const adminUser = await getAdminScopedUserByEmail(user.email);
+    if (!adminUser) {
       return NextResponse.json(
         { success: false, error: "Forbidden" },
         { status: 403 },
@@ -192,7 +173,7 @@ export async function PUT(
     }
     const claims = decodeJwt(session.access_token);
     const access = await evaluateAdminAccess(
-      { user, claims },
+      { user: adminUser, claims },
       { targetProducerId: id, targetStateSlug: stateSlug },
     );
     if (!access.allowed) {
