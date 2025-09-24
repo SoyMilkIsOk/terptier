@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prismadb";
 import { createServerActionClient } from "@supabase/auth-helpers-nextjs";
 import { getSupabaseCookieContext } from "@/lib/supabaseCookieContext";
-import { decodeJwt } from "@/lib/authorize";
+import { deriveClaimsFromUser } from "@/lib/authorize";
 import {
   evaluateAdminAccess,
   getAdminScopedUserByEmail,
@@ -33,10 +33,7 @@ export async function POST(request: Request) {
   if (!user) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  const claims = session?.access_token ? decodeJwt(session.access_token) : null;
+  const claims = deriveClaimsFromUser(authUser);
 
   const {
     name,
