@@ -68,7 +68,7 @@ export default async function ProducerProfilePage({
 
   const stateSlug = state.slug;
 
-  const supabase = await createSupabaseServerClient();
+  const supabase = createSupabaseServerClient();
   const {
     data: { session },
   } = await supabase.auth.getSession();
