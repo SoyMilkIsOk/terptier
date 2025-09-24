@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prismadb";
 import { createServerActionClient } from "@supabase/auth-helpers-nextjs";
-import { getSupabaseCookieContext } from "@/lib/supabaseCookieContext";
+import { cookies } from "next/headers";
 import { decodeJwt } from "@/lib/authorize";
 import {
   evaluateAdminAccess,
@@ -12,14 +12,10 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
 
 export async function POST(request: Request) {
-  const { cookieContext } = await getSupabaseCookieContext();
-  const supabase = createServerActionClient(
-    cookieContext,
-    {
-      supabaseUrl,
-      supabaseKey,
-    }
-  );
+  const supabase = createServerActionClient({ cookies }, {
+    supabaseUrl,
+    supabaseKey,
+  });
   const {
     data: { session },
   } = await supabase.auth.getSession();
