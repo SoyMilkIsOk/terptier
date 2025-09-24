@@ -132,7 +132,7 @@ export default async function RankingsPage({
     selectedMarket === "WHITE"
       ? "Recreational"
       : selectedMarket === "BLACK"
-      ? "Underground"
+      ? "Medical"
       : "";
 
   const heroTitle = `${state.name}'s Top ${
@@ -145,10 +145,10 @@ export default async function RankingsPage({
       className={`min-h-screen transition-colors duration-500 ${theme.page}`}
     >
       <Suspense fallback={null}>
-        <MarketModeToggle
+        {/* <MarketModeToggle
           className="fixed bottom-6 left-6 z-50"
           value={selectedMarket}
-        />
+        /> */}
       </Suspense>
       <div
         className={`relative overflow-visible bg-gradient-to-r transition-colors duration-500 ${theme.hero.wrapper}`}

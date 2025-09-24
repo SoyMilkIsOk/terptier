@@ -197,10 +197,10 @@ export default async function DropsPage({
       className={`min-h-screen transition-colors duration-500 ${theme.page}`}
     >
       <Suspense fallback={null}>
-        <MarketModeToggle
+        {/* <MarketModeToggle
           className="fixed bottom-6 left-6 z-50"
           value={market}
-        />
+        /> */}
       </Suspense>
       <div
         className={`relative overflow-visible bg-gradient-to-r transition-colors duration-500 ${theme.hero.wrapper}`}
