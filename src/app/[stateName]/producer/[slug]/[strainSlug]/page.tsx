@@ -122,7 +122,7 @@ export default async function StrainPage({ params }: StrainPageProps) {
     notFound();
   }
 
-  const supabase = await createSupabaseServerClient();
+  const supabase = createSupabaseServerClient();
   const {
     data: { user },
     error: userError,

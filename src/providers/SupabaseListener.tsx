@@ -20,21 +20,28 @@ export default function SupabaseListener({
 
     let active = true;
 
-    const revalidate = async () => {
+    const revalidate = async (source: string) => {
+      console.debug(`[SupabaseListener] revalidate triggered from ${source}`);
       try {
-        await supabase.auth.getUser();
+        const { data, error } = await supabase.auth.getUser();
+        if (error) {
+          console.warn("[SupabaseListener] auth.getUser error", error.message);
+        } else {
+          console.debug("[SupabaseListener] auth user", data.user?.id ?? null);
+        }
       } catch (error) {
-        console.error("Failed to refresh Supabase session", error);
+        console.error("[SupabaseListener] Failed to refresh Supabase session", error);
       }
       if (active) {
         router.refresh();
       }
     };
 
-    void revalidate();
+    void revalidate("mount");
 
-    const { data } = supabase.auth.onAuthStateChange(async () => {
-      await revalidate();
+    const { data } = supabase.auth.onAuthStateChange(async (event) => {
+      console.debug("[SupabaseListener] auth state change", event);
+      await revalidate(event ?? "unknown");
     });
 
     return () => {

@@ -236,16 +236,19 @@ export default function Navbar() {
   useEffect(() => {
     let isMounted = true;
 
-    const syncUser = async () => {
+    const syncUser = async (reason: string) => {
+      console.debug(`[Navbar] syncUser triggered by ${reason}`);
       const { data, error } = await supabase.auth.getUser();
       if (!isMounted) return;
       if (error) {
+        console.warn("[Navbar] auth.getUser error", error.message);
         setUser(null);
         applyUserResponse(null);
         return;
       }
 
       const nextUser = data.user ?? null;
+      console.debug("[Navbar] resolved user", nextUser?.id ?? null);
       setUser(nextUser);
 
       if (!nextUser?.email) {
@@ -267,10 +270,11 @@ export default function Navbar() {
       }
     };
 
-    void syncUser();
+    void syncUser("mount");
 
-    const { data: listener } = supabase.auth.onAuthStateChange(async () => {
-      await syncUser();
+    const { data: listener } = supabase.auth.onAuthStateChange(async (event) => {
+      console.debug("[Navbar] auth state change", event);
+      await syncUser(event ?? "unknown");
     });
     return () => {
       isMounted = false;
@@ -432,6 +436,7 @@ export default function Navbar() {
               <button
                 type="button"
                 onClick={async () => {
+                  console.debug("[Navbar] signOut (desktop)");
                   await supabase.auth.signOut();
                   setUser(null);
                   applyUserResponse(null);
@@ -504,6 +509,7 @@ export default function Navbar() {
                     <button
                       type="button"
                       onClick={async () => {
+                        console.debug("[Navbar] signOut (mobile)");
                         await supabase.auth.signOut();
                         setUser(null);
                         applyUserResponse(null);

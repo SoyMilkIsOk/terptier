@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { prisma } from "@/lib/prismadb";
-import { createServerActionClient } from "@supabase/auth-helpers-nextjs";
-import { getSupabaseCookieContext } from "@/lib/supabaseCookieContext";
+import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
 
 type StateAdminSummary = {
   stateId: string;
@@ -18,10 +18,10 @@ type StateAdminAssignment = {
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
 
-export async function GET() {
-  const { cookieContext } = await getSupabaseCookieContext();
-  const supabase = createServerActionClient(
-    cookieContext,
+export async function GET(request: Request) {
+  console.debug("[api/users/me] incoming cookies", request.headers.get("cookie") ?? "<none>");
+  const supabase = createRouteHandlerClient(
+    { cookies },
     {
       supabaseUrl,
       supabaseKey,
@@ -32,6 +32,10 @@ export async function GET() {
     error,
   } = await supabase.auth.getUser();
 
+  console.debug("[api/users/me] auth.getUser result", {
+    userId: authUser?.id ?? null,
+    error: error?.message ?? null,
+  });
   if (error || !authUser?.email) {
     return NextResponse.json(
       { success: false, error: "Not authenticated" },
@@ -104,9 +108,8 @@ export async function GET() {
 }
 
 export async function PATCH(request: Request) {
-  const { cookieContext } = await getSupabaseCookieContext();
-  const supabase = createServerActionClient(
-    cookieContext,
+  const supabase = createRouteHandlerClient(
+    { cookies },
     {
       supabaseUrl,
       supabaseKey,

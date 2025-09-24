@@ -48,12 +48,14 @@ function LoginForm() {
   };
 
   const finalizeAuth = async () => {
+    console.debug("[Login] finalizeAuth start");
     const {
       data: { user },
       error: finalError,
     } = await supabase.auth.getUser();
 
     if (user) {
+      console.debug("[Login] authenticated user", user.id);
       await fetch("/api/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -64,6 +66,7 @@ function LoginForm() {
         }),
       });
       const meRes = await fetch("/api/users/me");
+      console.debug("[Login] /api/users/me status", meRes.status);
       const meData: {
         success: boolean;
         isGlobalAdmin?: boolean;
@@ -92,6 +95,7 @@ function LoginForm() {
       }
     } else {
       setError(finalError?.message ?? "Authentication failed");
+      console.warn("[Login] finalizeAuth getUser error", finalError?.message);
     }
   };
 
@@ -119,12 +123,14 @@ function LoginForm() {
       }
     }
 
+    console.debug("[Login] attempting sign in with email", loginEmail);
     const { error: signInError } = await supabase.auth.signInWithPassword({
       email: loginEmail,
       password,
     });
 
     if (signInError) {
+      console.warn("[Login] signInWithPassword error", signInError.message);
       if (signInError.message.toLowerCase().includes("confirm")) {
         setError(
           "Please verify your email address before logging in. Check your inbox for the verification link."
@@ -137,6 +143,7 @@ function LoginForm() {
     }
 
     await finalizeAuth();
+    console.debug("[Login] finalizeAuth complete, redirecting");
     setLoading(false);
   };
 

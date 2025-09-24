@@ -97,15 +97,21 @@ export async function middleware(request: NextRequest) {
   }
 
   if (supabaseUrl && supabaseKey) {
+    console.debug("[middleware] processing", pathname);
     const supabase = createMiddlewareClient(
       { req: request, res: response },
       { supabaseUrl, supabaseKey }
     );
 
     try {
-      await supabase.auth.getUser();
+      const { data, error } = await supabase.auth.getUser();
+      if (error) {
+        console.warn("[middleware] auth.getUser error", error.message);
+      } else {
+        console.debug("[middleware] active user", data.user?.id ?? null);
+      }
     } catch (error) {
-      console.error("Failed to refresh Supabase session in middleware", error);
+      console.error("[middleware] Failed to refresh Supabase session", error);
     }
   }
 

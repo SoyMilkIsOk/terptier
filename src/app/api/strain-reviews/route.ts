@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { prisma } from "@/lib/prismadb";
 import { del } from "@vercel/blob";
-import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
-import { getSupabaseCookieContext } from "@/lib/supabaseCookieContext";
+import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -30,8 +30,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const { cookieContext } = await getSupabaseCookieContext();
-  const supabase = createServerComponentClient(cookieContext);
+  const supabase = createRouteHandlerClient({ cookies });
   const {
     data: { user },
     error,
@@ -114,8 +113,7 @@ export async function POST(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
-  const { cookieContext } = await getSupabaseCookieContext();
-  const supabase = createServerComponentClient(cookieContext);
+  const supabase = createRouteHandlerClient({ cookies });
   const {
     data: { user },
     error,
