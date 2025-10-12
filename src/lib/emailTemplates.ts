@@ -35,7 +35,7 @@ export function weeklyDropsEmail(baseUrl: string, profileSlug: string) {
     <div class="container">
       <div class="header">
         <img src="${logoUrl}" alt="TerpTier Logo" class="logo" />
-        <h1>This Week's Drops</h1>
+        <h1>What's Dropping This Week?</h1>
         <p class="header-subtitle">Fresh picks curated just for you</p>
       </div>
       <div class="content">
@@ -45,10 +45,10 @@ export function weeklyDropsEmail(baseUrl: string, profileSlug: string) {
         <div class="highlights">
           <h3>What's Inside</h3>
           <p>
-            ✨ Exclusive new releases<br>
+            ✨ Exclusive new drops<br>
             🔥 Trending products<br>
-            💎 Limited edition items<br>
-            🎯 Personalized recommendations
+            💎 Limited edition strains<br>
+            🎖️ Vote for your favorites
           </p>
         </div>
         
