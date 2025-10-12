@@ -3,6 +3,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prismadb";
 import { weeklyDropsEmail } from "@/lib/emailTemplates";
+import { createHash } from "crypto";
 
 /** ─────────────────────────────────────────────────────────────────────────────
  * Types for our domain
@@ -221,6 +222,25 @@ function getIsoWeekKey(date: Date): string {
   return `${utc.getUTCFullYear()}-W${week.toString().padStart(2, "0")}`;
 }
 
+/** Stable stringify: sorts object keys and preserves deterministic output */
+function stableStringify(value: unknown): string {
+  if (Array.isArray(value)) {
+    return `[${value.map(stableStringify).join(",")}]`;
+  }
+  if (value && typeof value === "object") {
+    const obj = value as Record<string, unknown>;
+    const keys = Object.keys(obj).sort();
+    return `{${keys.map((k) => `${JSON.stringify(k)}:${stableStringify(obj[k])}`).join(",")}}`;
+  }
+  return JSON.stringify(value);
+}
+
+/** Deterministic body hash for idempotency */
+function hashBodyHex(payload: unknown): string {
+  const str = stableStringify(payload);
+  return createHash("sha256").update(str).digest("hex");
+}
+
 /** ─────────────────────────────────────────────────────────────────────────────
  * API Route
  * ────────────────────────────────────────────────────────────────────────────*/
@@ -238,10 +258,11 @@ export async function GET() {
     return NextResponse.json({ success: false, error: "Server misconfig" }, { status: 500 });
   }
 
-  // NOTE: select only the fields we actually use (type-safe)
+  // IMPORTANT: order recipients deterministically so chunk boundaries are stable
   const users: SubscribedUser[] = await prisma.user.findMany({
     where: { notificationOptIn: true },
     select: { id: true, email: true, username: true },
+    orderBy: { email: "asc" }, // <— key for stable chunking and hashing
   });
 
   const noRecipients: Summary = {
@@ -293,13 +314,19 @@ export async function GET() {
       };
     });
 
-    const idempotencyKey = `${idempotencyPrefix}/chunk-${chunkIndex}`;
+    /**
+     * Idempotency design:
+     * - We keep the weekly prefix for semantics.
+     * - We append a SHA-256 of the EXACT request body (the array of items) we will send.
+     *   If anything in the body changes (new user, template tweak, reordering), the hash changes,
+     *   producing a new idempotency key and avoiding the "modified body" error from Resend.
+     * - Retries of the same body reuse the same key.
+     */
+    const bodyHash = hashBodyHex(items).slice(0, 24); // keep header short but collision-safe
+    const idempotencyKey = `${idempotencyPrefix}/chunk-${chunkIndex}/${bodyHash}`;
 
     let attempt = 0;
-    // Retry on HTTP 429 with exponential backoff; always reuse idempotencyKey
-    // to maintain idempotent semantics.
-    // We exit the loop on first non-429 outcome (success or other failure).
-    // If all attempts 429, we record as a failure for this chunk.
+
     while (attempt < MAX_ATTEMPTS) {
       const result = await resend.batch.send(items, {
         batchValidation: "permissive",
@@ -331,6 +358,7 @@ export async function GET() {
           statusCode: result.status,
           message: result.message,
           idempotencyKey,
+          bodyHash,
         });
 
         summary.failed += chunkUsers.length;
@@ -372,6 +400,7 @@ export async function GET() {
             batchId: item.batchId,
             status: item.status,
             idempotencyKey,
+            bodyHash,
           });
         });
 
@@ -395,6 +424,7 @@ export async function GET() {
           sent: sentCount,
           failed: result.errors.length,
           idempotencyKey,
+          bodyHash,
         });
       }
 
