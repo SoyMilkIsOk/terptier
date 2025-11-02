@@ -15,6 +15,7 @@ import { createSupabaseServerClient } from "@/lib/supabaseServer";
 import { ATTRIBUTE_OPTIONS } from "@/constants/attributes";
 import Tooltip from "@/components/Tooltip";
 import { getStateMetadata } from "@/lib/states";
+import { buildMarketFilters } from "@/lib/market";
 import { notFound } from "next/navigation";
 import {
   getProducerPageTitle,
@@ -198,10 +199,13 @@ export default async function ProducerProfilePage({
 
   // Calculate rank
   let rank = 0;
+  const whiteMarketFilters = buildMarketFilters("WHITE");
+
   const allProducersOfCategory = await prisma.producer.findMany({
     where: {
       ...(state.producerWhere ?? {}),
       category: producer.category,
+      market: { in: whiteMarketFilters },
     },
     include: { votes: true },
   });
