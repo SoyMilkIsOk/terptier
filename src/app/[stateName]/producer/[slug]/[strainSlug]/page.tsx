@@ -236,6 +236,7 @@ export default async function StrainPage({ params }: StrainPageProps) {
                     <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-yellow-100 to-orange-100 rounded-full">
                       <Star className="w-5 h-5 text-yellow-500" fill="currentColor" />
                       <span className="text-lg font-bold text-yellow-700">
+
                         {averageRating.toFixed(1)}
                       </span>
                       <span className="text-yellow-600 text-sm">
@@ -271,7 +272,7 @@ export default async function StrainPage({ params }: StrainPageProps) {
                     </div>
                     <div className="text-center p-3 lg:p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl border border-purple-100 col-span-2 lg:col-span-1">
                       <div className="text-xl lg:text-2xl font-bold text-purple-700 mb-1">
-                        {Math.max(...reviews.map(r => r.aggregateRating), 0)}
+                        {Math.max(...reviews.map(r => r.aggregateRating), 0).toFixed(1)}
                       </div>
                       <div className="text-xs lg:text-sm text-purple-600 font-medium">Highest</div>
                     </div>
