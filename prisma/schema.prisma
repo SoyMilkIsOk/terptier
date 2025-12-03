@@ -152,7 +152,7 @@ model StateAdmin {
 
 model Strain {
   id           String         @id @default(cuid())
-  strainSlug   String         @unique @default(cuid())
+  strainSlug   String         @default(cuid())
   name         String
   description  String?
   releaseDate  DateTime?
@@ -166,6 +166,7 @@ model Strain {
   StrainReview StrainReview[]
 
   @@unique([producerId, name])
+  @@unique([producerId, strainSlug])
   @@index([stateId])
 }
 
