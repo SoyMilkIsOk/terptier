@@ -8,6 +8,7 @@ import StrainReviewCard from "@/components/StrainReviewCard";
 import { Star, Calendar, ChevronDown, ChevronUp } from "lucide-react";
 import { createSupabaseServerClient } from "@/lib/supabaseServer";
 import React from "react";
+import NotifyToggle from "@/components/NotifyToggle";
 import { getStateMetadata } from "@/lib/states";
 import { notFound } from "next/navigation";
 import { getStaticPageTitle, getStrainPageTitle } from "@/lib/seo";
@@ -154,6 +155,7 @@ export default async function StrainPage({ params }: StrainPageProps) {
         orderBy: { updatedAt: "desc" },
       },
       producer: true,
+      notifications: currentUserId ? { where: { userId: currentUserId } } : false,
     },
   });
 
@@ -253,6 +255,12 @@ export default async function StrainPage({ params }: StrainPageProps) {
                       </span>
                     </div>
                   )}
+                  
+                  <NotifyToggle 
+                    strainId={strain.id} 
+                    initialSubscribed={strain.notifications?.length > 0} 
+                    isLoggedIn={!!currentUserId}
+                  />
                 </div>
 
                 {/* Quick Stats */}

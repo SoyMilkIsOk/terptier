@@ -2,6 +2,7 @@
 import { useState } from "react";
 import ImageUpload from "./ImageUpload";
 import type { Strain } from "@prisma/client";
+import Modal from "./Modal";
 
 type StrainWithSlug = Pick<
   Strain,
@@ -33,7 +34,10 @@ export default function AddStrainForm({
     formatInputDate(strain?.releaseDate ?? null),
   );
 
-  const save = async () => {
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [subscriberCount, setSubscriberCount] = useState(0);
+
+  const save = async (confirmNotify = false) => {
     const body = {
       producerId,
       name,
@@ -41,26 +45,45 @@ export default function AddStrainForm({
       imageUrl,
       releaseDate: releaseDate || null,
       strainSlug: strainSlug || undefined,
+      confirmNotify,
     };
+
+    let res;
     if (strain) {
-      await fetch(`/api/strains/${strain.id}`, {
+      res = await fetch(`/api/strains/${strain.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
         credentials: "include",
       });
     } else {
-      await fetch("/api/strains", {
+      res = await fetch("/api/strains", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
         credentials: "include",
       });
     }
+
+    if (res.status === 409) {
+      const data = await res.json();
+      if (data.requiresConfirmation) {
+        setSubscriberCount(data.subscriberCount);
+        setShowConfirm(true);
+        return;
+      }
+    }
+
+    if (!res.ok) {
+      console.error("Failed to save strain");
+      return;
+    }
+
     setName("");
     setDescription("");
     setImageUrl(null);
     setStrainSlug("");
+    setShowConfirm(false);
     onSaved ? onSaved() : window.location.reload();
   };
 
@@ -94,11 +117,35 @@ export default function AddStrainForm({
         className="border p-2 rounded w-full"
       />
       <button
-        onClick={save}
+        onClick={() => save(false)}
         className="bg-green-600 text-white px-4 py-2 rounded cursor-pointer"
       >
         {strain ? "Save" : "Add"}
       </button>
+
+      <Modal isOpen={showConfirm} onClose={() => setShowConfirm(false)}>
+        <div className="p-4">
+          <h3 className="text-lg font-bold mb-4">Update Drop Date?</h3>
+          <p className="mb-6 text-gray-600">
+            This update will trigger email notifications to <span className="font-bold text-green-700">{subscriberCount}</span> subscribed users.
+            Are you sure you want to proceed?
+          </p>
+          <div className="flex justify-end gap-3">
+            <button
+              onClick={() => setShowConfirm(false)}
+              className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => save(true)}
+              className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+            >
+              Confirm & Notify
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
