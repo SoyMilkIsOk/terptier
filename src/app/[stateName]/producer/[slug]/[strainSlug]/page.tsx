@@ -17,6 +17,7 @@ interface StrainPageProps {
   params: Promise<{ stateName: string; slug: string; strainSlug: string }>;
 }
 
+
 export async function generateMetadata({
   params,
 }: StrainPageProps): Promise<Metadata> {
@@ -199,7 +200,15 @@ export default async function StrainPage({ params }: StrainPageProps) {
           <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-teal-100/20 to-cyan-100/20 rounded-full translate-y-24 -translate-x-24"></div>
           
           <div className="relative z-10">
+            <div className="absolute top-0 right-0 z-20">
+              <NotifyToggle 
+                strainId={strain.id} 
+                initialSubscribed={strain.notifications?.length > 0} 
+                isLoggedIn={!!currentUserId}
+              />
+            </div>
             <div className="flex flex-col lg:flex-row items-center lg:items-start mb-8">
+
               {/* Strain Image */}
               <div className="mb-6 lg:mb-0 lg:mr-8 flex-shrink-0">
                 <div className="relative w-32 h-32 lg:w-40 lg:h-40 rounded-3xl overflow-hidden bg-gradient-to-br from-green-100 to-emerald-100 ring-4 ring-green-200 shadow-xl">
@@ -256,12 +265,8 @@ export default async function StrainPage({ params }: StrainPageProps) {
                     </div>
                   )}
                   
-                  <NotifyToggle 
-                    strainId={strain.id} 
-                    initialSubscribed={strain.notifications?.length > 0} 
-                    isLoggedIn={!!currentUserId}
-                  />
                 </div>
+
 
                 {/* Quick Stats */}
                 {reviews.length > 0 && (
