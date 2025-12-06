@@ -58,6 +58,7 @@ model User {
   updatedAt         DateTime        @updatedAt
   Producer          Producer[]
   StrainReview      StrainReview[]
+  notifications     StrainNotification[]
 }
 
 model Producer {
@@ -164,6 +165,7 @@ model Strain {
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
   StrainReview StrainReview[]
+  notifications StrainNotification[]
 
   @@unique([producerId, name])
   @@unique([producerId, strainSlug])
@@ -188,4 +190,16 @@ model StrainReview {
   updatedAt       DateTime @updatedAt
 
   @@unique([userId, strainId])
+}
+
+model StrainNotification {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  strain    Strain   @relation(fields: [strainId], references: [id], onDelete: Cascade)
+  strainId  String
+  createdAt DateTime @default(now())
+
+  @@unique([userId, strainId])
+  @@index([strainId])
 }

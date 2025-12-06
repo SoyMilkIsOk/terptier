@@ -5,6 +5,7 @@ import {
   evaluateAdminAccess,
   getAdminScopedUserByEmail,
 } from "@/lib/adminAuthorization";
+import { sendDropNotification } from "@/lib/notifications";
 
 interface UpdateStrainBody {
   name?: string;
@@ -12,6 +13,7 @@ interface UpdateStrainBody {
   imageUrl?: string | null;
   releaseDate?: string | null;
   strainSlug?: string;
+  confirmNotify?: boolean;
 }
 
 export async function GET(
@@ -108,6 +110,42 @@ export async function PUT(
   }
 
   const body = (await request.json()) as UpdateStrainBody;
+  
+  // Check for notification requirement
+  let shouldNotify = false;
+  if (body.releaseDate !== undefined) {
+    const newDate = body.releaseDate ? new Date(body.releaseDate) : null;
+    const oldDate = existing.releaseDate;
+    
+    // Only notify if date actually changed and is a valid future date (optional check, but good for UX)
+    // For now, just check if it changed.
+    const dateChanged = 
+      (newDate && !oldDate) || 
+      (!newDate && oldDate) || 
+      (newDate && oldDate && newDate.getTime() !== oldDate.getTime());
+
+    if (dateChanged && newDate) {
+      const subscriberCount = await prisma.strainNotification.count({
+        where: { strainId: id },
+      });
+
+      if (subscriberCount > 0) {
+        if (!body.confirmNotify) {
+          return NextResponse.json(
+            { 
+              success: false, 
+              error: "Confirmation required", 
+              requiresConfirmation: true, 
+              subscriberCount 
+            }, 
+            { status: 409 }
+          );
+        }
+        shouldNotify = true;
+      }
+    }
+  }
+
   try {
     const strain = await prisma.strain.update({
       where: { id },
@@ -130,6 +168,14 @@ export async function PUT(
         updatedAt: true,
       },
     });
+
+    if (shouldNotify && body.releaseDate) {
+      // Fire and forget notification
+      sendDropNotification(id, new Date(body.releaseDate)).catch(err => 
+        console.error("Failed to trigger notifications:", err)
+      );
+    }
+
     return NextResponse.json({ success: true, strain });
   } catch (err: any) {
     console.error("[PUT /api/strains/:id]", err);
