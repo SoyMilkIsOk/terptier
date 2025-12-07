@@ -22,6 +22,7 @@ export default function ProducerCard({
   stateName,
   averageRating: propsAverageRating,
   voteCount: propsVoteCount,
+  showTags = false,
 }: {
   rank: number;
   producer: Partial<ProducerWithVotes> & { name: string; id: string }; // Loose typing for search results
@@ -36,6 +37,7 @@ export default function ProducerCard({
   stateName?: string;
   averageRating?: number;
   voteCount?: number;
+  showTags?: boolean;
 }) {
   const contextStateSlug = useStateSlug();
   const stateSlug = propsStateSlug ?? contextStateSlug;
@@ -206,22 +208,24 @@ export default function ProducerCard({
         {/* Header row: Title + Stars on left, Comments on right */}
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <div className="flex items-center gap-2">
-                <h2 className="text-xl sm:text-2xl font-semibold leading-tight line-clamp-1">
-                {producer.name}
-                </h2>
-                {stateName && (
-                    <span className="flex-none px-2 py-0.5 text-xs font-semibold bg-gray-100 text-gray-500 rounded-md uppercase tracking-wider">
-                        {stateName}
-                    </span>
-                )}
-                {producer.category && (
-                    <span className={`flex-none px-2 py-0.5 text-xs font-bold rounded-md uppercase tracking-wider ${producer.category === 'FLOWER' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
-                        {producer.category}
-                    </span>
-                )}
-            </div>
-            <div className="mt-1 origin-left scale-[1.15]">
+            <h2 className="text-xl sm:text-2xl font-semibold leading-tight">
+              {producer.name}
+            </h2>
+            {showTags && (
+                <div className="flex items-center gap-2 mt-1.5">
+                    {stateName && (
+                        <span className="flex-none px-2 py-0.5 text-xs font-semibold bg-gray-100 text-gray-500 rounded-md uppercase tracking-wider">
+                            {stateName}
+                        </span>
+                    )}
+                    {producer.category && (
+                        <span className={`flex-none px-2 py-0.5 text-xs font-bold rounded-md uppercase tracking-wider ${producer.category === 'FLOWER' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
+                            {producer.category}
+                        </span>
+                    )}
+                </div>
+            )}
+            <div className="mt-2 origin-left scale-[1.15]">
               <VoteButton
                 producerId={producer.id}
                 initialAverage={average}

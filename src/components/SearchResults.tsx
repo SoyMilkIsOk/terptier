@@ -50,6 +50,7 @@ export default function SearchResults({
                 stateName={item.state.name}
                 averageRating={item.averageRating}
                 voteCount={item.voteCount}
+                showTags={true}
               />
             ))}
           </div>
