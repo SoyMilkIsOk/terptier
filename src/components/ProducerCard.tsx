@@ -18,9 +18,13 @@ export default function ProducerCard({
   showRank = true,
   useColors = true,
   appearance = "light",
+  stateSlug: propsStateSlug,
+  stateName,
+  averageRating: propsAverageRating,
+  voteCount: propsVoteCount,
 }: {
   rank: number;
-  producer: ProducerWithVotes;
+  producer: Partial<ProducerWithVotes> & { name: string; id: string }; // Loose typing for search results
   userVoteValue?: number | null;
   isTopTen?: boolean;
   color?: "gold" | "silver" | "bronze" | "gray" | "green" | "none";
@@ -28,10 +32,27 @@ export default function ProducerCard({
   showRank?: boolean;
   useColors?: boolean;
   appearance?: "light" | "gray" | "dark";
+  stateSlug?: string;
+  stateName?: string;
+  averageRating?: number;
+  voteCount?: number;
 }) {
-  const stateSlug = useStateSlug();
-  const total = producer.votes.reduce((sum, v) => sum + v.value, 0);
-  const average = producer.votes.length ? total / producer.votes.length : 0;
+  const contextStateSlug = useStateSlug();
+  const stateSlug = propsStateSlug ?? contextStateSlug;
+  
+  // Use passed rating or calculate from votes
+  let average = 0;
+  let count = 0;
+  
+  if (typeof propsAverageRating === "number") {
+    average = propsAverageRating;
+    count = propsVoteCount ?? 0;
+  } else {
+    const total = producer.votes?.reduce((sum, v) => sum + v.value, 0) ?? 0;
+    count = producer.votes?.length ?? 0;
+    average = count ? total / count : 0;
+  }
+  
   const userVote = userVoteValue;
 
   const colorClasses: Record<string, string> = {
@@ -185,9 +206,21 @@ export default function ProducerCard({
         {/* Header row: Title + Stars on left, Comments on right */}
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <h2 className="text-xl sm:text-2xl font-semibold leading-tight line-clamp-1">
-              {producer.name}
-            </h2>
+            <div className="flex items-center gap-2">
+                <h2 className="text-xl sm:text-2xl font-semibold leading-tight line-clamp-1">
+                {producer.name}
+                </h2>
+                {stateName && (
+                    <span className="flex-none px-2 py-0.5 text-xs font-semibold bg-gray-100 text-gray-500 rounded-md uppercase tracking-wider">
+                        {stateName}
+                    </span>
+                )}
+                {producer.category && (
+                    <span className={`flex-none px-2 py-0.5 text-xs font-bold rounded-md uppercase tracking-wider ${producer.category === 'FLOWER' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
+                        {producer.category}
+                    </span>
+                )}
+            </div>
             <div className="mt-1 origin-left scale-[1.15]">
               <VoteButton
                 producerId={producer.id}
@@ -214,7 +247,7 @@ export default function ProducerCard({
         </div>
 
         {/* Attributes row: single line, horizontal scroll with gradient fades (no tooltips) */}
-        {producer.attributes && producer.attributes.length > 0 && (
+        {producer.category && producer.attributes && producer.attributes.length > 0 && (
           <div className="relative mt-3">
             {/* Left fade */}
             <div
@@ -248,7 +281,9 @@ export default function ProducerCard({
               ].join(" ")}
             >
               {producer.attributes.map((a) => {
-                const opt = ATTRIBUTE_OPTIONS[producer.category].find(
+                // We know category exists because of the check above
+                const cat = producer.category!;
+                const opt = ATTRIBUTE_OPTIONS[cat]?.find(
                   (o) => o.key === a,
                 );
                 return (
