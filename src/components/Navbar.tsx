@@ -7,10 +7,11 @@ import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import Image from "next/image";
-import { LogIn, LogOut, User, Calendar, Crown } from "lucide-react";
+import { LogIn, LogOut, User, Calendar, Crown, Search } from "lucide-react";
 import type { Session } from "@supabase/supabase-js";
 import DropOptInModal from "./DropOptInModal";
 import { DEFAULT_STATE, DEFAULT_STATE_SLUG } from "@/lib/stateConstants";
+import NavbarSearch from "./NavbarSearch";
 
 const STATE_STORAGE_KEY = "terptier:selectedState";
 const STATE_COOKIE_NAME = "preferredState";
@@ -44,6 +45,7 @@ export default function Navbar() {
   const [isGlobalAdmin, setIsGlobalAdmin] = useState(false);
   const [adminStateSlugs, setAdminStateSlugs] = useState<string[]>([]);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [showBar, setShowBar] = useState(true);
   const [notificationOptIn, setNotificationOptIn] = useState(true);
   const [showDropModal, setShowDropModal] = useState(false);
@@ -325,6 +327,7 @@ export default function Navbar() {
       } else if (currentY > lastScrollY.current) {
         setShowBar(false);
         setMenuOpen(false);
+        setMobileSearchOpen(false);
       }
       lastScrollY.current = currentY;
     };
@@ -334,6 +337,7 @@ export default function Navbar() {
 
   useEffect(() => {
     setMenuOpen(false);
+    setMobileSearchOpen(false);
   }, [pathname]);
 
   return (
@@ -356,10 +360,28 @@ export default function Navbar() {
             />
           </Link>
 
-          {/* Mobile Menu Button */}
-          <div className="flex md:hidden mr-4">
+          {/* Mobile Actions Container */}
+          <div className="flex md:hidden mr-4 items-center space-x-3">
+             {/* Mobile Search Trigger */}
             <button
-              onClick={() => setMenuOpen(!menuOpen)}
+              onClick={() => {
+                const newState = !mobileSearchOpen;
+                setMobileSearchOpen(newState);
+                if (newState) setMenuOpen(false); 
+              }}
+              className="relative w-10 h-10 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 focus:outline-none hover:bg-white/20 transition-all duration-200 flex items-center justify-center text-white"
+              aria-label="Toggle search"
+            >
+              <Search className="w-5 h-5" />
+            </button>
+
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => {
+                 const newState = !menuOpen;
+                 setMenuOpen(newState);
+                 if (newState) setMobileSearchOpen(false);
+              }}
               className="relative w-10 h-10 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 focus:outline-none hover:bg-white/20 transition-all duration-200 flex items-center justify-center"
               aria-label="Toggle menu"
             >
@@ -385,6 +407,9 @@ export default function Navbar() {
 
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center space-x-6">
+            {/* Search Bar - Leftmost */}
+            <NavbarSearch />
+            
             {/* Navigation Links */}
             <Link
               href={dropsHref}
@@ -447,6 +472,22 @@ export default function Navbar() {
             )}
           </div>
         </div>
+
+        {/* Mobile Search Bar Expansion */}
+        <AnimatePresence>
+            {mobileSearchOpen && (
+                <motion.div
+                    key="mobile-search"
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                    className="md:hidden overflow-hidden"
+                >
+                    <NavbarSearch mobile isOpen={mobileSearchOpen} onClose={() => setMobileSearchOpen(false)} />
+                </motion.div>
+            )}
+        </AnimatePresence>
 
         {/* Mobile Menu */}
         <AnimatePresence>

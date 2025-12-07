@@ -18,6 +18,7 @@ interface StrainCardProps {
   className?: string;
   titleClassName?: string;
   metaClassName?: string;
+  stateSlug?: string;
 }
 
 export default function StrainCard({
@@ -27,8 +28,10 @@ export default function StrainCard({
   className,
   titleClassName,
   metaClassName,
+  stateSlug: propsStateSlug,
 }: StrainCardProps) {
-  const stateSlug = useStateSlug();
+  const contextStateSlug = useStateSlug();
+  const stateSlug = propsStateSlug ?? contextStateSlug;
   const baseClass =
     "flex items-center space-x-4 rounded p-4 shadow transition-colors duration-300";
   const containerClass = [
