@@ -43,30 +43,40 @@ export default function SearchBar({
   const [isFocused, setIsFocused] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
 
+  // Sync internal state with prop changes
+  useEffect(() => {
+    setQuery(initialQuery);
+  }, [initialQuery]);
+
   const theme = appearance ?? defaultTheme;
 
-  // Trigger search automatically with a short debounce
-  useEffect(() => {
-    const id = setTimeout(() => {
-      onSearch(query.trim());
-    }, 300);
-    return () => clearTimeout(id);
-  }, [query, onSearch]);
+  const handleSubmit = (e?: React.FormEvent) => {
+    e?.preventDefault();
+    onSearch(query.trim());
+    (document.activeElement as HTMLElement)?.blur();
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Escape") {
-      setQuery("");
+        // Revert to initial query or clear? 
+        // Let's clear for now as it's standard "escape" behavior in inputs
+      setQuery(""); 
       (e.target as HTMLInputElement).blur();
     }
   };
 
   const clearSearch = () => {
     setQuery("");
+    // If we want "clear" to also search for empty string immediately:
+    // onSearch("");
   };
+
+  const isDirty = query.trim() !== initialQuery.trim();
+  const showArrow = isDirty && query.trim().length > 0;
 
   return (
     <div className="mb-6 flex flex-col items-center">
-      <div className="relative w-5/6 md:w-2/3 max-w-md">
+      <form onSubmit={handleSubmit} className="relative w-5/6 md:w-2/3 max-w-md">
         {/* Search icon */}
         <div
           className={`absolute left-4 top-1/2 -translate-y-1/2 transform pointer-events-none z-10 ${theme.searchIcon}`}
@@ -102,65 +112,80 @@ export default function SearchBar({
           }`}
         />
 
-        {/* Filter toggle button */}
-        {enableFilters && (
-          <button
-            onClick={() => setShowFilters((s) => !s)}
-            className={`absolute right-2 top-1/2 -translate-y-1/2 transform p-1 transition-colors duration-200 ${
-              theme.filterButton
-            } ${showFilters ? theme.filterButtonActive : ""}`}
-            aria-label="Toggle filters"
-          >
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M3 4h18M6 12h12M10 20h4"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
-        )}
+        {/* Action Button: Arrow (Submit) or X (Clear) */}
+        {/* Priority: If text changed -> Arrow. Else if has text -> X. Else -> Filters (if enabled) */}
+        <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+             {showArrow ? (
+                <button
+                    type="submit"
+                    className="p-1.5 bg-green-500 hover:bg-green-600 text-white rounded-full transition-colors shadow-sm"
+                    aria-label="Search"
+                >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                    </svg>
+                </button>
+             ) : query ? (
+                <button
+                    type="button"
+                    onClick={clearSearch}
+                    className={`p-1 transition-colors duration-200 ${theme.clearButton}`}
+                    aria-label="Clear search"
+                >
+                    <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    >
+                    <path
+                        d="M18 6L6 18M6 6L18 18"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                    />
+                    </svg>
+                </button>
+             ) : null}
 
-        {/* Clear button */}
-        {query && (
-          <button
-            onClick={clearSearch}
-            className={`absolute right-8 top-1/2 -translate-y-1/2 transform transition-colors duration-200 ${theme.clearButton}`}
-            aria-label="Clear search"
-          >
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
+            {/* Filter toggle button */}
+            {enableFilters && (
+            <button
+                type="button"
+                onClick={() => setShowFilters((s) => !s)}
+                className={`p-1 transition-colors duration-200 ${
+                theme.filterButton
+                } ${showFilters ? theme.filterButtonActive : ""}`}
+                aria-label="Toggle filters"
             >
-              <path
-                d="M18 6L6 18M6 6L18 18"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
-        )}
-
+                <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                >
+                <path
+                    d="M3 4h18M6 12h12M10 20h4"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                />
+                </svg>
+            </button>
+            )}
+        </div>
+        
         {/* Focus ring */}
         <div
           className={`absolute inset-0 rounded-full ring-1 ${theme.focusRing} transition-all duration-200 pointer-events-none ${
             isFocused ? "ring-opacity-40" : "ring-opacity-0"
           }`}
         />
-      </div>
+      </form>
 
       {enableFilters && showFilters && onAttributesChange && category && (
         <div

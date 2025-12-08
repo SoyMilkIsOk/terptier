@@ -67,10 +67,13 @@ export async function GET(request: NextRequest) {
             categoryEnum ? { category: categoryEnum } : {},
             {
               OR: [
-                { name: { contains: query, mode: "insensitive" } },
-                { slug: { contains: query, mode: "insensitive" } },
+                { name: { startsWith: query, mode: "insensitive" } },
+                { name: { contains: ` ${query}`, mode: "insensitive" } },
               ],
             },
+            // EXCLUDE BLACK MARKET PRODUCERS
+            // To revert this change, remove or comment out the following line:
+            { market: { not: "BLACK" } },
           ],
         },
         include: {
@@ -107,9 +110,12 @@ export async function GET(request: NextRequest) {
             categoryEnum ? { producer: { category: categoryEnum } } : {},
             {
               OR: [
-                { name: { contains: query, mode: "insensitive" } },
-                { description: { contains: query, mode: "insensitive" } },
-                { producer: { name: { contains: query, mode: "insensitive" } } }, // NEW: Search by producer name
+                // Match strain name (start of string or start of word)
+                { name: { startsWith: query, mode: "insensitive" } },
+                { name: { contains: ` ${query}`, mode: "insensitive" } },
+                // Match producer name (start of string or start of word)
+                { producer: { name: { startsWith: query, mode: "insensitive" } } },
+                { producer: { name: { contains: ` ${query}`, mode: "insensitive" } } },
               ],
             },
           ],
@@ -149,9 +155,6 @@ export async function GET(request: NextRequest) {
       let relevance = calculateRelevance(p.name, query);
       // Boost producer relevance slightly to prioritize them in mixed view if names match
       relevance += 20;
-      // Also check slug
-      const slugRelevance = calculateRelevance(p.slug, query);
-      if (slugRelevance > relevance) relevance = slugRelevance;
 
       const total = p.votes.reduce((sum, v) => sum + v.value, 0);
       const count = p.votes.length;

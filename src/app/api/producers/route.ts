@@ -25,7 +25,13 @@ export async function GET(request: NextRequest) {
 
     const [flower, hash] = await Promise.all([
       prisma.producer.findMany({
-        where: { category: "FLOWER", stateId: state.id },
+        where: {
+          category: "FLOWER",
+          stateId: state.id,
+          // EXCLUDE BLACK MARKET PRODUCERS
+          // To revert this change, remove or comment out the following line:
+          market: { not: "BLACK" },
+        },
         include: {
           votes: true,
           _count: { select: { comments: true } },
@@ -33,7 +39,13 @@ export async function GET(request: NextRequest) {
         },
       }),
       prisma.producer.findMany({
-        where: { category: "HASH", stateId: state.id },
+        where: {
+          category: "HASH",
+          stateId: state.id,
+          // EXCLUDE BLACK MARKET PRODUCERS
+          // To revert this change, remove or comment out the following line:
+          market: { not: "BLACK" },
+        },
         include: {
           votes: true,
           _count: { select: { comments: true } },

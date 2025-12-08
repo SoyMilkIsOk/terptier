@@ -37,7 +37,9 @@ export default function AddProducerForm({
   const [profileImage, setProfileImage] = useState<string | null>(
     producer?.profileImage ?? null,
   );
-  const [market, setMarket] = useState<Market>(producer?.market ?? "BOTH");
+  // RESTRICT MARKET SELECTION: Default to "WHITE" for now.
+  // To revert, change "WHITE" back to "BOTH" and uncomment the fieldset below.
+  const [market, setMarket] = useState<Market>(producer?.market ?? "WHITE");
   const marketFieldName = useId();
 
   const displayStateName = producer?.state?.name ?? state.name;
@@ -138,6 +140,7 @@ export default function AddProducerForm({
           </label>
         ))}
       </div>
+      {/* RESTRICT MARKET SELECTION: Hidden for now. To revert, uncomment this block.
       <fieldset className="space-y-1">
         <legend className="block text-xs font-semibold text-gray-500">
           Market
@@ -169,6 +172,7 @@ export default function AddProducerForm({
           })}
         </div>
       </fieldset>
+      */}
       <select
         value={category}
         onChange={(e) => setCategory(e.target.value as any)}

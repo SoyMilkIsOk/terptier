@@ -1,8 +1,10 @@
 "use client";
 
 import { useSearchParams, useRouter } from "next/navigation";
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState, Suspense, useCallback } from "react";
 import SearchResults from "@/components/SearchResults";
+import SearchBar from "@/components/SearchBar";
+import BackButton from "@/components/BackButton";
 import { Loader2 } from "lucide-react";
 import type { SearchResultItem } from "@/app/api/search/route";
 
@@ -81,21 +83,37 @@ function SearchPageContent() {
         params.delete(key);
     }
     // Use replace to avoid adding to history stack
-    router.replace(`/search?${params.toString()}`);
+    router.replace(`/search?${params.toString()}`, { scroll: false });
   };
+
+  const handleSearch = useCallback((newQuery: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (newQuery) {
+        params.set("q", newQuery);
+    } else {
+        params.delete("q");
+    }
+    router.replace(`/search?${params.toString()}`, { scroll: false });
+  }, [searchParams, router]);
 
   return (
     <main className="min-h-screen bg-gray-50 pt-8 pb-20">
       <div className="container mx-auto px-4">
-        <div className="mb-6 flex items-center gap-4">
-            <button 
-                onClick={() => router.back()} 
-                className="p-2 hover:bg-gray-200 rounded-full transition-colors cursor-pointer"
-                aria-label="Go back"
-            >
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-            </button>
-            <h1 className="text-xl md:text-3xl font-bold text-gray-900 leading-tight break-words">
+        <div className="mb-2">
+            <BackButton />
+        </div>
+        
+        <div className="mb-8">
+            <SearchBar 
+                onSearch={handleSearch} 
+                initialQuery={query}
+                enableFilters={false} // We have filters below already
+                placeholder="Search producers & strains..."
+            />
+        </div>
+
+        <div className="mb-6 flex items-center justify-center gap-4">
+            <h1 className="text-xl md:text-3xl font-bold text-gray-900 leading-tight break-words text-center">
                 Search Results for "{query}"
             </h1>
         </div>
