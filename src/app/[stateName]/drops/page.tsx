@@ -389,11 +389,11 @@ export default async function DropsPage({
                                 <div className="absolute -inset-0.5 bg-gradient-to-r from-orange-400 to-red-400 rounded-lg blur opacity-20 group-hover/strain:opacity-30 transition-opacity duration-300"></div>
                               )}
 
-                              <div className="relative rounded-lg overflow-hidden border border-transparent transition-all duration-300">
+                              <div className="relative rounded-lg overflow-hidden border border-transparent transition-all duration-300 h-full">
                                 <StrainCard
                                   strain={strain}
                                   producerSlug={producer.slug ?? producer.id}
-                                  className={theme.strainCard.container}
+                                  className={`${theme.strainCard.container} h-full`}
                                   metaClassName={theme.strainCard.meta}
                                 >
                                   <div className="mt-2 sm:mt-3">
