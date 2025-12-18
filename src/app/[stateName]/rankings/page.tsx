@@ -102,8 +102,21 @@ export default async function RankingsPage({
       category: Category.FLOWER,
       market: { in: marketFilters },
     },
-    include: { votes: true, _count: { select: { comments: true } } },
-  })) as ProducerWithVotes[];
+    include: {
+      votes: true,
+      _count: { select: { comments: true } },
+      strains: {
+        select: {
+          StrainReview: {
+            select: {
+              id: true,
+              comment: true,
+            },
+          },
+        },
+      },
+    },
+  })) as any[]; // Using any[] temporarily effectively, casting to ProducerWithVotes later after sanitization
 
   const hashRaw = (await prisma.producer.findMany({
     where: {
@@ -111,8 +124,21 @@ export default async function RankingsPage({
       category: Category.HASH,
       market: { in: marketFilters },
     },
-    include: { votes: true, _count: { select: { comments: true } } },
-  })) as ProducerWithVotes[];
+    include: {
+      votes: true,
+      _count: { select: { comments: true } },
+      strains: {
+        select: {
+          StrainReview: {
+            select: {
+              id: true,
+              comment: true,
+            },
+          },
+        },
+      },
+    },
+  })) as any[];
 
   const score = (p: ProducerWithVotes) => {
     const total = p.votes.reduce((sum, v) => sum + v.value, 0);
@@ -125,8 +151,51 @@ export default async function RankingsPage({
   const initialViewParam = view === "hash" ? "hash" : "flower";
 
   const totalProducers = flower.length + hash.length;
-  const totalVotes =
-    [...flower, ...hash].reduce((acc, p) => acc + p.votes.length, 0) || 0;
+
+  // Calculate total engagement:
+  // Producer Votes + Producer Comments + Strain Votes + Strain Comments
+  let totalEngagement = 0;
+
+  const calculateEngagement = (producers: any[]) => {
+    producers.forEach((p) => {
+      // Producer Votes
+      totalEngagement += p.votes.length;
+      // Producer Comments
+      totalEngagement += p._count?.comments || 0;
+
+      // Strain engagement
+      if (p.strains) {
+        p.strains.forEach((s: any) => {
+          if (s.StrainReview) {
+            // Strain Votes (Reviews)
+            totalEngagement += s.StrainReview.length;
+            // Strain Comments
+            s.StrainReview.forEach((r: any) => {
+              if (r.comment && r.comment.trim().length > 0) {
+                totalEngagement += 1;
+              }
+            });
+          }
+        });
+      }
+    });
+  };
+
+  calculateEngagement(flower);
+  calculateEngagement(hash);
+
+  // Sanitize data to match ProducerWithVotes type and remove heavy strain data
+  // casting to unknown first to avoid ts errors during map
+  const sanitize = (list: any[]): ProducerWithVotes[] => {
+    return list.map((p) => {
+      const { strains, ...rest } = p;
+      return rest as ProducerWithVotes;
+    });
+  };
+
+  const cleanFlower = sanitize(flower);
+  const cleanHash = sanitize(hash);
+
 
   const marketDescriptor =
     selectedMarket === "WHITE"
@@ -197,7 +266,7 @@ export default async function RankingsPage({
               <div className="flex items-center gap-2">
                 <Star className="w-5 h-5" />
                 <span className="text-sm font-medium">
-                  {totalVotes} Vote{totalVotes === 1 ? "" : "s"}
+                  {totalEngagement} Votes & Comments
                 </span>
               </div>
               <div
@@ -230,7 +299,7 @@ export default async function RankingsPage({
         className={`container mx-auto px-2 md:px-4 py-10 md:py-12 transition-colors duration-500 ${theme.content}`}
       >
         <ProducerList
-          initialData={{ flower, hash }}
+          initialData={{ flower: cleanFlower, hash: cleanHash }}
           userVotes={userVotes}
           initialView={initialViewParam}
           cardAppearance={theme.producerCardAppearance}
