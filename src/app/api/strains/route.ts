@@ -52,6 +52,7 @@ export async function GET(request: NextRequest) {
   try {
     const strains = await prisma.strain.findMany({
       where: { producerId },
+      orderBy: { name: "asc" },
       select: {
         id: true,
         strainSlug: true,

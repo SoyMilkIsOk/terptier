@@ -86,14 +86,9 @@ export default async function ProducerStrainsPage({
     return { ...rest, avgRating: avg };
   });
 
-  const sortedStrains = strainsWithAvg.sort((a, b) => {
-    if (a.releaseDate && b.releaseDate) {
-      return b.releaseDate.getTime() - a.releaseDate.getTime();
-    }
-    if (a.releaseDate) return -1;
-    if (b.releaseDate) return 1;
-    return a.name.localeCompare(b.name);
-  });
+  const sortedStrains = strainsWithAvg.sort((a, b) => 
+    a.name.localeCompare(b.name)
+  );
 
   const producerSlug = producer.slug ?? slug;
 

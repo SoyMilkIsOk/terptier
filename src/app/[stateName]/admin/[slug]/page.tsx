@@ -74,6 +74,7 @@ export default async function ProducerAdminPage({
     },
     include: {
       strains: {
+        orderBy: { name: "asc" },
         select: {
           id: true,
           name: true,
