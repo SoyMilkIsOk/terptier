@@ -14,9 +14,7 @@ type Step = "age" | "privacy" | "complete";
 
 interface CookiePreferences {
   essential: boolean;
-  analytics: boolean;
-  marketing: boolean;
-  functional: boolean;
+  analyticsMarketing: boolean;
 }
 
 type CookieType = keyof Omit<CookiePreferences, "essential">;
@@ -80,9 +78,7 @@ export default function AgeGate({ states = [], initialStateSlug = null }: AgeGat
   const [step, setStep] = useState<Step>("age");
   const [cookiePreferences, setCookiePreferences] = useState<CookiePreferences>({
     essential: true,
-    analytics: false,
-    marketing: false,
-    functional: false,
+    analyticsMarketing: true,
   });
   const [showCookieDetails, setShowCookieDetails] = useState<boolean>(false);
   const [selectedState, setSelectedState] = useState<string>(() => {
@@ -138,7 +134,10 @@ export default function AgeGate({ states = [], initialStateSlug = null }: AgeGat
     if (cookiePrefs) {
       try {
         const parsed = JSON.parse(decodeURIComponent(cookiePrefs));
-        setCookiePreferences((prev) => ({ ...prev, ...parsed }));
+        setCookiePreferences((prev) => ({
+          ...prev,
+          analyticsMarketing: parsed.analyticsMarketing ?? (parsed.analytics || parsed.marketing || true),
+        }));
       } catch (error) {
         console.error("Error parsing cookie preferences:", error);
       }
@@ -207,23 +206,16 @@ export default function AgeGate({ states = [], initialStateSlug = null }: AgeGat
       persistStateSelection(selectedState);
     }
 
-    if (cookiePreferences.analytics) {
+    if (cookiePreferences.analyticsMarketing) {
       setCookie("analyticsEnabled", "true", 365);
-    } else {
-      deleteCookie("analyticsEnabled");
-    }
-
-    if (cookiePreferences.marketing) {
       setCookie("marketingEnabled", "true", 365);
     } else {
+      deleteCookie("analyticsEnabled");
       deleteCookie("marketingEnabled");
     }
 
-    if (cookiePreferences.functional) {
-      setCookie("functionalEnabled", "true", 365);
-    } else {
-      deleteCookie("functionalEnabled");
-    }
+    // We can also remove functionalEnabled if it's no longer used
+    deleteCookie("functionalEnabled");
 
     setTimeout(() => {
       setOpen(false);
@@ -238,23 +230,7 @@ export default function AgeGate({ states = [], initialStateSlug = null }: AgeGat
     }));
   };
 
-  const handleRejectAll = (): void => {
-    setCookiePreferences({
-      essential: true,
-      analytics: false,
-      marketing: false,
-      functional: false,
-    });
-  };
 
-  const handleAcceptAll = (): void => {
-    setCookiePreferences({
-      essential: true,
-      analytics: true,
-      marketing: true,
-      functional: true,
-    });
-  };
 
   const handleStateChange = (event: ChangeEvent<HTMLSelectElement>) => {
     setSelectedState(event.target.value);
@@ -392,47 +368,15 @@ export default function AgeGate({ states = [], initialStateSlug = null }: AgeGat
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between p-3 sm:p-4 bg-gray-50 rounded-xl border">
+                <div className="flex items-center justify-between p-3 sm:p-4 bg-gray-50 rounded-xl border border-gray-200">
                   <div className="flex-1 pr-3">
-                    <h3 className="font-semibold text-gray-800 text-sm sm:text-base">Analytics</h3>
-                    <p className="text-xs sm:text-sm text-gray-600">Help us improve our service</p>
+                    <h3 className="font-semibold text-gray-800 text-sm sm:text-base">Analytics & Marketing</h3>
+                    <p className="text-xs sm:text-sm text-gray-600">Help us improve our service and show relevant content</p>
                   </div>
                   <button
-                    onClick={() => toggleCookiePreference("analytics")}
+                    onClick={() => toggleCookiePreference("analyticsMarketing")}
                     className={`w-10 h-5 sm:w-12 sm:h-6 rounded-full flex items-center px-1 transition-all duration-200 ${
-                      cookiePreferences.analytics ? "bg-green-500 justify-end" : "bg-gray-300 justify-start"
-                    }`}
-                    type="button"
-                  >
-                    <div className="w-3 h-3 sm:w-4 sm:h-4 bg-white rounded-full" />
-                  </button>
-                </div>
-
-                <div className="flex items-center justify-between p-3 sm:p-4 bg-gray-50 rounded-xl border">
-                  <div className="flex-1 pr-3">
-                    <h3 className="font-semibold text-gray-800 text-sm sm:text-base">Marketing</h3>
-                    <p className="text-xs sm:text-sm text-gray-600">Personalized content and ads</p>
-                  </div>
-                  <button
-                    onClick={() => toggleCookiePreference("marketing")}
-                    className={`w-10 h-5 sm:w-12 sm:h-6 rounded-full flex items-center px-1 transition-all duration-200 ${
-                      cookiePreferences.marketing ? "bg-green-500 justify-end" : "bg-gray-300 justify-start"
-                    }`}
-                    type="button"
-                  >
-                    <div className="w-3 h-3 sm:w-4 sm:h-4 bg-white rounded-full" />
-                  </button>
-                </div>
-
-                <div className="flex items-center justify-between p-3 sm:p-4 bg-gray-50 rounded-xl border">
-                  <div className="flex-1 pr-3">
-                    <h3 className="font-semibold text-gray-800 text-sm sm:text-base">Functional</h3>
-                    <p className="text-xs sm:text-sm text-gray-600">Experience enhancements</p>
-                  </div>
-                  <button
-                    onClick={() => toggleCookiePreference("functional")}
-                    className={`w-10 h-5 sm:w-12 sm:h-6 rounded-full flex items-center px-1 transition-all duration-200 ${
-                      cookiePreferences.functional ? "bg-green-500 justify-end" : "bg-gray-300 justify-start"
+                      cookiePreferences.analyticsMarketing ? "bg-green-500 justify-end" : "bg-gray-300 justify-start"
                     }`}
                     type="button"
                   >
@@ -442,22 +386,7 @@ export default function AgeGate({ states = [], initialStateSlug = null }: AgeGat
               </div>
 
               <div className="space-y-3">
-                <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
-                  <button
-                    onClick={handleAcceptAll}
-                    className="flex-1 bg-green-100 hover:bg-green-200 text-green-700 font-semibold py-3 px-4 rounded-xl transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg text-sm border border-green-200"
-                    type="button"
-                  >
-                    Accept All
-                  </button>
-                  <button
-                    onClick={handleRejectAll}
-                    className="flex-1 bg-red-100 hover:bg-red-200 text-red-700 font-medium py-3 px-4 rounded-xl transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg text-sm border border-red-200"
-                    type="button"
-                  >
-                    Reject All
-                  </button>
-                </div>
+
 
                 <button
                   onClick={handlePrivacyAccept}
@@ -481,17 +410,11 @@ export default function AgeGate({ states = [], initialStateSlug = null }: AgeGat
                 <div className="mt-4 p-3 sm:p-4 bg-green-50 rounded-xl border border-green-100 text-xs sm:text-sm text-gray-700">
                   <h4 className="font-semibold mb-2 text-green-800">Cookie Information</h4>
                   <ul className="space-y-1 text-xs">
-                    <li>
+                   <li>
                       • <strong>Essential:</strong> Session management, security, age verification
                     </li>
                     <li>
-                      • <strong>Analytics:</strong> Google Analytics, usage statistics, performance
-                    </li>
-                    <li>
-                      • <strong>Marketing:</strong> Ad personalization, retargeting, social media
-                    </li>
-                    <li>
-                      • <strong>Functional:</strong> Language preferences, user settings, themes
+                      • <strong>Analytics & Marketing:</strong> Performance tracking, usage statistics, and personalized content
                     </li>
                   </ul>
                   <p className="mt-2 text-xs text-gray-500">
