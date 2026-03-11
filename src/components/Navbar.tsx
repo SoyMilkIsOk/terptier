@@ -55,6 +55,7 @@ export default function Navbar() {
   const [selectedState, setSelectedState] = useState(DEFAULT_STATE_SLUG);
   const lastScrollY = useRef(0);
   const adminDefaultApplied = useRef(false);
+  const userDropdownRef = useRef<HTMLDivElement>(null);
 
   const marketSelection = searchParams.get("market");
   const viewSelection = searchParams.get("view");
@@ -346,6 +347,23 @@ export default function Navbar() {
     setUserDropdownOpen(false);
   }, [pathname]);
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        userDropdownRef.current &&
+        !userDropdownRef.current.contains(event.target as Node)
+      ) {
+        setUserDropdownOpen(false);
+      }
+    };
+    if (userDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [userDropdownOpen]);
+
   return (
     <>
       <motion.nav
@@ -450,15 +468,15 @@ export default function Navbar() {
                 <span>Log In / Sign Up</span>
               </Link>
             ) : (
-              <div className="relative">
+              <div className="relative" ref={userDropdownRef}>
                 <button
                   onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                  className="flex items-center justify-center w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm border-2 border-white/20 hover:bg-white/20 transition-all duration-200 overflow-hidden"
+                  className="flex items-center justify-center w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm border-2 border-white/20 hover:bg-white/20 transition-all duration-200 overflow-hidden cursor-pointer"
                 >
                   {profilePicUrl ? (
-                     <img src={profilePicUrl} alt="Profile" className="w-full h-full object-cover" />
+                     <img src={profilePicUrl} alt="Profile" className="w-full h-full object-cover cursor-pointer" />
                   ) : (
-                    <User className="w-5 h-5 text-white" />
+                    <User className="w-5 h-5 text-white cursor-pointer" />
                   )}
                 </button>
 

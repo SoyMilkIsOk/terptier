@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { DEFAULT_STATE_SLUG } from "@/lib/stateConstants";
@@ -18,6 +18,14 @@ function LoginForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        router.push("/");
+      }
+    });
+  }, [router]);
 
   const getPreferredStateSlug = () => {
     if (typeof window === "undefined") {
@@ -54,7 +62,7 @@ function LoginForm() {
     } = await supabase.auth.getSession();
 
     if (session) {
-      await fetch("/api/users", {
+      fetch("/api/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -62,34 +70,9 @@ function LoginForm() {
           email: session.user.email,
           name: session.user.user_metadata?.name || session.user.email,
         }),
-      });
-      const meRes = await fetch("/api/users/me");
-      const meData: {
-        success: boolean;
-        isGlobalAdmin?: boolean;
-        stateAdminAssignments?: { stateSlug?: string | null }[];
-      } = await meRes.json();
-      if (meData.success) {
-        const preferredState = getPreferredStateSlug();
-        const assignedStates = Array.isArray(meData.stateAdminAssignments)
-          ? meData.stateAdminAssignments
-              .map((assignment: { stateSlug?: string | null }) => assignment?.stateSlug)
-              .filter((slug): slug is string => Boolean(slug))
-          : [];
-
-        if (meData.isGlobalAdmin) {
-          router.push(`/${preferredState}/admin`);
-        } else if (assignedStates.length > 0) {
-          const targetState = assignedStates.includes(preferredState)
-            ? preferredState
-            : assignedStates[0];
-          router.push(`/${targetState}/admin`);
-        } else {
-          router.push(`/${DEFAULT_STATE_SLUG}/rankings`);
-        }
-      } else {
-        router.push("/");
-      }
+      }).catch(console.error);
+      
+      router.push("/");
     } else {
       setError(finalError?.message ?? "Authentication failed");
     }

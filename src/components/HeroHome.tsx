@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ChevronRight, Star, Users, TrendingUp, Cannabis, LogIn, Crown, Calendar } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { supabase } from "@/lib/supabaseClient";
 import type { AgeGateStateOption } from "./AgeGate";
 
 type HeroHomeProps = {
@@ -14,6 +15,13 @@ type HeroHomeProps = {
 
 export default function HeroHome({ state, states }: HeroHomeProps) {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsLoggedIn(!!session);
+    });
+  }, []);
 
   useEffect(() => {
     interface MouseEventWithClient extends MouseEvent {
@@ -248,19 +256,21 @@ export default function HeroHome({ state, states }: HeroHomeProps) {
                 <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" />
               </div>
             </motion.button>
-          </Link>
-          <Link href="/signup">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="group cursor-pointer bg-white/10 backdrop-blur-sm text-white font-semibold px-8 py-4 rounded-full border border-white/20 hover:bg-white/20 transition-all duration-300"
-            >
-              <div className="flex items-center justify-center gap-2">
-                <Users size={20} />
-                <span>Sign Up</span>
-              </div>
-            </motion.button>
-          </Link>
+           </Link>
+          {isLoggedIn === false && (
+            <Link href="/signup">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="group cursor-pointer bg-white/10 backdrop-blur-sm text-white font-semibold px-8 py-4 rounded-full border border-white/20 hover:bg-white/20 transition-all duration-300"
+              >
+                <div className="flex items-center justify-center gap-2">
+                  <Users size={20} />
+                  <span>Sign Up</span>
+                </div>
+              </motion.button>
+            </Link>
+          )}
         </motion.div>
       </motion.div>
     </div>
