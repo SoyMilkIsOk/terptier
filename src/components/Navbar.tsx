@@ -42,10 +42,12 @@ export default function Navbar() {
   const searchParams = useSearchParams();
   const [session, setSession] = useState<Session | null>(null);
   const [profileUsername, setProfileUsername] = useState<string | null>(null);
+  const [profilePicUrl, setProfilePicUrl] = useState<string | null>(null);
   const [isGlobalAdmin, setIsGlobalAdmin] = useState(false);
   const [adminStateSlugs, setAdminStateSlugs] = useState<string[]>([]);
   const [menuOpen, setMenuOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [showBar, setShowBar] = useState(true);
   const [notificationOptIn, setNotificationOptIn] = useState(true);
   const [showDropModal, setShowDropModal] = useState(false);
@@ -200,6 +202,7 @@ export default function Navbar() {
   const applyUserResponse = useCallback((data: CurrentUserResponse | null) => {
     if (!data || !data.success) {
       setProfileUsername(null);
+      setProfilePicUrl(null);
       setIsGlobalAdmin(false);
       setAdminStateSlugs([]);
       setNotificationOptIn(true);
@@ -210,6 +213,7 @@ export default function Navbar() {
 
     adminDefaultApplied.current = false;
     setProfileUsername(data.username || data.id);
+    setProfilePicUrl(data.profilePicUrl || null);
     setNotificationOptIn(data.notificationOptIn);
     const adminSlugs = Array.isArray(data.stateAdminAssignments)
       ? data.stateAdminAssignments
@@ -328,6 +332,7 @@ export default function Navbar() {
         setShowBar(false);
         setMenuOpen(false);
         setMobileSearchOpen(false);
+        setUserDropdownOpen(false);
       }
       lastScrollY.current = currentY;
     };
@@ -338,6 +343,7 @@ export default function Navbar() {
   useEffect(() => {
     setMenuOpen(false);
     setMobileSearchOpen(false);
+    setUserDropdownOpen(false);
   }, [pathname]);
 
   return (
@@ -434,41 +440,66 @@ export default function Navbar() {
               <span>Brands</span>
             </Link>
 
-            {profileUsername && (
-              <Link
-                href={`/profile/${profileUsername}`}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-2xl text-sm font-medium transition-all duration-200 ${
-                  pathname === `/profile/${profileUsername}`
-                    ? "bg-white/20 backdrop-blur-sm"
-                    : "hover:bg-white/10 backdrop-blur-sm"
-                }`}
-              >
-                <User className="w-4 h-4" />
-                <span>Profile</span>
-              </Link>
-            )}
-            {/* Auth Buttons */}
+            {/* User Profile / Auth */}
             {!session ? (
               <Link
                 href="/login"
                 className="flex items-center space-x-2 bg-white/95 backdrop-blur-sm text-green-800 px-6 py-2.5 rounded-2xl font-medium hover:bg-white/100 hover:scale-105 transition-all duration-200 shadow-lg"
               >
                 <LogIn className="w-4 h-4" />
-                <span>Log In</span>
+                <span>Log In / Sign Up</span>
               </Link>
             ) : (
-              <button
-                type="button"
-                onClick={async () => {
-                  await supabase.auth.signOut();
-                  setSession(null);
-                  location.reload();
-                }}
-                className="flex items-center space-x-2 bg-red-500/90 backdrop-blur-sm hover:bg-red-600/90 px-6 py-2.5 rounded-2xl font-medium cursor-pointer hover:scale-105 transition-all duration-200 shadow-lg"
-              >
-                <LogOut className="w-4 h-4 text-white" />
-                <span className="text-white">Sign Out</span>
-              </button>
+              <div className="relative">
+                <button
+                  onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                  className="flex items-center justify-center w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm border-2 border-white/20 hover:bg-white/20 transition-all duration-200 overflow-hidden"
+                >
+                  {profilePicUrl ? (
+                     <img src={profilePicUrl} alt="Profile" className="w-full h-full object-cover" />
+                  ) : (
+                    <User className="w-5 h-5 text-white" />
+                  )}
+                </button>
+
+                <AnimatePresence>
+                  {userDropdownOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      transition={{ duration: 0.2 }}
+                      className="absolute right-0 mt-2 w-48 bg-gradient-to-b from-green-800/95 to-green-900/95 backdrop-blur-lg border border-white/10 rounded-2xl shadow-xl overflow-hidden z-50"
+                    >
+                      <div className="flex flex-col py-2">
+                        {profileUsername && (
+                          <Link
+                            href={`/profile/${profileUsername}`}
+                            onClick={() => setUserDropdownOpen(false)}
+                            className="flex items-center space-x-2 px-4 py-3 hover:bg-white/10 transition-colors duration-200"
+                          >
+                            <User className="w-4 h-4" />
+                            <span>Profile</span>
+                          </Link>
+                        )}
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            setUserDropdownOpen(false);
+                            await supabase.auth.signOut();
+                            setSession(null);
+                            location.reload();
+                          }}
+                          className="flex items-center space-x-2 px-4 py-3 hover:bg-red-500/20 text-red-100 transition-colors duration-200 w-full text-left"
+                        >
+                          <LogOut className="w-4 h-4" />
+                          <span>Sign Out</span>
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             )}
           </div>
         </div>
@@ -519,16 +550,6 @@ export default function Navbar() {
                     <Crown className="w-4 h-4" />
                     <span>Brands</span>
                   </Link>
-                  {profileUsername && (
-                    <Link
-                      href={`/profile/${profileUsername}`}
-                      onClick={() => setMenuOpen(false)}
-                      className="flex items-center justify-center space-x-2 w-full py-3 bg-white/10 backdrop-blur-sm rounded-2xl hover:bg-white/20 transition-all duration-200 font-medium"
-                    >
-                      <User className="w-4 h-4" />
-                      <span>Profile</span>
-                    </Link>
-                  )}
                   
                 </div>
 
@@ -541,22 +562,38 @@ export default function Navbar() {
                       className="flex items-center justify-center space-x-2 w-full py-3 bg-white/95 backdrop-blur-sm text-green-800 rounded-2xl font-medium shadow-lg"
                     >
                       <LogIn className="w-4 h-4" />
-                      <span>Log In</span>
+                      <span>Log In / Sign Up</span>
                     </Link>
                   ) : (
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        await supabase.auth.signOut();
-                        setSession(null);
-                        setMenuOpen(false);
-                        location.reload();
-                      }}
-                      className="flex items-center justify-center space-x-2 w-full py-3 bg-red-500/90 backdrop-blur-sm hover:bg-red-600/90 rounded-2xl font-medium cursor-pointer text-white shadow-lg"
-                    >
-                      <LogOut className="w-4 h-4" />
-                      <span>Sign Out</span>
-                    </button>
+                    <>
+                      {profileUsername && (
+                        <Link
+                          href={`/profile/${profileUsername}`}
+                          onClick={() => setMenuOpen(false)}
+                          className="flex items-center justify-center space-x-2 w-full py-3 bg-white/10 backdrop-blur-sm rounded-2xl hover:bg-white/20 transition-all duration-200 font-medium"
+                        >
+                          {profilePicUrl ? (
+                             <img src={profilePicUrl} alt="Profile" className="w-5 h-5 rounded-full object-cover" />
+                          ) : (
+                             <User className="w-4 h-4" />
+                          )}
+                          <span>Profile</span>
+                        </Link>
+                      )}
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          await supabase.auth.signOut();
+                          setSession(null);
+                          setMenuOpen(false);
+                          location.reload();
+                        }}
+                        className="flex items-center justify-center space-x-2 w-full py-3 bg-red-500/90 backdrop-blur-sm hover:bg-red-600/90 rounded-2xl font-medium cursor-pointer text-white shadow-lg"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        <span>Sign Out</span>
+                      </button>
+                    </>
                   )}
                 </div>
               </div>
